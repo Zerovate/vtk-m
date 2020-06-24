@@ -10,7 +10,7 @@ enable_testing()
 
 
 add_executable(Diffusion heat_diffusion.cxx Diffusion_Filter.h hd_worklets.h parameters.h)
-target_link_libraries(Diffusion PRIVATE vtkm_filter)
+target_link_libraries(Diffusion PRIVATE vtkm_filter vtkm_io)
 vtkm_add_target_information(Diffusion
         DROP_UNUSED_SYMBOLS MODIFY_CUDA_FLAGS
         DEVICE_SOURCES heat_diffusion.cxx)

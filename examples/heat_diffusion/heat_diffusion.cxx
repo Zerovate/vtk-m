@@ -22,13 +22,10 @@
 
 #include <vtkm/filter/FilterDataSet.h>
 
-#include <vtkm/io/reader/VTKDataSetReader.h>
+#include <vtkm/io/VTKDataSetReader.h>
 
 #include <vtkm/worklet/DispatcherMapField.h>
 
-#include <vtkm/cont/cuda/DeviceAdapterCuda.h>
-#include <vtkm/cont/serial/DeviceAdapterSerial.h>
-#include <vtkm/cont/tbb/DeviceAdapterTBB.h>
 
 #include <iomanip>
 
@@ -160,7 +157,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    vtkm::io::reader::VTKDataSetReader reader(params.filename);
+    vtkm::io::VTKDataSetReader reader(params.filename);
     data = reader.ReadDataSet();
   }
 
@@ -213,7 +210,7 @@ int main(int argc, char* argv[])
     std::cout << "Number of iteration: " << params.iteration << std::endl;
 
     start = static_cast<vtkm::Float32>(gTimer.GetElapsedTime());
-    data = filter.Execute(data, DiffusionPolicy());
+    data = filter.Execute(data);
     end = static_cast<vtkm::Float32>(gTimer.GetElapsedTime());
 
     std::cout << std::endl << "Execution time = " << end - start << std::endl;

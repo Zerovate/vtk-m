@@ -9,11 +9,6 @@
 
 #include <utility>
 
-struct DiffusionPolicy : public vtkm::filter::PolicyBase<DiffusionPolicy>
-{
-  using FieldTypeList = vtkm::List<vtkm::Float32, vtkm::Int8, int, vtkm::Vec3f_32>;
-};
-
 namespace vtkm
 {
 namespace filter
@@ -22,6 +17,8 @@ namespace filter
 class Diffusion : public vtkm::filter::FilterDataSet<Diffusion>
 {
 public:
+  using SupportedTypes = vtkm::List<vtkm::Float32, vtkm::Int8, int, vtkm::Vec3f_32>;
+
   template <typename Policy>
   VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input,
                                           vtkm::filter::PolicyBase<Policy> policy)
@@ -47,7 +44,7 @@ public:
     for (int i = 0; i < iteration.ReadPortal().Get(0); i++)
     {
       this->Invoke(UpdateHeat{},
-                   vtkm::filter::ApplyPolicyCellSet(cells, policy),
+                   vtkm::filter::ApplyPolicyCellSet(cells, policy, *this),
                    *ptra,
                    condition,
                    diffusionCoeff,
