@@ -51,8 +51,6 @@ int main(int argc, char* argv[])
 
   data.GetPointField("temperature").GetData().CopyTo(copie);
 
-  gData->GetPointField("temperature").GetData().CopyTo(copie);
-
   ifstream file("test_result_square_data.txt");
   int i = 0;
   vtkm::Float32 compare;
