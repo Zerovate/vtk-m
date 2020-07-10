@@ -1,13 +1,3 @@
-//============================================================================
-//  Copyright (c) Kitware, Inc.
-//  All rights reserved.
-//  See LICENSE.txt for details.
-//
-//  This software is distributed WITHOUT ANY WARRANTY; without even
-//  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-//  PURPOSE.  See the above copyright notice for more information.
-//============================================================================
-
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DataSetBuilderUniform.h>
@@ -61,6 +51,7 @@ int main(int argc, char* argv[])
 
   data.GetPointField("temperature").GetData().CopyTo(copie);
 
+  gData->GetPointField("temperature").GetData().CopyTo(copie);
 
   ifstream file("test_result_square_data.txt");
   int i = 0;
