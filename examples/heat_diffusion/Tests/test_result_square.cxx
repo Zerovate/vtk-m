@@ -66,12 +66,14 @@ int main(int argc, char* argv[])
   int i = 0;
   vtkm::Float32 compare;
 
+  auto portal = copie.ReadPortal();
+
   bool equal = true;
   do
   {
     file >> compare;
 
-    if (abs(compare - copie.ReadPortal().Get(i)) > 0.0001f)
+    if (abs(compare - portal.Get(i)) > 0.0001f)
     {
       equal = false;
     }
