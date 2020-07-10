@@ -20,7 +20,6 @@
 
 #include "Diffusion.hpp"
 #include "InitalCondition.h"
-
 #include "parameters.h"
 
 #include <iomanip>
