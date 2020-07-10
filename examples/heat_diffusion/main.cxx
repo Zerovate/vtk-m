@@ -137,7 +137,8 @@ int main(int argc, char* argv[])
     std::vector<int> ite;
     ite.push_back(10);
 
-    vtkm::cont::DataSetFieldAdd::AddPointField(*global_ptr_data, "iteration", ite);
+    global_ptr_data->AddField(
+      vtkm::cont::make_FieldPoint("iteration", vtkm::cont::make_ArrayHandle(ite)));
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
@@ -163,7 +164,7 @@ int main(int argc, char* argv[])
     std::vector<int> ite;
     ite.push_back(params.iteration);
 
-    vtkm::cont::DataSetFieldAdd::AddPointField(data, "iteration", ite);
+    data.AddField(vtkm::cont::make_FieldPoint("iteration", vtkm::cont::make_ArrayHandle(ite)));
     vtkm::Float32 end, start;
     vtkm::cont::Timer gTimer;
     gTimer.Start();

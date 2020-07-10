@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
   std::vector<int> ite;
   ite.push_back(params.iteration);
 
-  vtkm::cont::DataSetFieldAdd::AddPointField(data, "iteration", ite);
+  data.AddField(vtkm::cont::make_FieldPoint("iteration", vtkm::cont::make_ArrayHandle(ite)));
 
 
   data = filter.Execute(data);
