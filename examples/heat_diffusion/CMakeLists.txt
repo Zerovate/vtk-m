@@ -1,8 +1,17 @@
+##============================================================================
+##  Copyright (c) Kitware, Inc.
+##  All rights reserved.
+##  See LICENSE.txt for details.
+##
+##  This software is distributed WITHOUT ANY WARRANTY; without even
+##  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+##  PURPOSE.  See the above copyright notice for more information.
+##============================================================================
 cmake_minimum_required(VERSION 3.13)
-project(Heat_Diffusion)
+
+project(Heat_Diffusion  CXX)
 
 find_package(VTKm REQUIRED)
-
 
 vtkm_find_gl(OPTIONAL GL GLUT GLEW)
 include(CTest)
