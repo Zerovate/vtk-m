@@ -54,7 +54,7 @@ foreach(file ${files})
     add_test(${file_without_ext}_OMP ${file_without_ext} -d OpenMP)
     add_test(${file_without_ext}_TBB ${file_without_ext} -d TBB)
     add_test(${file_without_ext}_CUDA ${file_without_ext} -d Cuda)
-    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Tests/${file_without_ext}_data.data ${CMAKE_CURRENT_BINARY_DIR}/${file_without_ext}_data.txt  COPYONLY)
+    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Tests/${file_without_ext}_data.data ${CMAKE_CURRENT_BINARY_DIR}/${file_without_ext}_data.data  COPYONLY)
 endforeach()
 
 add_test(perf_Serial HeatDiffusionExample -d Serial -p -s 20 -i 1)
