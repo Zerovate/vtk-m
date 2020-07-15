@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 
   data.GetPointField("temperature").GetData().CopyTo(copie);
 
-  ifstream file("test_result_square_data.txt");
+  ifstream file("test_result_square_data.data");
   int i = 0;
   vtkm::Float32 compare;
 
