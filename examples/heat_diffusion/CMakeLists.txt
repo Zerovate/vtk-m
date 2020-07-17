@@ -14,8 +14,8 @@ project(Heat_Diffusion  CXX)
 find_package(VTKm REQUIRED)
 
 vtkm_find_gl(OPTIONAL GL GLUT GLEW)
-##include(CTest)
-##enable_testing()
+include(CTest)
+enable_testing()
 
 add_library(Parameters parameters.cpp)
 
