@@ -14,8 +14,8 @@ project(Heat_Diffusion  CXX)
 find_package(VTKm REQUIRED)
 
 vtkm_find_gl(OPTIONAL GL GLUT GLEW)
-//include(CTest)
-//enable_testing()
+##include(CTest)
+##enable_testing()
 
 add_library(Parameters parameters.cpp)
 
@@ -42,22 +42,22 @@ else()
 endif()
 
 
-//file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/Tests/test_*.cxx")
-//foreach(file ${files})
-//    string(REGEX REPLACE "(^.*/|\\.[^.]*$)" "" file_without_ext ${file})
-//    add_executable(${file_without_ext} ${file})
-//    target_link_libraries(${file_without_ext} PUBLIC vtkm_filter vtkm_io InitalCondition Parameters)
-//    vtkm_add_target_information(${file_without_ext}
-//            DROP_UNUSED_SYMBOLS MODIFY_CUDA_FLAGS
-//            DEVICE_SOURCES ${file})
-//    add_test(${file_without_ext}_SERIAL ${file_without_ext} -d Serial)
-//    add_test(${file_without_ext}_OMP ${file_without_ext} -d OpenMP)
-//    add_test(${file_without_ext}_TBB ${file_without_ext} -d TBB)
-//    add_test(${file_without_ext}_CUDA ${file_without_ext} -d Cuda)
-//    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Tests/${file_without_ext}_data.data ${CMAKE_CURRENT_BINARY_DIR}/${file_without_ext}_data.data  COPYONLY)
-//endforeach()
+##file(GLOB files "${CMAKE_CURRENT_SOURCE_DIR}/Tests/test_*.cxx")
+##foreach(file ${files})
+##    string(REGEX REPLACE "(^.*/|\\.[^.]*$)" "" file_without_ext ${file})
+##    add_executable(${file_without_ext} ${file})
+##    target_link_libraries(${file_without_ext} PUBLIC vtkm_filter vtkm_io InitalCondition Parameters)
+##    vtkm_add_target_information(${file_without_ext}
+##            DROP_UNUSED_SYMBOLS MODIFY_CUDA_FLAGS
+##            DEVICE_SOURCES ${file})
+##    add_test(${file_without_ext}_SERIAL ${file_without_ext} -d Serial)
+##    add_test(${file_without_ext}_OMP ${file_without_ext} -d OpenMP)
+##    add_test(${file_without_ext}_TBB ${file_without_ext} -d TBB)
+##    add_test(${file_without_ext}_CUDA ${file_without_ext} -d Cuda)
+##    configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/Tests/${file_without_ext}_data.data ${CMAKE_CURRENT_BINARY_DIR}/${file_without_ext}_data.data  COPYONLY)
+##endforeach()
 
-//add_test(perf_Serial HeatDiffusionExample -d Serial -p -s 20 -i 1)
-//add_test(perf_OpenMP HeatDiffusionExample -d OpenMP -p -s 20 -i 1)
-//add_test(perf_TBB HeatDiffusionExample -d TBB -p -s 20 -i 1)
-//add_test(perf_CUDA HeatDiffusionExample -d CUDA -p -s 20 -i 1)
+##add_test(perf_Serial HeatDiffusionExample -d Serial -p -s 20 -i 1)
+##add_test(perf_OpenMP HeatDiffusionExample -d OpenMP -p -s 20 -i 1)
+##add_test(perf_TBB HeatDiffusionExample -d TBB -p -s 20 -i 1)
+##add_test(perf_CUDA HeatDiffusionExample -d CUDA -p -s 20 -i 1)
