@@ -47,6 +47,7 @@ set(unit_tests
   UnitTestArrayHandleIndex.cxx
   UnitTestArrayHandleReverse.cxx
   UnitTestArrayHandlePermutation.cxx
+  UnitTestArrayHandleRandomBernoulli.cxx
   UnitTestArrayHandleRandomStandardNormal.cxx
   UnitTestArrayHandleRandomUniformBits.cxx
   UnitTestArrayHandleRandomUniformReal.cxx
