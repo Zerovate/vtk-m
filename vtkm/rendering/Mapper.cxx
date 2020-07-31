@@ -28,10 +28,7 @@ void Mapper::SetActiveColorTable(const vtkm::cont::ColorTable& colorTable)
 
   vtkm::cont::ArrayHandle<vtkm::Vec4ui_8> temp;
 
-  {
-    vtkm::cont::ScopedRuntimeDeviceTracker tracker(vtkm::cont::DeviceAdapterTagSerial{});
-    colorTable.Sample(1024, temp);
-  }
+  colorTable.Sample(1024, temp);
 
   this->ColorMap.Allocate(1024);
   auto portal = this->ColorMap.WritePortal();
