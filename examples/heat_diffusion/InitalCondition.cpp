@@ -18,8 +18,8 @@ VTKM_EXEC void FillInitialCondition::operator()(const CoordType &coord,
         diffusion = parameters.diffuse_coeff;
     } else {
 
-        float dx = coord[0] - 0.0f;
-        float dy = coord[1] - 0.0f;
+        float dx = (float) coord[0] - 0.0f;
+        float dy = (float) coord[1] - 0.0f;
         float distance = dx * dx + dy * dy;
 
         float rayon = (1.25f * 1.25f);
