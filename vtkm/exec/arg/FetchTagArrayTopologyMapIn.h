@@ -19,6 +19,7 @@
 #include <vtkm/internal/ArrayPortalUniformPointCoordinates.h>
 
 #include <vtkm/VecAxisAlignedPointCoordinates.h>
+#include <vtkm/exec/ConnectivityExplicit.h>
 #include <vtkm/exec/ConnectivityExtrude.h>
 #include <vtkm/exec/ConnectivityStructured.h>
 
@@ -153,6 +154,67 @@ struct FetchArrayTopologyMapInImplementation<
       field.GetOrigin(), field.GetSpacing(), indices.GetIndexLogical());
   }
 };
+
+template <typename PortalType>
+VTKM_EXEC inline void PerformHigherOrderToLowerOrderCellSubstitution(
+  PortalType pt,
+  vtkm::CellShapeTagLagrange_Hexahedron)
+{
+  pt.LimitNumberOfComponents(8);
+}
+
+template <typename PortalType>
+VTKM_EXEC inline void PerformHigherOrderToLowerOrderCellSubstitution(
+  PortalType pt,
+  vtkm::CellShapeTagGeneric shape)
+{
+  if (shape.Id == vtkm::CELL_SHAPE_LAGRANGE_HEXAHEDRON)
+    pt.LimitNumberOfComponents(8);
+}
+
+
+template <typename PortalType, typename CellShapeTag>
+VTKM_EXEC inline void PerformHigherOrderToLowerOrderCellSubstitution(PortalType, CellShapeTag)
+{
+  return;
+}
+
+template <typename PortalType, typename CellShapeTag>
+VTKM_EXEC inline void PerformInlineShapeSubstitution(PortalType pt, CellShapeTag shape)
+{
+  PerformHigherOrderToLowerOrderCellSubstitution(pt, shape);
+}
+
+template <typename FieldExecObjectType, typename X, typename Y, typename Z, typename W>
+struct FetchArrayTopologyMapInImplementation<
+  vtkm::exec::ConnectivityExplicit<X, Y, Z>,
+  FieldExecObjectType,
+  ThreadIndicesTopologyMap<vtkm::exec::ConnectivityExplicit<X, Y, Z>, W>>
+{
+  using ThreadIndicesTopologyMapType =
+    const ThreadIndicesTopologyMap<vtkm::exec::ConnectivityExplicit<X, Y, Z>, W>;
+
+  // stored in a Vec-like object.
+  using IndexVecType = typename ThreadIndicesTopologyMapType::IndicesIncidentType;
+
+  // The FieldExecObjectType is expected to behave like an ArrayPortal.
+  using PortalType = FieldExecObjectType;
+
+  using ValueType = vtkm::VecFromPortalPermute<IndexVecType, PortalType>;
+
+  VTKM_SUPPRESS_EXEC_WARNINGS
+  VTKM_EXEC
+  static ValueType Load(ThreadIndicesTopologyMapType& indices, const FieldExecObjectType& field)
+  {
+    std::cerr << "LOAD5" << std::endl;
+    ValueType rv(indices.GetIndicesIncidentPointer(), field);
+    PerformInlineShapeSubstitution(rv, indices.GetCellShape());
+    //if (indices.GetCellShape() == vtkm::CellShapeTagLagrange_Hexahedron())
+    //rv.LimitNumberOfComponents(8);
+    return rv;
+  }
+};
+
 
 template <typename PermutationPortal, vtkm::IdComponent NumDimensions, typename ThreadIndicesType>
 struct FetchArrayTopologyMapInImplementation<

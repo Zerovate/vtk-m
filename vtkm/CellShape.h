@@ -13,6 +13,7 @@
 #include <vtkm/StaticAssert.h>
 #include <vtkm/Types.h>
 
+#include <lcl/Lagrange_Hexahedron.h>
 #include <lcl/Polygon.h>
 #include <lcl/Shapes.h>
 
@@ -48,6 +49,7 @@ enum CellShapeIdEnum
   CELL_SHAPE_HEXAHEDRON = lcl::ShapeId::HEXAHEDRON,
   CELL_SHAPE_WEDGE = lcl::ShapeId::WEDGE,
   CELL_SHAPE_PYRAMID = lcl::ShapeId::PYRAMID,
+  CELL_SHAPE_LAGRANGE_HEXAHEDRON = lcl::ShapeId::LAGRANGE_HEXAHEDRON,
 
   NUMBER_OF_CELL_SHAPES
 };
@@ -141,6 +143,7 @@ VTKM_DEFINE_CELL_TAG(Tetra, CELL_SHAPE_TETRA);
 VTKM_DEFINE_CELL_TAG(Hexahedron, CELL_SHAPE_HEXAHEDRON);
 VTKM_DEFINE_CELL_TAG(Wedge, CELL_SHAPE_WEDGE);
 VTKM_DEFINE_CELL_TAG(Pyramid, CELL_SHAPE_PYRAMID);
+VTKM_DEFINE_CELL_TAG(Lagrange_Hexahedron, CELL_SHAPE_LAGRANGE_HEXAHEDRON);
 
 #undef VTKM_DEFINE_CELL_TAG
 
@@ -178,6 +181,13 @@ inline lcl::Polygon make_LclCellShapeTag(const vtkm::CellShapeTagPolygon&,
                                          vtkm::IdComponent numPoints = 0)
 {
   return lcl::Polygon(numPoints);
+}
+
+VTKM_EXEC_CONT
+inline lcl::Lagrange_Hexahedron make_LclCellShapeTag(const vtkm::CellShapeTagLagrange_Hexahedron&,
+                                                     vtkm::IdComponent numPoints = 0)
+{
+  return lcl::Lagrange_Hexahedron(numPoints);
 }
 
 VTKM_EXEC_CONT
@@ -238,7 +248,8 @@ inline lcl::Cell make_LclCellShapeTag(const vtkm::CellShapeTagGeneric& tag,
   vtkmGenericCellShapeMacroCase(CELL_SHAPE_TETRA, call);      \
   vtkmGenericCellShapeMacroCase(CELL_SHAPE_HEXAHEDRON, call); \
   vtkmGenericCellShapeMacroCase(CELL_SHAPE_WEDGE, call);      \
-  vtkmGenericCellShapeMacroCase(CELL_SHAPE_PYRAMID, call)
+  vtkmGenericCellShapeMacroCase(CELL_SHAPE_PYRAMID, call);    \
+  vtkmGenericCellShapeMacroCase(CELL_SHAPE_LAGRANGE_HEXAHEDRON, call);
 
 } // namespace vtkm
 
