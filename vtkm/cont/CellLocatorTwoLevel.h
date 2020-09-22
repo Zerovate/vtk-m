@@ -11,9 +11,11 @@
 #define vtk_m_cont_CellLocatorTwoLevel_h
 
 #include <vtkm/cont/ArrayHandle.h>
-#include <vtkm/cont/CellLocator.h>
-#include <vtkm/cont/VirtualObjectHandle.h>
+#include <vtkm/cont/CellSetList.h>
 
+#include <vtkm/cont/internal/CellLocatorBase.h>
+
+#include <vtkm/exec/CellLocatorMultiplexer.h>
 #include <vtkm/exec/CellLocatorTwoLevel.h>
 
 
@@ -38,9 +40,43 @@ namespace cont
 /// Javor Kalojanov, Markus Billeter, and Philipp Slusallek. "Two-Level Grids for Ray Tracing
 /// on GPUs." _Computer Graphics Forum_, 2011, pages 307-314. DOI 10.1111/j.1467-8659.2011.01862.x
 ///
-class VTKM_CONT_EXPORT CellLocatorTwoLevel : public vtkm::cont::CellLocator
+class VTKM_CONT_EXPORT CellLocatorTwoLevel
+  : public vtkm::cont::internal::CellLocatorBase<CellLocatorTwoLevel>
 {
+  using Superclass = vtkm::cont::internal::CellLocatorBase<CellLocatorTwoLevel>;
+
+  template <typename Device>
+  struct CellSetContToExec
+  {
+    template <typename CellSetCont>
+    using Transform =
+      typename CellSetCont::template ExecutionTypes<Device,
+                                                    vtkm::TopologyElementTagCell,
+                                                    vtkm::TopologyElementTagPoint>::ExecObjectType;
+  };
+
+  template <typename Device>
+  struct CellSetExecToCellLocatorExec
+  {
+    template <typename CellSetExec>
+    using Transform = vtkm::exec::CellLocatorTwoLevel<CellSetExec, Device>;
+  };
+
 public:
+  using SupportedCellSets = VTKM_DEFAULT_CELL_SET_LIST;
+
+  template <typename Device>
+  using CellSetExecList =
+    vtkm::ListTransform<SupportedCellSets, CellSetContToExec<Device>::template Transform>;
+  template <typename Device>
+  using CellLocatorExecList =
+    vtkm::ListTransform<CellSetExecList<Device>,
+                        CellSetExecToCellLocatorExec<Device>::template Transform>;
+
+  template <typename Device>
+  using ExecObjType =
+    vtkm::ListApply<CellLocatorExecList<Device>, vtkm::exec::CellLocatorMultiplexer>;
+
   CellLocatorTwoLevel()
     : DensityL1(32.0f)
     , DensityL2(2.0f)
@@ -67,11 +103,20 @@ public:
 
   void PrintSummary(std::ostream& out) const;
 
-  const vtkm::exec::CellLocator* PrepareForExecution(vtkm::cont::DeviceAdapterId device,
-                                                     vtkm::cont::Token& token) const override;
+public:
+  // When all the arrays get updated to the new buffer style, the template for this
+  // method can be removed and the implementation moved to CellLocatorRectilinearGrid.cxx.
+  template <typename Device>
+  ExecObjType<Device> PrepareForExecution(Device device, vtkm::cont::Token& token) const
+  {
+    ExecObjType<Device> execObject;
+    this->GetCellSet().CastAndCall(MakeExecObject{}, device, token, *this, execObject);
+    return execObject;
+  }
 
 private:
-  VTKM_CONT void Build() override;
+  friend Superclass;
+  VTKM_CONT void Build();
 
   vtkm::FloatDefault DensityL1, DensityL2;
 
@@ -82,9 +127,32 @@ private:
   vtkm::cont::ArrayHandle<vtkm::Id> CellCount;
   vtkm::cont::ArrayHandle<vtkm::Id> CellIds;
 
-  mutable vtkm::cont::VirtualObjectHandle<vtkm::exec::CellLocator> ExecutionObjectHandle;
+  // When all the arrays get updated to the new buffer style, the template for this
+  // method can be removed and the implementation moved to CellLocatorRectilinearGrid.cxx.
+  struct MakeExecObject
+  {
+    template <typename CellSetType, typename Device>
+    VTKM_CONT void operator()(const CellSetType& cellSet,
+                              Device,
+                              vtkm::cont::Token& token,
+                              const CellLocatorTwoLevel& self,
+                              ExecObjType<Device>& execObject) const
+    {
+      using CellStructuredType =
+        typename CellSetContToExec<Device>::template Transform<CellSetType>;
+      execObject =
+        vtkm::exec::CellLocatorTwoLevel<CellStructuredType, Device>(self.TopLevel,
+                                                                    self.LeafDimensions,
+                                                                    self.LeafStartIndex,
+                                                                    self.CellStartIndex,
+                                                                    self.CellCount,
+                                                                    self.CellIds,
+                                                                    cellSet,
+                                                                    self.GetCoordinates(),
+                                                                    token);
+    }
+  };
 
-  struct MakeExecObject;
   struct PrepareForExecutionFunctor;
 };
 }
