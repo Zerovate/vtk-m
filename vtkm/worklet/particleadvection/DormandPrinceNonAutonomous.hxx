@@ -38,20 +38,20 @@ public:
 
     // Solve the ODE on an unbounded domain.
     template<class RHS>
-    DormandPrinceNonAutonomous(const RHS& f, vtkm::Vec<Real, dimension> const & InitialConditions, ODEParameters<Real> const & params) : DormandPrince<Real, dimension>(params)
+    DormandPrinceNonAutonomous(const RHS& f, vtkm::Vec<Real, dimension> const & InitialConditions, std::pair<Real, Real> const & tspan, ODEParameters<Real> const & params) : DormandPrince<Real, dimension>(params)
     {
         // Solve the ODE in the constructor.
         // There is little hope for parallelism in the body of an adaptive ODE stepper.
         // This design makes it clear that we must parallelize over particles, not within solutions.s
-        Real dt = params.MaxTimeOfPropagation/params.assumed_skeleton_points;
-        times_.push_back(params.t0);
+        Real dt = (tspan.second - tspan.first)/params.AssumedSkeletonPoints;
+        times_.push_back(tspan.first);
         skeleton_.push_back(InitialConditions);
-        auto y = f(params.t0, InitialConditions);
+        auto y = f(tspan.first, InitialConditions);
         skeleton_tangent_.push_back(y);
 
         std::array<vtkm::Vec<Real, dimension>, 7> k;
         auto bt = DormandPrinceButcherTableau<Real>();
-        while (times_.back() < params.t0 + params.MaxTimeOfPropagation) {
+        while (times_.back() < tspan.second) {
             // We differ from Wikipedia's notation only in the sense we zero index.
             k[0] = skeleton_tangent_.back();
             for (size_t i = 1; i < k.size(); ++i) {

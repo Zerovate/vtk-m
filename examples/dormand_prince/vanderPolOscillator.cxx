@@ -66,16 +66,16 @@ void SolveVanderPolSystem(Real mu, vtkm::Vec<Real, 2> const & initialConditions)
 
     ODEParameters<Real> parameters;
     // How long do we want to integrate the solution?
-    parameters.MaxTimeOfPropagation = 500;
+    std::pair<Real, Real> tspan{0.0, 500.0};
     // On each step, what error is acceptable to us?
     parameters.MaxAcceptableErrorPerStep = 0.05;
     // How many points do we expect to compute?
     // In general, you don't need to worry about this parameter,
     // because the stepper resizes the vectors if you guess wrong.
     // But if you guess right, you don't do any resizing!
-    parameters.assumed_skeleton_points = 256;
+    parameters.AssumedSkeletonPoints = 256;
     // Pass the rhs of v' = f(v), the initial conditions, and the parameter to the constructor:
-    auto dp = DormandPrinceAutonomous<Real, 2>(f, initialConditions, parameters);
+    auto dp = DormandPrinceAutonomous<Real, 2>(f, initialConditions, tspan, parameters);
     // Note that the constructor solves the equation!
     // the dp object is an interpolator, so we can query it at any time:
 

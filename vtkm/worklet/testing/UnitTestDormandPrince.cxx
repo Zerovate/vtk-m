@@ -31,13 +31,13 @@ void TestConstant() {
     std::uniform_real_distribution<Real> dis(-1, 1);
     ODEParameters<Real> parameters;
     parameters.MaxAcceptableErrorPerStep = 0.01;
-    parameters.MaxTimeOfPropagation = 10;
+    std::pair<Real, Real> tspan = {0.0, 10.0};
 
     vtkm::Vec<Real, dimension> initialConditions;
     for (vtkm::IdComponent i = 0; i < dimension; ++i) {
       initialConditions[i] = dis(rd);
     }
-    auto dpa = DormandPrinceAutonomous<Real, dimension>(f, initialConditions, parameters);
+    auto dpa = DormandPrinceAutonomous<Real, dimension>(f, initialConditions, tspan, parameters);
     auto const & skeleton = dpa.skeleton();
     for (auto const & bone : skeleton) {
       for (vtkm::IdComponent i = 0; i < dimension; ++i) {
@@ -134,13 +134,12 @@ void TestConstantNonAutonomous() {
     std::uniform_real_distribution<Real> dis(-1, 1);
     ODEParameters<Real> parameters;
     parameters.MaxAcceptableErrorPerStep = 0.01;
-    parameters.MaxTimeOfPropagation = 10;
 
     vtkm::Vec<Real, dimension> initialConditions;
     for (vtkm::IdComponent i = 0; i < dimension; ++i) {
       initialConditions[i] = dis(rd);
     }
-    auto dpna = DormandPrinceNonAutonomous<Real, dimension>(f, initialConditions, parameters);
+    auto dpna = DormandPrinceNonAutonomous<Real, dimension>(f, initialConditions, {0.0, 10.0}, parameters);
     auto const & skeleton = dpna.skeleton();
     for (auto const & bone : skeleton) {
       for (vtkm::IdComponent i = 0; i < dimension; ++i) {
@@ -196,8 +195,8 @@ void TestLine() {
     };
 
     parameters.MaxAcceptableErrorPerStep = 0.01;
-    parameters.MaxTimeOfPropagation = 10;
-    auto dpa = DormandPrinceAutonomous<Real, dimension>(f, initialConditions, parameters);
+    std::pair<Real, Real> tspan{0.0, 10.0};
+    auto dpa = DormandPrinceAutonomous<Real, dimension>(f, initialConditions, tspan, parameters);
     auto const & skeleton = dpa.skeleton();
     std::vector<Real> const & times = dpa.times();
     VTKM_TEST_ASSERT(times.size() == skeleton.size(),
@@ -295,8 +294,8 @@ void TestLineNonAutonomous() {
     };
 
     parameters.MaxAcceptableErrorPerStep = 0.01;
-    parameters.MaxTimeOfPropagation = 10;
-    auto dpna = DormandPrinceNonAutonomous<Real, dimension>(f, initialConditions, parameters);
+    std::pair<Real, Real> tspan{0.0, 10.0};
+    auto dpna = DormandPrinceNonAutonomous<Real, dimension>(f, initialConditions, tspan, parameters);
     auto const & skeleton = dpna.skeleton();
     std::vector<Real> const & times = dpna.times();
     VTKM_TEST_ASSERT(times.size() == skeleton.size(),
@@ -354,8 +353,8 @@ void TestParabolaNonAutonomous() {
     };
 
     parameters.MaxAcceptableErrorPerStep = 0.01;
-    parameters.MaxTimeOfPropagation = 10;
-    auto dpna = DormandPrinceNonAutonomous<Real, dimension>(f, initialConditions, parameters);
+    std::pair<Real, Real> tspan{0.0, 10.0};
+    auto dpna = DormandPrinceNonAutonomous<Real, dimension>(f, initialConditions, tspan, parameters);
     auto const & skeleton = dpna.skeleton();
     std::vector<Real> const & times = dpna.times();
     VTKM_TEST_ASSERT(times.size() == skeleton.size(),
@@ -417,10 +416,10 @@ void TestExp() {
     };
     ODEParameters<Real> parameters;
     parameters.MaxAcceptableErrorPerStep = 0.001;
-    parameters.MaxTimeOfPropagation = 3;
+    std::pair<Real, Real> tspan{0.0, 3.0};
 
     auto initialConditions = vtkm::Vec<Real, dimension>(1);
-    auto dpa = DormandPrinceAutonomous<Real, dimension>(f, initialConditions, parameters);
+    auto dpa = DormandPrinceAutonomous<Real, dimension>(f, initialConditions, tspan, parameters);
 
     auto const & skeleton = dpa.skeleton();
     auto const & times = dpa.times();
@@ -456,9 +455,9 @@ void TestOscillatoryNonAutonomous(){
 
   ODEParameters<Real> parameters;
   parameters.MaxAcceptableErrorPerStep = 0.001;
-  parameters.MaxTimeOfPropagation = 2;
+  std::pair<Real, Real> tspan{0.0, 2.0};
   auto initialConditions = vtkm::Vec<Real, 1>(1);
-  auto dpna = DormandPrinceNonAutonomous<Real, 1>(f, initialConditions, parameters);
+  auto dpna = DormandPrinceNonAutonomous<Real, 1>(f, initialConditions, tspan, parameters);
   auto const & skeleton = dpna.skeleton();
   auto const & times = dpna.times();
   for (size_t i = 0; i < times.size(); ++i) {
@@ -496,10 +495,10 @@ void TestHelix()
 
   ODEParameters<Real> parameters;
   parameters.MaxAcceptableErrorPerStep = 0.001;
-  parameters.MaxTimeOfPropagation = 1;
+  std::pair<Real, Real> tspan{0.0, 1.0};
   auto initialConditions = vtkm::Vec<Real, 3>(r, 0, 0);
 
-  auto dpa = DormandPrinceAutonomous<Real, 3>(f, initialConditions, parameters);
+  auto dpa = DormandPrinceAutonomous<Real, 3>(f, initialConditions, tspan, parameters);
   auto const & times = dpa.times();
   Real kappa_expected = r/(r*r+c*c);
   for (size_t i = 0; i < times.size() - 1; ++i) {
