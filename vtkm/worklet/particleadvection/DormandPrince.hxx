@@ -32,13 +32,8 @@ struct ODEParameters {
     // Maximum acceptable value of ‖xᵢ - x̂ᵢ‖_∞.
     // Step is rejected and stepsize reduced if estimated error exceeds this threshold.
     Real MaxAcceptableErrorPerStep;
-    // Maximum allowed time of propagation.
-    // Useful for terminating solutions that fall into sinks:
-    Real MaxTimeOfPropagation;
-    // Initial time. Default value of zero is fairly common:
-    Real t0 = 0;
     // Default number of points we assume will be generated via the solve:
-    vtkm::Id assumed_skeleton_points = 256;
+    vtkm::Id AssumedSkeletonPoints = 256;
     // A dense skeleton adds "superfluous points" to the skeleton which are not strictly required for accuracy.
     // These points double the size of the skeleton, at the cost of only one extra function evaluation.
     // Why do we sometimes need this? Well, in computer graphics, we often want to visualize the solution,
@@ -95,9 +90,9 @@ public:
 
     DormandPrince(ODEParameters<Real> const & params) {
         static_assert(dimension >= 1, "The spacial dimension must be >= 1.");
-        times_.reserve(params.assumed_skeleton_points);
-        skeleton_.reserve(params.assumed_skeleton_points);
-        skeleton_tangent_.reserve(params.assumed_skeleton_points);
+        times_.reserve(params.AssumedSkeletonPoints);
+        skeleton_.reserve(params.AssumedSkeletonPoints);
+        skeleton_tangent_.reserve(params.AssumedSkeletonPoints);
         rejected_steps_ = 0;
     }
 

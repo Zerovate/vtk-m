@@ -39,20 +39,20 @@ public:
 
     // Solve the ODE on an unbounded domain.
     template<class RHS>
-    DormandPrinceAutonomous(const RHS& f, vtkm::Vec<Real, dimension> const & InitialConditions, ODEParameters<Real> const & params) : DormandPrince<Real, dimension>(params)
+    DormandPrinceAutonomous(const RHS& f, vtkm::Vec<Real, dimension> const & InitialConditions, std::pair<Real, Real> const & tspan, ODEParameters<Real> const & params) : DormandPrince<Real, dimension>(params)
     {
         // Solve the ODE in the constructor.
         // There is little hope for parallelism in the body of an adaptive ODE stepper.
         // This design makes it clear that we must parallelize over particles, not within solutions.s
-        Real dt = params.MaxTimeOfPropagation/params.assumed_skeleton_points;
-        times_.push_back(params.t0);
+        Real dt = (tspan.second - tspan.first)/params.AssumedSkeletonPoints;
+        times_.push_back(tspan.first);
         skeleton_.push_back(InitialConditions);
         auto y = f(InitialConditions);
         skeleton_tangent_.push_back(y);
 
         std::array<vtkm::Vec<Real, dimension>, 7> k;
         auto bt = DormandPrinceButcherTableau<Real>();
-        while (times_.back() < params.t0 + params.MaxTimeOfPropagation) {
+        while (times_.back() < tspan.second) {
             // We differ from Wikipedia's notation only in the sense we zero index.
             k[0] = skeleton_tangent_.back();
             for (size_t i = 1; i < k.size(); ++i) {
@@ -119,81 +119,6 @@ public:
         skeleton_.shrink_to_fit();
         skeleton_tangent_.shrink_to_fit();
     }
-
-    // Solve the ODE on a domain defined by a function.
-    template<class RHS>
-    DormandPrinceAutonomous(const RHS& f, vtkm::Bounds bounds, vtkm::Vec<Real, dimension> const & InitialConditions, ODEParameters<Real> const & params) : DormandPrince<Real, dimension>(params)
-    {
-        static_assert(dimension >= 3, "VTK-m Bounds must have dimension > 3");
-        // TODO: Implement this with maximum code reuse!
-        if (!bounds.Contains(vtkm::Vec<Real, 3>(InitialConditions[0]), InitialConditions[1], InitialConditions[2])) {
-            VTKM_LOG_S(vtkm::cont::LogLevel::Error,
-                       __FILE__ << ":" << __LINE__ << " Initial condition " << InitialConditions << " is not in spatial boundary.");
-            return;
-        }
-
-        Real dt = params.MaxTimeOfPropagation/params.assumed_skeleton_points;
-        times_.push_back(params.t0);
-        skeleton_.push_back(InitialConditions);
-        auto y = f(InitialConditions);
-        skeleton_tangent_.push_back(y);
-
-        std::array<vtkm::Vec<Real, dimension>, 7> k;
-        auto bt = DormandPrinceButcherTableau<Real>();
-        while (times_.back() < params.t0 + params.MaxTimeOfPropagation) {
-            // We differ from Wikipedia's notation only in the sense we zero index.
-            k[0] = skeleton_tangent_.back();
-            for (size_t i = 1; i < k.size(); ++i) {
-                vtkm::Vec<Real, dimension> dy(0);
-                for (size_t j = 0; j < i; ++j) {
-                    dy += bt.a[6*(i-1) + j]*k[j];
-                }
-                auto ep = skeleton_.back() + dt*dy;
-                if (!bounds.Contains(vtkm::Vec<Real, 3>(ep[0], ep[1], ep[2]))) {
-                    // Snap to boundary:
-
-                }
-
-                k[i] = f(skeleton_.back() + dt*dy);
-            }
-
-            auto dy = bt.b1[0]*k[0];
-            for (size_t i = 1; i < k.size(); ++i) {
-                dy += bt.b1[i]*k[i];
-            }
-            auto y1 = skeleton_.back() + dt*dy;
-            // y2 is for the error estimate:
-            dy = bt.b2[0]*k[0];
-            for (size_t i = 1; i < k.size(); ++i) {
-                dy += bt.b2[i]*k[i];
-            }
-            auto y2 = skeleton_.back() + dt*dy;
-
-            Real error = 0;
-            for (vtkm::IdComponent i = 0; i < dimension; ++i) {
-                Real error_i = vtkm::Abs(y1[i] - y2[i]);
-                if (error_i > error) {
-                    error = error_i;
-                }
-            }
-
-            // TODO: Use theory of optimal control to choose the best step.
-            // Numerical Recipes has a good treatment of this topic.
-            if (error > params.MaxAcceptableErrorPerStep) {
-                dt /= 2;
-            } else {
-                times_.push_back(times_.back() + dt);
-                skeleton_.push_back(y1);
-                skeleton_tangent_.push_back(f(y1));
-                dt *= 1.5;
-            }
-        }
-
-        times_.shrink_to_fit();
-        skeleton_.shrink_to_fit();
-        skeleton_tangent_.shrink_to_fit();
-    }
-
 };
 
 }}}
