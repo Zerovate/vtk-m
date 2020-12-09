@@ -29,6 +29,7 @@ set(unit_tests
   UnitTestCosmoTools.cxx
   UnitTestCrossProduct.cxx
   UnitTestDescriptiveStatistics.cxx
+  UnitTestDormandPrince.cxx
   UnitTestDotProduct.cxx
   UnitTestExternalFaces.cxx
   UnitTestExtractGeometry.cxx
