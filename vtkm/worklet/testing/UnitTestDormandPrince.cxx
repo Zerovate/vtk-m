@@ -88,6 +88,13 @@ void TestConstant() {
         }
       }
 
+      auto interpolated_triple_prime = dpa.triple_prime(t);
+      for (vtkm::IdComponent j = 0; j < dimension; ++j) {
+        auto dist = vtkm::FloatDistance(interpolated_triple_prime[j], 0);
+        if (dist > 5) {
+          VTKM_TEST_FAIL("Interpolated second derivative is incorrect.");
+        }
+      }
       Real kappa = dpa.curvature(t);
       // There is no notion of the curvature of a constant:
       VTKM_ASSERT(std::isnan(kappa));
@@ -116,6 +123,15 @@ void TestConstant() {
           VTKM_TEST_FAIL("Interpolated second derivative is incorrect.");
         }
       }
+
+      interpolated_triple_prime = dpa.triple_prime(t);
+      for (vtkm::IdComponent j = 0; j < dimension; ++j) {
+        auto dist = vtkm::FloatDistance(interpolated_triple_prime[j], 0);
+        if (dist > 5) {
+          VTKM_TEST_FAIL("Interpolated second derivative is incorrect.");
+        }
+      }
+
 
       kappa = dpa.curvature(t);
       VTKM_ASSERT(std::isnan(kappa));
@@ -263,6 +279,28 @@ void TestLine() {
           std::cerr << "This is " << mag/std::numeric_limits<Real>::epsilon() << " times the "
                     << vtkm::cont::TypeToString<Real>() << " epsilon\n";
           VTKM_TEST_FAIL("Interpolated second derivative on a line is incorrect.");
+        }
+      }
+
+      auto interpolated_triple_prime = dpa.triple_prime(t);
+      for (vtkm::IdComponent j = 0; j < dimension; ++j) {
+        auto mag = vtkm::Abs(interpolated_triple_prime[j]);
+        if (mag > 1000*std::numeric_limits<Real>::epsilon()) {
+          std::cerr << "Interpolated third derivative is " << interpolated_triple_prime << ", but expected zero.\n";
+          std::cerr << "This is " << mag/std::numeric_limits<Real>::epsilon() << " times the "
+                    << vtkm::cont::TypeToString<Real>() << " epsilon\n";
+          VTKM_TEST_FAIL("Interpolated third derivative on a line is incorrect.");
+        }
+      }
+
+      interpolated_triple_prime = dpa.triple_prime(times[i]);
+      for (vtkm::IdComponent j = 0; j < dimension; ++j) {
+        auto mag = vtkm::Abs(interpolated_triple_prime[j]);
+        if (mag > 100*sqrt(std::numeric_limits<Real>::epsilon())) {
+          std::cerr << "Interpolated third derivative is " << interpolated_triple_prime << ", but expected zero.\n";
+          std::cerr << "This is " << mag/std::numeric_limits<Real>::epsilon() << " times the "
+                    << vtkm::cont::TypeToString<Real>() << " epsilon\n";
+          VTKM_TEST_FAIL("Interpolated third derivative on a line is incorrect.");
         }
       }
 
@@ -483,6 +521,7 @@ void TestOscillatoryNonAutonomous(){
 // The solution is of course
 // (rcos(t), rsin(t), ct)
 // and has curvature κ = r/(r^2 + c^2).
+// and torsion τ = c/(r^2 + c^2).
 template<typename Real>
 void TestHelix()
 {
@@ -500,7 +539,8 @@ void TestHelix()
 
   auto dpa = DormandPrinceAutonomous<Real, 3>(f, initialConditions, tspan, parameters);
   auto const & times = dpa.times();
-  Real kappa_expected = r/(r*r+c*c);
+  Real kappa_expected = r/(r*r + c*c);
+  Real tau_expected = c/(r*r + c*c);
   for (size_t i = 0; i < times.size() - 1; ++i) {
     Real t = times[i] + times.back()/(4*times.size());
     auto v = dpa(t);
@@ -515,6 +555,14 @@ void TestHelix()
       std::cerr << "Difference is " << vtkm::Abs(kappa_computed - kappa_expected) << "\n";
       VTKM_TEST_ASSERT(false, "Computed curvature of a helix is wrong.");
     }
+
+    Real tau_computed = dpa.torsion(t);
+    if (vtkm::Abs(tau_computed - tau_expected) > 0.009) {
+      std::cerr << "Computed torsion of a helix is " << tau_computed << ", but expected is " << tau_expected << "\n";
+      std::cerr << "Difference is " << vtkm::Abs(tau_computed - tau_expected) << "\n";
+      VTKM_TEST_ASSERT(false, "Computed torsion of a helix is wrong.");
+    }
+
   }
 
 }

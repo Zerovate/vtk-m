@@ -206,6 +206,34 @@ public:
         return h00_dbl_prime*p0/(dt*dt) + h10_dbl_prime*s0/dt + h01_dbl_prime*p1/(dt*dt) + h11_dbl_prime*s1/dt;
     }
 
+    // Return value of third derivative of the solution at time t:
+    vtkm::Vec<Real, dimension> triple_prime(Real t) const {
+        if  (t < times_[0] || t > times_.back()) {
+            std::ostringstream oss;
+            oss.precision(std::numeric_limits<Real>::digits10+3);
+            oss << "Requested abscissa t = " << t << ", which is outside of allowed range ["
+                << times_[0] << ", " << times_.back() << "]";
+            throw std::domain_error(oss.str());
+        }
+
+        auto it = std::upper_bound(times_.begin(), times_.end(), t);
+        auto i = std::distance(times_.begin(), it) - 1;
+        Real t0 = *(it-1);
+        Real t1 = *it;
+        auto const & p0 = skeleton_[i];
+        auto const & p1 = skeleton_[i+1];
+        auto s0 = skeleton_tangent_[i];
+        auto s1 = skeleton_tangent_[i+1];
+        Real dt = (t1-t0);
+        // See: https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
+        Real h00_triple_prime = 12;
+        Real h10_triple_prime = 6;
+        Real h01_triple_prime = -h00_triple_prime;
+        Real h11_triple_prime = 6;
+
+        return h00_triple_prime*p0/(dt*dt*dt) + h10_triple_prime*s0/(dt*dt) + h01_triple_prime*p1/(dt*dt*dt) + h11_triple_prime*s1/(dt*dt);
+    }
+
     // Returns κ = 1/R, where R is the radius of the oscullating circle to the ODE solution at time t.
     Real curvature(Real t) const {
         auto dvdt = this->prime(t);
@@ -220,8 +248,20 @@ public:
     // Returns a number quantifying how fast the curve is twisting out of the plane of curvature.
     // https://en.wikipedia.org/wiki/Torsion_of_a_curve
     Real torsion(Real t) const {
-        static_assert(dimension >= 3, "Torsion is undefined in dimension < 3.");
-        return std::numeric_limits<Real>::quiet_NaN();
+        static_assert(dimension == 3, "Torsion is undefined in dimension < 3; and we have only implemented in dimension 3.");
+
+        auto dvdt = this->prime(t);
+        auto d2vdt2 = this->double_prime(t);
+        auto d3vdt3 = this->triple_prime(t);
+
+        auto cross = vtkm::Cross(dvdt, d2vdt2);
+        Real numerator = vtkm::Dot(cross, d3vdt3);
+        Real denominator = vtkm::Dot(cross, cross);
+        // Is this the correct limit???
+        if (denominator == 0) {
+            return Real(0);
+        }
+        return numerator/denominator;
     }
 
     // List of tᵢs:

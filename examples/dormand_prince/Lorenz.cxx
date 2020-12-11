@@ -32,18 +32,21 @@ void WriteSolution(DormandPrinceAutonomous<Real, 3> const & dp) {
   auto start = std::chrono::steady_clock::now();
   std::vector<Real> times(lineSegments);
   std::vector<Real> curvatures(lineSegments);
+  std::vector<Real> torsions(lineSegments);
   for (vtkm::Id i = 0; i < lineSegments; ++i)
   {
     vtkm::FloatDefault t = t0 + i*(tf - t0) / lineSegments;
     vtkm::Id pid = dsb.AddPoint(dp(t));
     times[i] = t;
     curvatures[i] = dp.curvature(t);
+    torsions[i] = dp.torsion(t);
     ids.push_back(pid);
   }
   dsb.AddCell(vtkm::CELL_SHAPE_POLY_LINE, ids);
   vtkm::cont::DataSet ds = dsb.Create();
   ds.AddPointField("time", times);
   ds.AddPointField("curvature", curvatures);
+  ds.AddPointField("torsion", torsions);
   auto end = std::chrono::steady_clock::now();
   std::cout << "The solution was interpolated to 'visualizable' density in " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
 
