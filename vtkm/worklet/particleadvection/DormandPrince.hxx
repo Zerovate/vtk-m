@@ -264,6 +264,20 @@ public:
         return numerator/denominator;
     }
 
+    vtkm::Vec<vtkm::Vec<Real, dimension>, dimension> frenet_frame(Real t) const {
+        static_assert(dimension <= 3, "We cannot take more than 3 derivatives of a Hermite spline, so we cannot get the Frenet frame in more than 3 dimensions");
+        vtkm::Vec<vtkm::Vec<Real, dimension>, dimension> derivatives;
+        derivatives[0] = this->prime(t);
+        derivatives[1] = this->double_prime(t);
+        derivatives[2] = this->triple_prime(t);
+        vtkm::Vec<vtkm::Vec<Real, dimension>, dimension> frame;
+        int num_vecs = vtkm::Orthonormalize(derivatives, frame, std::numeric_limits<Real>::epsilon());
+        if (num_vecs != dimension) {
+            VTKM_LOG_S(vtkm::cont::LogLevel::Error, "Orthogonalization failed due to numerically collinear vectors");
+        }
+        return frame;
+    }
+
     // List of tᵢs:
     std::vector<Real> times_;
     // Solution skeleton. This mirrors the language of Corless's book, "A Graduate Introduction to Numerical Methods".

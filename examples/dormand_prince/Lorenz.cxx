@@ -33,6 +33,10 @@ void WriteSolution(DormandPrinceAutonomous<Real, 3> const & dp) {
   std::vector<Real> times(lineSegments);
   std::vector<Real> curvatures(lineSegments);
   std::vector<Real> torsions(lineSegments);
+  std::vector<vtkm::Vec<Real, 3>> tangents(lineSegments);
+  std::vector<vtkm::Vec<Real, 3>> normals(lineSegments);
+  std::vector<vtkm::Vec<Real, 3>> binormals(lineSegments);
+
   for (vtkm::Id i = 0; i < lineSegments; ++i)
   {
     vtkm::FloatDefault t = t0 + i*(tf - t0) / lineSegments;
@@ -40,6 +44,10 @@ void WriteSolution(DormandPrinceAutonomous<Real, 3> const & dp) {
     times[i] = t;
     curvatures[i] = dp.curvature(t);
     torsions[i] = dp.torsion(t);
+    auto frenet_frame = dp.frenet_frame(t);
+    tangents[i] = frenet_frame[0];
+    normals[i] = frenet_frame[1];
+    binormals[i] = frenet_frame[2];
     ids.push_back(pid);
   }
   dsb.AddCell(vtkm::CELL_SHAPE_POLY_LINE, ids);
@@ -47,6 +55,9 @@ void WriteSolution(DormandPrinceAutonomous<Real, 3> const & dp) {
   ds.AddPointField("time", times);
   ds.AddPointField("curvature", curvatures);
   ds.AddPointField("torsion", torsions);
+  ds.AddPointField("tangent", tangents);
+  ds.AddPointField("normal", normals);
+  ds.AddPointField("binormal", binormals);
   auto end = std::chrono::steady_clock::now();
   std::cout << "The solution was interpolated to 'visualizable' density in " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " microseconds\n";
 
