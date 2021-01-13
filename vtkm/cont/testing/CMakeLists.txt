@@ -90,11 +90,11 @@ set(unit_tests
   )
 
 set(library_sources
-  TestEqualArrayHandles.cxx
   )
 
 set(library_sources_device
   TestEqualArrayHandles.cxx # Really doesn't need device, but currently includes device headers
+  Testing.cxx # Really doesn't need device, but currently includes device headers
   )
 
 vtkm_library(
@@ -103,7 +103,7 @@ vtkm_library(
   DEVICE_SOURCES ${library_sources_device}
   HEADERS ${headers}
   )
-target_link_libraries(vtkm_cont_testing PUBLIC vtkm_cont)
+target_link_libraries(vtkm_cont_testing PUBLIC vtkm_cont vtkm_io)
 
 vtkm_unit_tests(SOURCES ${unit_tests} DEFINES VTKM_NO_ERROR_ON_MIXED_CUDA_CXX_TAG)
 
