@@ -15,7 +15,7 @@ using namespace vtkm::cont::testing::serialization;
 namespace
 {
 
-using FieldTypeList = vtkm::List<vtkm::Float32, vtkm::Vec3f>;
+using FieldTypeList = vtkm::List<vtkm::Float32, vtkm::Float64, vtkm::Vec3f>;
 using CellSetTypes = vtkm::List<vtkm::cont::CellSetExplicit<>,
                                 vtkm::cont::CellSetSingleType<>,
                                 vtkm::cont::CellSetStructured<1>,

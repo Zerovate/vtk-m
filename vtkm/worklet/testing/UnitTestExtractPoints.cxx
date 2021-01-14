@@ -33,7 +33,7 @@ public:
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;
-    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem(0));
+    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem());
 
     // Output data set with cell set containing extracted points
     vtkm::worklet::ExtractPoints extractPoints;
@@ -60,13 +60,13 @@ public:
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;
-    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem(0));
+    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem());
 
     // Output data set with cell set containing extracted points
     vtkm::worklet::ExtractPoints extractPoints;
     OutCellSetType outCellSet =
       extractPoints.Run(dataset.GetCellSet(),
-                        dataset.GetCoordinateSystem("coords"),
+                        dataset.GetCoordinateSystem(),
                         vtkm::cont::make_ImplicitFunctionHandle<vtkm::Box>(minPoint, maxPoint),
                         extractInside);
     outDataSet.SetCellSet(outCellSet);
@@ -91,13 +91,13 @@ public:
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;
-    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem(0));
+    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem());
 
     // Output data set with cell set containing extracted points
     vtkm::worklet::ExtractPoints extractPoints;
     OutCellSetType outCellSet =
       extractPoints.Run(dataset.GetCellSet(),
-                        dataset.GetCoordinateSystem("coords"),
+                        dataset.GetCoordinateSystem(),
                         vtkm::cont::make_ImplicitFunctionHandle<vtkm::Box>(minPoint, maxPoint),
                         extractInside);
     outDataSet.SetCellSet(outCellSet);
@@ -122,13 +122,13 @@ public:
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;
-    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem(0));
+    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem());
 
     // Output data set with cell set containing extracted points
     vtkm::worklet::ExtractPoints extractPoints;
     OutCellSetType outCellSet =
       extractPoints.Run(dataset.GetCellSet(),
-                        dataset.GetCoordinateSystem("coords"),
+                        dataset.GetCoordinateSystem(),
                         vtkm::cont::make_ImplicitFunctionHandle<vtkm::Sphere>(center, radius),
                         extractInside);
     outDataSet.SetCellSet(outCellSet);
@@ -153,13 +153,13 @@ public:
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;
-    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem(0));
+    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem());
 
     // Output data set with cell set containing extracted points
     vtkm::worklet::ExtractPoints extractPoints;
     OutCellSetType outCellSet =
       extractPoints.Run(dataset.GetCellSet(),
-                        dataset.GetCoordinateSystem("coordinates"),
+                        dataset.GetCoordinateSystem(),
                         vtkm::cont::make_ImplicitFunctionHandle<vtkm::Box>(minPoint, maxPoint),
                         extractInside);
     outDataSet.SetCellSet(outCellSet);
@@ -184,13 +184,13 @@ public:
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;
-    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem(0));
+    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem());
 
     // Output data set with cell set containing extracted points
     vtkm::worklet::ExtractPoints extractPoints;
     OutCellSetType outCellSet =
       extractPoints.Run(dataset.GetCellSet(),
-                        dataset.GetCoordinateSystem("coordinates"),
+                        dataset.GetCoordinateSystem(),
                         vtkm::cont::make_ImplicitFunctionHandle<vtkm::Box>(minPoint, maxPoint),
                         extractInside);
     outDataSet.SetCellSet(outCellSet);
@@ -214,7 +214,7 @@ public:
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;
-    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem(0));
+    outDataSet.AddCoordinateSystem(dataset.GetCoordinateSystem());
 
     // Output data set with cell set containing extracted points
     vtkm::worklet::ExtractPoints extractPoints;

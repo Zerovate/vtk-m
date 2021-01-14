@@ -13,11 +13,10 @@
 #include <vtkm/filter/CreateResult.h>
 #include <vtkm/filter/FilterField.h>
 
+#include <vtkm/io/VTKDataSetReader.h>
 #include <vtkm/io/VTKDataSetWriter.h>
 
 #include <vtkm/cont/Initialize.h>
-
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 
 #include <vtkm/VectorAnalysis.h>
 
@@ -81,10 +80,20 @@ public:
 
 int main(int argc, char** argv)
 {
-  vtkm::cont::Initialize(argc, argv, vtkm::cont::InitializeOptions::Strict);
+  vtkm::cont::InitializeResult initResult = vtkm::cont::Initialize(argc, argv);
 
-  vtkm::cont::testing::MakeTestDataSet testDataMaker;
-  vtkm::cont::DataSet inputData = testDataMaker.Make3DExplicitDataSetCowNose();
+  if (argc != 2)
+  {
+    std::cerr << "USAGE: " << argv[0] << " [options] <vtk-file>\n";
+    std::cerr << "options are:\n";
+    std::cerr << initResult.Usage << "\n";
+    std::cerr << "For the input file, consider "
+                 "vtk-m/data/data/unstructured/ExplicitDataSet3D_CowNose.vtk\n";
+    return 1;
+  }
+
+  vtkm::io::VTKDataSetReader reader(argv[1]);
+  vtkm::cont::DataSet inputData = reader.ReadDataSet();
 
   vtkm::filter::HelloField helloField;
   helloField.SetActiveField("point_vectors");
