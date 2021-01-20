@@ -10,6 +10,8 @@
 
 #include <vtkm/filter/ClipWithField.h>
 
+#include <vtkm/source/Tangle.h>
+
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
@@ -87,13 +89,13 @@ void TestClipVolume()
   std::cout << "Testing Clip Filter on volumetric data" << std::endl;
 
   vtkm::Id3 dims(10, 10, 10);
-  vtkm::cont::testing::MakeTestDataSet maker;
-  vtkm::cont::DataSet ds = maker.Make3DUniformDataSet3(dims);
+  vtkm::source::Tangle maker(dims);
+  vtkm::cont::DataSet ds = maker.Execute();
 
   vtkm::filter::ClipWithField clip;
-  clip.SetClipValue(0.0);
-  clip.SetActiveField("pointvar");
-  clip.SetFieldsToPass("pointvar", vtkm::cont::Field::Association::POINTS);
+  clip.SetClipValue(1.0);
+  clip.SetActiveField("nodevar");
+  clip.SetFieldsToPass("nodevar", vtkm::cont::Field::Association::POINTS);
 
   const vtkm::cont::DataSet outputData = clip.Execute(ds);
 }

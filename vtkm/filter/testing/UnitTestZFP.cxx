@@ -15,6 +15,8 @@
 #include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/testing/Testing.h>
 
+#include <vtkm/source/Tangle.h>
+
 #include <vtkm/filter/ZFPCompressor1D.h>
 #include <vtkm/filter/ZFPCompressor2D.h>
 #include <vtkm/filter/ZFPCompressor3D.h>
@@ -92,9 +94,9 @@ void TestZFP2DFilter(vtkm::Float64 rate)
 void TestZFP3DFilter(vtkm::Float64 rate)
 {
   const vtkm::Id3 dims(4, 4, 4);
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataset = testDataSet.Make3DUniformDataSet3(dims);
-  auto dynField = dataset.GetField("pointvar").GetData();
+  vtkm::source::Tangle dataSource(dims);
+  vtkm::cont::DataSet dataset = dataSource.Execute();
+  auto dynField = dataset.GetField("nodevar").GetData();
   vtkm::cont::ArrayHandle<vtkm::Float64> field;
   dynField.AsArrayHandle(field);
   auto oport = field.ReadPortal();
@@ -103,7 +105,7 @@ void TestZFP3DFilter(vtkm::Float64 rate)
   vtkm::filter::ZFPCompressor3D compressor;
   vtkm::filter::ZFPDecompressor3D decompressor;
 
-  compressor.SetActiveField("pointvar");
+  compressor.SetActiveField("nodevar");
   compressor.SetRate(rate);
   auto compressed = compressor.Execute(dataset);
 

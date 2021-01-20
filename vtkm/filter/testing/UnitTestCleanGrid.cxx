@@ -12,6 +12,8 @@
 
 #include <vtkm/filter/Contour.h>
 
+#include <vtkm/source/Tangle.h>
+
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
@@ -69,8 +71,8 @@ void TestUniformGrid(vtkm::filter::CleanGrid clean)
 
 void TestPointMerging()
 {
-  vtkm::cont::testing::MakeTestDataSet makeDataSet;
-  vtkm::cont::DataSet baseData = makeDataSet.Make3DUniformDataSet3(vtkm::Id3(4, 4, 4));
+  vtkm::source::Tangle makeData(vtkm::Id3(4, 4, 4));
+  vtkm::cont::DataSet baseData = makeData.Execute();
 
   //Convert the baseData implicit points to explicit points, since the contour
   //filter for uniform data always does point merging
@@ -79,12 +81,12 @@ void TestPointMerging()
   baseData.GetCoordinateSystem().SetData(newcoords);
 
   vtkm::filter::Contour marchingCubes;
-  marchingCubes.SetIsoValue(0.05);
+  marchingCubes.SetIsoValue(11.0);
   marchingCubes.SetMergeDuplicatePoints(false);
-  marchingCubes.SetActiveField("pointvar");
+  marchingCubes.SetActiveField("nodevar");
   vtkm::cont::DataSet inData = marchingCubes.Execute(baseData);
-  constexpr vtkm::Id originalNumPoints = 228;
-  constexpr vtkm::Id originalNumCells = 76;
+  constexpr vtkm::Id originalNumPoints = 240;
+  constexpr vtkm::Id originalNumCells = 80;
   VTKM_TEST_ASSERT(inData.GetCellSet().GetNumberOfPoints() == originalNumPoints);
   VTKM_TEST_ASSERT(inData.GetNumberOfCells() == originalNumCells);
 
@@ -98,18 +100,18 @@ void TestPointMerging()
   VTKM_TEST_ASSERT(noMerging.GetNumberOfCells() == originalNumCells);
   VTKM_TEST_ASSERT(noMerging.GetCellSet().GetNumberOfPoints() == originalNumPoints);
   VTKM_TEST_ASSERT(noMerging.GetNumberOfPoints() == originalNumPoints);
-  VTKM_TEST_ASSERT(noMerging.GetField("pointvar").GetNumberOfValues() == originalNumPoints);
+  VTKM_TEST_ASSERT(noMerging.GetField("nodevar").GetNumberOfValues() == originalNumPoints);
   VTKM_TEST_ASSERT(noMerging.GetField("cellvar").GetNumberOfValues() == originalNumCells);
 
   std::cout << "Clean grid by merging very close points" << std::endl;
   cleanGrid.SetMergePoints(true);
   cleanGrid.SetFastMerge(false);
   vtkm::cont::DataSet closeMerge = cleanGrid.Execute(inData);
-  constexpr vtkm::Id closeMergeNumPoints = 62;
+  constexpr vtkm::Id closeMergeNumPoints = 72;
   VTKM_TEST_ASSERT(closeMerge.GetNumberOfCells() == originalNumCells);
   VTKM_TEST_ASSERT(closeMerge.GetCellSet().GetNumberOfPoints() == closeMergeNumPoints);
   VTKM_TEST_ASSERT(closeMerge.GetNumberOfPoints() == closeMergeNumPoints);
-  VTKM_TEST_ASSERT(closeMerge.GetField("pointvar").GetNumberOfValues() == closeMergeNumPoints);
+  VTKM_TEST_ASSERT(closeMerge.GetField("nodevar").GetNumberOfValues() == closeMergeNumPoints);
   VTKM_TEST_ASSERT(closeMerge.GetField("cellvar").GetNumberOfValues() == originalNumCells);
 
   std::cout << "Clean grid by merging very close points with fast merge" << std::endl;
@@ -118,39 +120,39 @@ void TestPointMerging()
   VTKM_TEST_ASSERT(closeFastMerge.GetNumberOfCells() == originalNumCells);
   VTKM_TEST_ASSERT(closeFastMerge.GetCellSet().GetNumberOfPoints() == closeMergeNumPoints);
   VTKM_TEST_ASSERT(closeFastMerge.GetNumberOfPoints() == closeMergeNumPoints);
-  VTKM_TEST_ASSERT(closeFastMerge.GetField("pointvar").GetNumberOfValues() == closeMergeNumPoints);
+  VTKM_TEST_ASSERT(closeFastMerge.GetField("nodevar").GetNumberOfValues() == closeMergeNumPoints);
   VTKM_TEST_ASSERT(closeFastMerge.GetField("cellvar").GetNumberOfValues() == originalNumCells);
 
   std::cout << "Clean grid with largely separated points" << std::endl;
   cleanGrid.SetFastMerge(false);
   cleanGrid.SetTolerance(0.1);
   vtkm::cont::DataSet farMerge = cleanGrid.Execute(inData);
-  constexpr vtkm::Id farMergeNumPoints = 36;
+  constexpr vtkm::Id farMergeNumPoints = 48;
   VTKM_TEST_ASSERT(farMerge.GetNumberOfCells() == originalNumCells);
   VTKM_TEST_ASSERT(farMerge.GetCellSet().GetNumberOfPoints() == farMergeNumPoints);
   VTKM_TEST_ASSERT(farMerge.GetNumberOfPoints() == farMergeNumPoints);
-  VTKM_TEST_ASSERT(farMerge.GetField("pointvar").GetNumberOfValues() == farMergeNumPoints);
+  VTKM_TEST_ASSERT(farMerge.GetField("nodevar").GetNumberOfValues() == farMergeNumPoints);
   VTKM_TEST_ASSERT(farMerge.GetField("cellvar").GetNumberOfValues() == originalNumCells);
 
   std::cout << "Clean grid with largely separated points quickly" << std::endl;
   cleanGrid.SetFastMerge(true);
   vtkm::cont::DataSet farFastMerge = cleanGrid.Execute(inData);
-  constexpr vtkm::Id farFastMergeNumPoints = 19;
+  constexpr vtkm::Id farFastMergeNumPoints = 20;
   VTKM_TEST_ASSERT(farFastMerge.GetNumberOfCells() == originalNumCells);
   VTKM_TEST_ASSERT(farFastMerge.GetCellSet().GetNumberOfPoints() == farFastMergeNumPoints);
   VTKM_TEST_ASSERT(farFastMerge.GetNumberOfPoints() == farFastMergeNumPoints);
-  VTKM_TEST_ASSERT(farFastMerge.GetField("pointvar").GetNumberOfValues() == farFastMergeNumPoints);
+  VTKM_TEST_ASSERT(farFastMerge.GetField("nodevar").GetNumberOfValues() == farFastMergeNumPoints);
   VTKM_TEST_ASSERT(farFastMerge.GetField("cellvar").GetNumberOfValues() == originalNumCells);
 
   std::cout << "Clean grid with largely separated points quickly with degenerate cells"
             << std::endl;
   cleanGrid.SetRemoveDegenerateCells(true);
   vtkm::cont::DataSet noDegenerateCells = cleanGrid.Execute(inData);
-  constexpr vtkm::Id numNonDegenerateCells = 33;
+  constexpr vtkm::Id numNonDegenerateCells = 24;
   VTKM_TEST_ASSERT(noDegenerateCells.GetNumberOfCells() == numNonDegenerateCells);
   VTKM_TEST_ASSERT(noDegenerateCells.GetCellSet().GetNumberOfPoints() == farFastMergeNumPoints);
   VTKM_TEST_ASSERT(noDegenerateCells.GetNumberOfPoints() == farFastMergeNumPoints);
-  VTKM_TEST_ASSERT(noDegenerateCells.GetField("pointvar").GetNumberOfValues() ==
+  VTKM_TEST_ASSERT(noDegenerateCells.GetField("nodevar").GetNumberOfValues() ==
                    farFastMergeNumPoints);
   VTKM_TEST_ASSERT(noDegenerateCells.GetField("cellvar").GetNumberOfValues() ==
                    numNonDegenerateCells);

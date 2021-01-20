@@ -17,6 +17,8 @@
 #include <vtkm/worklet/ZFP2DCompressor.h>
 #include <vtkm/worklet/ZFP2DDecompress.h>
 
+#include <vtkm/source/Tangle.h>
+
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/worklet/zfp/ZFPTools.h>
@@ -119,9 +121,9 @@ void Test3D(int rate)
   //vtkm::Id3 dims(8,8,8);
   //vtkm::Id3 dims(256,256,256);
   //vtkm::Id3 dims(128,128,128);
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataset = testDataSet.Make3DUniformDataSet3(dims);
-  auto dynField = dataset.GetField("pointvar").GetData();
+  vtkm::source::Tangle dataSource(dims);
+  vtkm::cont::DataSet dataset = dataSource.Execute();
+  auto dynField = dataset.GetField("nodevar").GetData();
 
   vtkm::worklet::ZFPCompressor compressor;
   vtkm::worklet::ZFPDecompressor decompressor;

@@ -16,13 +16,14 @@
 #include <vtkm/cont/DeviceAdapterAlgorithm.h>
 #include <vtkm/cont/Initialize.h>
 #include <vtkm/cont/Timer.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 
 #include <vtkm/rendering/Camera.h>
 #include <vtkm/rendering/raytracing/Ray.h>
 #include <vtkm/rendering/raytracing/RayTracer.h>
 #include <vtkm/rendering/raytracing/SphereIntersector.h>
 #include <vtkm/rendering/raytracing/TriangleExtractor.h>
+
+#include <vtkm/source/Tangle.h>
 
 #include <vtkm/exec/FunctorBase.h>
 
@@ -40,8 +41,8 @@ void BenchRayTracing(::benchmark::State& state)
 {
   const vtkm::Id3 dims(128, 128, 128);
 
-  vtkm::cont::testing::MakeTestDataSet maker;
-  auto dataset = maker.Make3DUniformDataSet3(dims);
+  vtkm::source::Tangle maker(dims);
+  auto dataset = maker.Execute();
   auto coords = dataset.GetCoordinateSystem();
 
   vtkm::rendering::Camera camera;
@@ -68,7 +69,7 @@ void BenchRayTracing(::benchmark::State& state)
 
   rays.Buffers.at(0).InitConst(0.f);
 
-  vtkm::cont::Field field = dataset.GetField("pointvar");
+  vtkm::cont::Field field = dataset.GetField("nodevar");
   vtkm::Range range = field.GetRange().ReadPortal().Get(0);
 
   tracer.SetField(field, range);
