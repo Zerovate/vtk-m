@@ -9,7 +9,6 @@
 //============================================================================
 
 #include <vtkm/cont/ArrayCopy.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/filter/CellSetConnectivity.h>
 #include <vtkm/filter/Contour.h>
@@ -50,7 +49,8 @@ public:
 
   void TestExplicitDataSet() const
   {
-    vtkm::cont::DataSet dataSet = vtkm::cont::testing::MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     vtkm::filter::CellSetConnectivity connectivity;
     const vtkm::cont::DataSet output = connectivity.Execute(dataSet);
@@ -68,7 +68,8 @@ public:
 
   void TestUniformDataSet() const
   {
-    vtkm::cont::DataSet dataSet = vtkm::cont::testing::MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
     vtkm::filter::CellSetConnectivity connectivity;
     const vtkm::cont::DataSet output = connectivity.Execute(dataSet);
 

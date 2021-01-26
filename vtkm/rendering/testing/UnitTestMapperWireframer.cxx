@@ -9,9 +9,9 @@
 //============================================================================
 
 #include <vtkm/cont/ArrayCopy.h>
+#include <vtkm/cont/DataSetBuilderExplicit.h>
 #include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/DeviceAdapter.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/rendering/CanvasRayTracer.h>
 #include <vtkm/rendering/MapperWireframer.h>
@@ -96,15 +96,23 @@ void RenderTests()
   using V2 = vtkm::rendering::View2D;
   using V1 = vtkm::rendering::View1D;
 
-  vtkm::cont::testing::MakeTestDataSet maker;
   vtkm::cont::ColorTable colorTable("samsel fire");
 
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DRegularDataSet0(), "pointvar", colorTable, "wf_reg3D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_2.vtk"),
+    "pointvar",
+    colorTable,
+    "wf_reg3D.pnm");
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DRectilinearDataSet0(), "pointvar", colorTable, "wf_rect3D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet3D_0.vtk"),
+    "pointvar",
+    colorTable,
+    "wf_rect3D.pnm");
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DExplicitDataSet4(), "pointvar", colorTable, "wf_expl3D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_4.vtk"),
+    "pointvar",
+    colorTable,
+    "wf_expl3D.pnm");
   vtkm::rendering::testing::Render<M, C, V3>(
     Make3DUniformDataSet(), "pointvar", colorTable, "wf_uniform3D.pnm");
   vtkm::rendering::testing::Render<M, C, V2>(
@@ -119,11 +127,18 @@ void RenderTests()
   colors.push_back(vtkm::rendering::Color(1.f, 0.f, 0.f));
   colors.push_back(vtkm::rendering::Color(0.f, 1.f, 0.f));
   vtkm::rendering::testing::Render<M, C, V1>(
-    maker.Make1DUniformDataSet0(), fields, colors, "wf_lines1D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet1D_0.vtk"),
+    fields,
+    colors,
+    "wf_lines1D.pnm");
   //test log y
   vtkm::rendering::Color red = vtkm::rendering::Color::red;
   vtkm::rendering::testing::Render<M, C, V1>(
-    maker.Make1DUniformDataSet1(), "pointvar", red, "wf_linesLogY1D.pnm", true);
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet1D_1.vtk"),
+    "pointvar",
+    red,
+    "wf_linesLogY1D.pnm",
+    true);
 }
 
 } //namespace

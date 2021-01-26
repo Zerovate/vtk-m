@@ -10,7 +10,6 @@
 
 #include <vtkm/filter/CellMeasures.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vector>
@@ -70,23 +69,22 @@ void TestCellMeasures()
   using vtkm::AllMeasures;
   using vtkm::Volume;
 
-  vtkm::cont::testing::MakeTestDataSet factory;
   vtkm::cont::DataSet data;
 
-  data = factory.Make3DExplicitDataSet2();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_2.vtk");
   TestCellMeasuresFilter(data, "explicit dataset 2", { -1.f }, AllMeasures());
 
-  data = factory.Make3DExplicitDataSet3();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_3.vtk");
   TestCellMeasuresFilter(data, "explicit dataset 3", { -1.f / 6.f }, AllMeasures());
 
-  data = factory.Make3DExplicitDataSet4();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_4.vtk");
   TestCellMeasuresFilter(data, "explicit dataset 4", { -1.f, -1.f }, AllMeasures());
 
-  data = factory.Make3DExplicitDataSet5();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
   TestCellMeasuresFilter(
     data, "explicit dataset 5", { 1.f, 1.f / 3.f, 1.f / 6.f, -1.f / 2.f }, AllMeasures());
 
-  data = factory.Make3DExplicitDataSet6();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_6.vtk");
   TestCellMeasuresFilter(data,
                          "explicit dataset 6 (only volume)",
                          { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.083426f, 0.25028f },

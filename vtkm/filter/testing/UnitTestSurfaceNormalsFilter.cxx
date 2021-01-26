@@ -9,7 +9,6 @@
 //============================================================================
 #include <vtkm/filter/SurfaceNormals.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -55,7 +54,8 @@ void VerifyPointNormalValues(const vtkm::cont::DataSet& ds)
 
 void TestSurfaceNormals()
 {
-  vtkm::cont::DataSet ds = vtkm::cont::testing::MakeTestDataSet().Make3DExplicitDataSetPolygonal();
+  vtkm::cont::DataSet ds =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_Polygonal.vtk");
 
   vtkm::filter::SurfaceNormals filter;
   vtkm::cont::DataSet result;

@@ -8,7 +8,6 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/filter/PointAverage.h>
 
@@ -19,8 +18,8 @@ void TestPointAverageUniform3D()
 {
   std::cout << "Testing PointAverage Filter on 3D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   vtkm::filter::PointAverage pointAverage;
   pointAverage.SetOutputFieldName("avgvals");
@@ -44,8 +43,8 @@ void TestPointAverageRegular3D()
 {
   std::cout << "Testing PointAverage Filter on 2D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DRectilinearDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet3D_0.vtk");
 
   vtkm::filter::PointAverage pointAverage;
   pointAverage.SetActiveField("cellvar");
@@ -70,8 +69,8 @@ void TestPointAverageExplicit1()
 {
   std::cout << "Testing PointAverage Filter on Explicit data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DExplicitDataSet1();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_1.vtk");
 
   vtkm::filter::PointAverage pointAverage;
   pointAverage.SetActiveField("cellvar");
@@ -93,8 +92,8 @@ void TestPointAverageExplicit2()
 {
   std::cout << "Testing PointAverage Filter on Explicit data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DExplicitDataSet5();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
   vtkm::filter::PointAverage pointAverage;
   pointAverage.SetActiveField("cellvar");

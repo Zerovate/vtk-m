@@ -12,7 +12,6 @@
 
 #include <vtkm/Bounds.h>
 #include <vtkm/cont/DeviceAdapter.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/rendering/Actor.h>
 #include <vtkm/rendering/Camera.h>
 #include <vtkm/rendering/Canvas.h>

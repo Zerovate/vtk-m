@@ -9,7 +9,6 @@
 //============================================================================
 
 #include <vtkm/cont/DeviceAdapter.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/rendering/Actor.h>
 #include <vtkm/rendering/CanvasRayTracer.h>
@@ -27,14 +26,17 @@ void RenderTests()
   using C = vtkm::rendering::CanvasRayTracer;
   using V3 = vtkm::rendering::View3D;
 
-  vtkm::cont::testing::MakeTestDataSet maker;
   vtkm::cont::ColorTable colorTable("inferno");
 
   M mapper;
   std::cout << "Testing uniform delta raduis\n";
   mapper.SetRadiusDelta(4.0f);
   vtkm::rendering::testing::Render<M, C, V3>(
-    mapper, maker.Make3DUniformDataSet1(), "pointvar", colorTable, "points_vr_reg3D.pnm");
+    mapper,
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk"),
+    "pointvar",
+    colorTable,
+    "points_vr_reg3D.pnm");
 
   // restore defaults
   mapper.SetRadiusDelta(0.5f);
@@ -42,12 +44,20 @@ void RenderTests()
 
   mapper.SetRadius(0.2f);
   vtkm::rendering::testing::Render<M, C, V3>(
-    mapper, maker.Make3DUniformDataSet1(), "pointvar", colorTable, "points_reg3D.pnm");
+    mapper,
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk"),
+    "pointvar",
+    colorTable,
+    "points_reg3D.pnm");
 
   mapper.UseCells();
   mapper.SetRadius(1.f);
   vtkm::rendering::testing::Render<M, C, V3>(
-    mapper, maker.Make3DExplicitDataSet7(), "cellvar", colorTable, "spheres.pnm");
+    mapper,
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_7.vtk"),
+    "cellvar",
+    colorTable,
+    "spheres.pnm");
 }
 
 } //namespace

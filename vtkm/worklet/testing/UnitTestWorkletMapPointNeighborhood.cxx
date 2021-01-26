@@ -20,7 +20,6 @@
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DeviceAdapterTag.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace test_pointneighborhood
@@ -202,13 +201,12 @@ static void TestMaxNeighborValue()
   std::cout << "Testing MaxPointOfCell worklet" << std::endl;
 
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-
   vtkm::worklet::DispatcherPointNeighborhood<::test_pointneighborhood::MaxNeighborValue> dispatcher;
 
   vtkm::cont::ArrayHandle<vtkm::Float32> output;
 
-  vtkm::cont::DataSet dataSet3D = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet3D =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
   dispatcher.Invoke(dataSet3D.GetField("pointvar")
                       .GetData()
                       .ResetTypes<vtkm::TypeListFieldScalar, VTKM_DEFAULT_STORAGE_LIST>(),
@@ -224,7 +222,8 @@ static void TestMaxNeighborValue()
                      "Wrong result for MaxNeighborValue worklet");
   }
 
-  vtkm::cont::DataSet dataSet2D = testDataSet.Make2DUniformDataSet1();
+  vtkm::cont::DataSet dataSet2D =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
   dispatcher.Invoke(dataSet2D.GetField("pointvar")
                       .GetData()
                       .ResetTypes<vtkm::TypeListFieldScalar, VTKM_DEFAULT_STORAGE_LIST>(),
@@ -247,15 +246,15 @@ static void TestScatterIdentityNeighbor()
 {
   std::cout << "Testing identity scatter with PointNeighborhood" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-
   vtkm::worklet::DispatcherPointNeighborhood<::test_pointneighborhood::ScatterIdentityNeighbor>
     dispatcher;
 
-  vtkm::cont::DataSet dataSet3D = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet3D =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
   dispatcher.Invoke(dataSet3D.GetCellSet(), dataSet3D.GetCoordinateSystem());
 
-  vtkm::cont::DataSet dataSet2D = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet2D =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
   dispatcher.Invoke(dataSet2D.GetCellSet(), dataSet2D.GetCoordinateSystem());
 }
 
@@ -264,15 +263,15 @@ static void TestScatterUnfiormNeighbor()
 {
   std::cout << "Testing uniform scatter with PointNeighborhood" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-
   vtkm::worklet::DispatcherPointNeighborhood<::test_pointneighborhood::ScatterUniformNeighbor>
     dispatcher;
 
-  vtkm::cont::DataSet dataSet3D = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet3D =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
   dispatcher.Invoke(dataSet3D.GetCellSet(), dataSet3D.GetCoordinateSystem());
 
-  vtkm::cont::DataSet dataSet2D = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet2D =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
   dispatcher.Invoke(dataSet2D.GetCellSet(), dataSet2D.GetCoordinateSystem());
 }
 

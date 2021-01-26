@@ -19,7 +19,6 @@
 #include <vtkm/cont/FieldRangeCompute.h>
 #include <vtkm/cont/PartitionedDataSet.h>
 #include <vtkm/cont/serial/DeviceAdapterSerial.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/exec/ConnectivityStructured.h>
 #include <vtkm/thirdparty/diy/Configure.h>
@@ -29,11 +28,12 @@
 void DataSet_Compare(vtkm::cont::DataSet& LeftDateSet, vtkm::cont::DataSet& RightDateSet);
 static void PartitionedDataSetTest()
 {
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
   vtkm::cont::PartitionedDataSet pds;
 
-  vtkm::cont::DataSet TDset1 = testDataSet.Make2DUniformDataSet0();
-  vtkm::cont::DataSet TDset2 = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet TDset1 =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
+  vtkm::cont::DataSet TDset2 =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   pds.AppendPartition(TDset1);
   pds.AppendPartition(TDset2);

@@ -11,7 +11,6 @@
 #include <vtkm/worklet/DispatcherMapTopology.h>
 #include <vtkm/worklet/Gradient.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -21,8 +20,8 @@ void TestPointGradientUniform2D()
 {
   std::cout << "Testing PointGradient Worklet on 2D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
   dataSet.GetField("pointvar").GetData().AsArrayHandle(fieldArray);
@@ -47,8 +46,8 @@ void TestPointGradientUniform3D()
 {
   std::cout << "Testing PointGradient Worklet on 3D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
   dataSet.GetField("pointvar").GetData().AsArrayHandle(fieldArray);
@@ -78,8 +77,8 @@ void TestPointGradientUniform3DWithVectorField()
 {
   std::cout << "Testing PointGradient Worklet with a vector field on 3D structured data"
             << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   //Verify that we can compute the gradient of a 3 component vector
   const int nVerts = 18;
@@ -123,8 +122,8 @@ void TestPointGradientUniform3DWithVectorField2()
             << std::endl
             << "Disabling Gradient computation and enabling Divergence, Vorticity, and QCriterion"
             << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   //Verify that we can compute the gradient of a 3 component vector
   const int nVerts = 18;
@@ -198,8 +197,8 @@ void TestPointGradientExplicit3D()
 {
   std::cout << "Testing PointGradient Worklet on Explicit 3D data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DExplicitDataSet5();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
   dataSet.GetField("pointvar").GetData().AsArrayHandle(fieldArray);
@@ -231,8 +230,8 @@ void TestPointGradientExplicit2D()
 {
   std::cout << "Testing PointGradient Worklet on Explicit 2D data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DExplicitDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet2D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
   dataSet.GetField("pointvar").GetData().AsArrayHandle(fieldArray);

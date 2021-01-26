@@ -14,7 +14,6 @@
 #include <vtkm/cont/CellSetExplicit.h>
 #include <vtkm/cont/CellSetPermutation.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -22,8 +21,8 @@ namespace
 
 vtkm::cont::CellSetExplicit<> CreateCellSet()
 {
-  vtkm::cont::testing::MakeTestDataSet makeData;
-  vtkm::cont::DataSet data = makeData.Make3DExplicitDataSet0();
+  vtkm::cont::DataSet data =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_0.vtk");
   vtkm::cont::CellSetExplicit<> cellSet;
   data.GetCellSet().CopyTo(cellSet);
   return cellSet;

@@ -17,7 +17,6 @@
 #include <vtkm/exec/ConnectivityStructured.h>
 
 #include <vtkm/cont/CoordinateSystem.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 static void TwoDimRectilinearTest();
@@ -35,9 +34,9 @@ void TestDataSet_Rectilinear()
 static void TwoDimRectilinearTest()
 {
   std::cout << "2D Rectilinear data set" << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
 
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DRectilinearDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet2D_0.vtk");
 
   vtkm::cont::CellSetStructured<2> cellSet;
   dataSet.GetCellSet().CopyTo(cellSet);
@@ -121,9 +120,9 @@ static void TwoDimRectilinearTest()
 static void ThreeDimRectilinearTest()
 {
   std::cout << "3D Rectilinear data set" << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
 
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DRectilinearDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet3D_0.vtk");
 
   vtkm::cont::CellSetStructured<3> cellSet;
   dataSet.GetCellSet().CopyTo(cellSet);

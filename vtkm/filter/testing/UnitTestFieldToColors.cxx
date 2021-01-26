@@ -10,7 +10,6 @@
 
 #include <vtkm/filter/FieldToColors.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 namespace
 {
@@ -28,7 +27,9 @@ void TestFieldToColors()
   table.SetAboveRangeColor(vtkm::Vec<float, 3>{ 1.0f, 0.0f, 0.0f }); //red
   table.SetBelowRangeColor(vtkm::Vec<float, 3>{ 0.0f, 0.0f, 1.0f }); //green
 
-  vtkm::cont::DataSet ds = vtkm::cont::testing::MakeTestDataSet().Make3DExplicitDataSetPolygonal();
+  vtkm::cont::DataSet ds =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_Polygonal.vtk");
+  ;
   ds.AddPointField("faux", data, nvals);
 
   vtkm::filter::FieldToColors ftc(table);

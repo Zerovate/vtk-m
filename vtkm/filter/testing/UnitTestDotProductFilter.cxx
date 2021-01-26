@@ -8,7 +8,6 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/filter/DotProduct.h>
 
@@ -104,14 +103,13 @@ void TestDotProduct()
 {
   std::cout << "Testing DotProduct Filter" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-
   const int numCases = 7;
   for (int i = 0; i < numCases; i++)
   {
     std::cout << "Case " << i << std::endl;
 
-    vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
     vtkm::Id nVerts = dataSet.GetCoordinateSystem(0).GetNumberOfPoints();
 
     std::vector<vtkm::Vec3f> vecs1, vecs2;

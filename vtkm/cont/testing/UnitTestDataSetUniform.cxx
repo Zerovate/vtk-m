@@ -16,7 +16,6 @@
 
 #include <vtkm/exec/ConnectivityStructured.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 static void TwoDimUniformTest();
@@ -34,9 +33,9 @@ void TestDataSet_Uniform()
 static void TwoDimUniformTest()
 {
   std::cout << "2D Uniform data set" << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
 
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
   dataSet.PrintSummary(std::cout);
 
@@ -123,9 +122,9 @@ static void TwoDimUniformTest()
 static void ThreeDimUniformTest()
 {
   std::cout << "3D Uniform data set" << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
 
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   dataSet.PrintSummary(std::cout);
 

@@ -8,12 +8,9 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/ExtractStructured.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 namespace
 {
@@ -24,7 +21,8 @@ public:
   void TestUniform2D() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make2DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
 
     vtkm::RangeId3 range(1, 4, 1, 4, 0, 1);
     vtkm::Id3 sample(1, 1, 1);
@@ -61,7 +59,8 @@ public:
   void TestUniform3D0() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::filter::ExtractStructured extract;
 
@@ -97,7 +96,8 @@ public:
   void TestUniform3D1() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::filter::ExtractStructured extract;
 
@@ -135,7 +135,8 @@ public:
   void TestUniform3D2() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
     vtkm::filter::ExtractStructured extract;
 
     // VOI surrounds dataset
@@ -172,7 +173,8 @@ public:
   void TestUniform3D3() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
     vtkm::filter::ExtractStructured extract;
 
     // RangeId3 intersects dataset on far boundary
@@ -209,7 +211,8 @@ public:
   void TestUniform3D4() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::filter::ExtractStructured extract;
 
@@ -247,7 +250,8 @@ public:
   void TestUniform3D5() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::filter::ExtractStructured extract;
 
@@ -285,7 +289,8 @@ public:
   void TestUniform3D6() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::filter::ExtractStructured extract;
 
@@ -323,7 +328,8 @@ public:
   void TestUniform3D7() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::filter::ExtractStructured extract;
 
@@ -360,7 +366,8 @@ public:
   void TestUniform3D8() const
   {
     std::cout << "Testing extract structured uniform" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
     vtkm::filter::ExtractStructured extract;
 
     // RangeId3 within data set with sampling
@@ -399,7 +406,8 @@ public:
   void TestRectilinear2D() const
   {
     std::cout << "Testing extract structured rectilinear" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make2DRectilinearDataSet0();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet2D_0.vtk");
 
     vtkm::filter::ExtractStructured extract;
 
@@ -436,7 +444,8 @@ public:
   void TestRectilinear3D() const
   {
     std::cout << "Testing extract structured rectilinear" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DRectilinearDataSet0();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet3D_0.vtk");
 
     vtkm::filter::ExtractStructured extract;
 

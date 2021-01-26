@@ -20,7 +20,6 @@
 
 #include <vtkm/Math.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -99,8 +98,8 @@ struct NeighborhoodWorklet : vtkm::worklet::WorkletPointNeighborhood
 template <typename DispatcherType>
 void TestMapWorklet()
 {
-  vtkm::cont::testing::MakeTestDataSet builder;
-  vtkm::cont::DataSet data = builder.Make3DUniformDataSet1();
+  vtkm::cont::DataSet data =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
   vtkm::cont::CellSetStructured<3> cellSet =
     data.GetCellSet().Cast<vtkm::cont::CellSetStructured<3>>();

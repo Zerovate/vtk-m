@@ -9,7 +9,6 @@
 //============================================================================
 #include <vtkm/cont/ArrayCopy.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/worklet/DispatcherMapTopology.h>
 #include <vtkm/worklet/ScatterCounting.h>
 #include <vtkm/worklet/WorkletMapTopology.h>
@@ -128,8 +127,8 @@ struct DoTestWorklet
   template <typename T>
   VTKM_CONT void operator()(T) const
   {
-    vtkm::cont::testing::MakeTestDataSet testDataSet;
-    vtkm::cont::DataSet dataSet3D = testDataSet.Make3DUniformDataSet0();
+    vtkm::cont::DataSet dataSet3D =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
     vtkm::cont::CellSetStructured<3> cellSet =
       dataSet3D.GetCellSet().Cast<vtkm::cont::CellSetStructured<3>>();
@@ -145,8 +144,8 @@ struct DoTestWorklet<TestWorkletMapTopoSelect>
   template <typename T>
   VTKM_CONT void operator()(T) const
   {
-    vtkm::cont::testing::MakeTestDataSet testDataSet;
-    vtkm::cont::DataSet dataSet3D = testDataSet.Make3DUniformDataSet0();
+    vtkm::cont::DataSet dataSet3D =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
     // Start select array with an array of zeros
     auto selectArrayHandle = vtkm::cont::make_ArrayHandleMove(

@@ -8,12 +8,9 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/Triangulate.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 namespace
 {
@@ -24,7 +21,8 @@ public:
   void TestStructured() const
   {
     std::cout << "Testing triangulate structured" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make2DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
     vtkm::filter::Triangulate triangulate;
     triangulate.SetFieldsToPass({ "pointvar", "cellvar" });
     vtkm::cont::DataSet output = triangulate.Execute(dataset);
@@ -44,7 +42,8 @@ public:
   void TestExplicit() const
   {
     std::cout << "Testing triangulate explicit" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make2DExplicitDataSet0();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet2D_0.vtk");
     vtkm::filter::Triangulate triangulate;
     triangulate.SetFieldsToPass({ "pointvar", "cellvar" });
     vtkm::cont::DataSet output = triangulate.Execute(dataset);

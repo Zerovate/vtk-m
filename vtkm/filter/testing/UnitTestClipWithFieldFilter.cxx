@@ -12,7 +12,8 @@
 
 #include <vtkm/source/Tangle.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
+#include <vtkm/cont/DataSetBuilderExplicit.h>
+
 #include <vtkm/cont/testing/Testing.h>
 
 namespace

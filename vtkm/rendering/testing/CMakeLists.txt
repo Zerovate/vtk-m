@@ -19,7 +19,7 @@ set(unit_tests
   UnitTestCanvas.cxx
   UnitTestMapperConnectivity.cxx
   UnitTestMultiMapper.cxx
-  #UnitTestMapperCylinders.cxx
+  UnitTestMapperCylinders.cxx
   UnitTestMapperPoints.cxx
   UnitTestMapperQuads.cxx
   UnitTestMapperRayTracer.cxx

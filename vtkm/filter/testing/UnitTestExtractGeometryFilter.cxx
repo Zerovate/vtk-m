@@ -8,12 +8,9 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/ExtractGeometry.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 namespace
 {
@@ -24,7 +21,8 @@ public:
   void TestUniformByBox0() const
   {
     std::cout << "Testing extract geometry with implicit function (box):" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(1.f, 1.f, 1.f);
@@ -51,7 +49,8 @@ public:
   void TestUniformByBox1() const
   {
     std::cout << "Testing extract geometry with implicit function (box):" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(1.f, 1.f, 1.f);
@@ -78,7 +77,8 @@ public:
   void TestUniformByBox2() const
   {
     std::cout << "Testing extract geometry with implicit function (box):" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(0.5f, 0.5f, 0.5f);
@@ -104,7 +104,8 @@ public:
   void TestUniformByBox3() const
   {
     std::cout << "Testing extract geometry with implicit function (box):" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(0.5f, 0.5f, 0.5f);

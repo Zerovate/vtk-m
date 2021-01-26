@@ -11,9 +11,9 @@
 #include <vtkm/cont/CellSetPermutation.h>
 #include <vtkm/cont/CellSetSingleType.h>
 #include <vtkm/cont/DataSet.h>
+#include <vtkm/cont/DataSetBuilderExplicit.h>
 #include <vtkm/cont/DeviceAdapterAlgorithm.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/worklet/CellAverage.h>
@@ -119,8 +119,8 @@ void TestDataSet_Explicit()
 void TestDataSet_Structured2D()
 {
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
   //iterate the 2nd cell 4 times
   vtkm::cont::ArrayHandle<vtkm::Id> validCellIds =
@@ -152,8 +152,8 @@ void TestDataSet_Structured2D()
 void TestDataSet_Structured3D()
 {
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   //iterate the 2nd cell 4 times
   vtkm::cont::ArrayHandle<vtkm::Id> validCellIds =

@@ -8,9 +8,12 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
-#include <vtkm/cont/testing/Testing.h>
 #include <vtkm/filter/ImageMedian.h>
+#include <vtkm/filter/VectorMagnitude.h>
+
+#include <vtkm/cont/DataSetBuilderUniform.h>
+
+#include <vtkm/cont/testing/Testing.h>
 
 namespace
 {
@@ -19,8 +22,11 @@ void TestImageMedian()
 {
   std::cout << "Testing Image Median Filter on 3D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet2();
+  vtkm::cont::DataSetBuilderUniform builder;
+  vtkm::filter::VectorMagnitude magnitude;
+  magnitude.SetUseCoordinateSystemAsField(true);
+  magnitude.SetOutputFieldName("pointvar");
+  vtkm::cont::DataSet dataSet = magnitude.Execute(builder.Create(vtkm::Id3(16)));
 
   vtkm::filter::ImageMedian median;
   median.Perform3x3();

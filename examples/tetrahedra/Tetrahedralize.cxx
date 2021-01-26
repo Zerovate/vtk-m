@@ -9,8 +9,6 @@
 //============================================================================
 #include <vtkm/cont/Initialize.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
-
 #include <vtkm/io/VTKDataSetReader.h>
 #include <vtkm/io/VTKDataSetWriter.h>
 

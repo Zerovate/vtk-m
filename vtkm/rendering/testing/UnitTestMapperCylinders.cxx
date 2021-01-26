@@ -9,7 +9,6 @@
 //============================================================================
 
 #include <vtkm/cont/DeviceAdapter.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/rendering/Actor.h>
 #include <vtkm/rendering/CanvasRayTracer.h>
@@ -28,41 +27,69 @@ void RenderTests()
   typedef vtkm::rendering::View3D V3;
   typedef vtkm::rendering::View2D V2;
 
-  vtkm::cont::testing::MakeTestDataSet maker;
   vtkm::cont::ColorTable colorTable("inferno");
 
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DRegularDataSet0(), "pointvar", colorTable, "rt_reg3D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_2.vtk"),
+    "pointvar",
+    colorTable,
+    "rt_reg3D.pnm");
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DRectilinearDataSet0(), "pointvar", colorTable, "rt_rect3D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet3D_0.vtk"),
+    "pointvar",
+    colorTable,
+    "rt_rect3D.pnm");
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DExplicitDataSet4(), "pointvar", colorTable, "rt_expl3D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_4.vtk"),
+    "pointvar",
+    colorTable,
+    "rt_expl3D.pnm");
 
   vtkm::rendering::testing::Render<M, C, V2>(
-    maker.Make2DUniformDataSet1(), "pointvar", colorTable, "uni2D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk"),
+    "pointvar",
+    colorTable,
+    "uni2D.pnm");
 
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DExplicitDataSet8(), "cellvar", colorTable, "cylinder.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_8.vtk"),
+    "cellvar",
+    colorTable,
+    "cylinder.pnm");
 
   //hexahedron, wedge, pyramid, tetrahedron
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DExplicitDataSet5(), "cellvar", colorTable, "rt_hex3d.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk"),
+    "cellvar",
+    colorTable,
+    "rt_hex3d.pnm");
 
   M mapper;
 
   mapper.SetRadius(0.1f);
   vtkm::rendering::testing::Render<M, C, V3>(
-    mapper, maker.Make3DExplicitDataSet8(), "cellvar", colorTable, "cyl_static_radius.pnm");
+    mapper,
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_8.vtk"),
+    "cellvar",
+    colorTable,
+    "cyl_static_radius.pnm");
 
   mapper.UseVariableRadius(true);
   mapper.SetRadiusDelta(2.0f);
   vtkm::rendering::testing::Render<M, C, V3>(
-    mapper, maker.Make3DExplicitDataSet8(), "cellvar", colorTable, "cyl_var_radius.pnm");
+    mapper,
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_8.vtk"),
+    "cellvar",
+    colorTable,
+    "cyl_var_radius.pnm");
 
   //test to make sure can reset
   mapper.UseVariableRadius(false);
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DExplicitDataSet8(), "cellvar", colorTable, "cylinder2.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_8.vtk"),
+    "cellvar",
+    colorTable,
+    "cylinder2.pnm");
 }
 
 } //namespace

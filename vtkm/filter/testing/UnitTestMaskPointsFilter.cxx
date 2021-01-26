@@ -8,12 +8,9 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/MaskPoints.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 namespace
 {
@@ -24,7 +21,8 @@ public:
   void TestRegular2D() const
   {
     std::cout << "Testing mask points on 2D regular dataset" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make2DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
 
     vtkm::filter::MaskPoints maskPoints;
     maskPoints.SetStride(2);
@@ -39,7 +37,8 @@ public:
   void TestRegular3D() const
   {
     std::cout << "Testing mask points on 3D regular dataset" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::filter::MaskPoints maskPoints;
     maskPoints.SetStride(5);
@@ -54,7 +53,8 @@ public:
   void TestExplicit3D() const
   {
     std::cout << "Testing mask points on 3D explicit dataset" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     vtkm::filter::MaskPoints maskPoints;
     maskPoints.SetStride(3);

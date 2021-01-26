@@ -11,10 +11,7 @@
 #include <vtkm/worklet/ExtractStructured.h>
 
 #include <vtkm/cont/DataSet.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 class TestingExtractStructured
 {
@@ -25,7 +22,8 @@ public:
     using CellSetType = vtkm::cont::CellSetStructured<2>;
 
     // Create the input uniform cell set
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make2DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
     CellSetType cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
 
@@ -50,7 +48,8 @@ public:
     using CellSetType = vtkm::cont::CellSetStructured<3>;
 
     // Create the input uniform cell set
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
     CellSetType cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
 
@@ -116,7 +115,8 @@ public:
     using CellSetType = vtkm::cont::CellSetStructured<3>;
 
     // Create the input uniform cell set
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
     CellSetType cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
 
@@ -167,7 +167,8 @@ public:
     using CellSetType = vtkm::cont::CellSetStructured<2>;
 
     // Create the input uniform cell set
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make2DRectilinearDataSet0();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet2D_0.vtk");
     CellSetType cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
 
@@ -193,7 +194,8 @@ public:
     using CellSetType = vtkm::cont::CellSetStructured<3>;
 
     // Create the input uniform cell set
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make3DRectilinearDataSet0();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet3D_0.vtk");
     CellSetType cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
 

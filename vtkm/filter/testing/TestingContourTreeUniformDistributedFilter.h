@@ -58,7 +58,6 @@
 #include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/PartitionedDataSet.h>
 #include <vtkm/cont/Serialization.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/filter/ContourTreeUniformDistributed.h>
 #include <vtkm/filter/MapFieldPermutation.h>
@@ -371,7 +370,8 @@ inline void TestContourTreeUniformDistributed8x9(int nBlocks, int rank = 0, int 
     std::cout << "Testing ContourTreeUniformDistributed on 2D 8x9 data set divided into " << nBlocks
               << " blocks." << std::endl;
   }
-  vtkm::cont::DataSet in_ds = vtkm::cont::testing::MakeTestDataSet().Make2DUniformDataSet3();
+  vtkm::cont::DataSet in_ds =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_3.vtk");
   vtkm::cont::PartitionedDataSet result =
     RunContourTreeDUniformDistributed(in_ds, "pointvar", false, nBlocks, rank, size);
 
@@ -434,7 +434,8 @@ inline void TestContourTreeUniformDistributed5x6x7(int nBlocks,
               << std::endl;
   }
 
-  vtkm::cont::DataSet in_ds = vtkm::cont::testing::MakeTestDataSet().Make3DUniformDataSet4();
+  vtkm::cont::DataSet in_ds =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_4.vtk");
   vtkm::cont::PartitionedDataSet result =
     RunContourTreeDUniformDistributed(in_ds, "pointvar", marchingCubes, nBlocks, rank, size);
 

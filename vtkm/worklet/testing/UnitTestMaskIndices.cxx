@@ -12,7 +12,6 @@
 #include <vtkm/cont/ArrayCopy.h>
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/ArrayHandleConstant.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/worklet/DispatcherMapTopology.h>
 #include <vtkm/worklet/WorkletMapTopology.h>
@@ -81,7 +80,8 @@ void RunTest(const CellSetType& cellset, const vtkm::cont::ArrayHandle<vtkm::Id>
 
 void TestMaskIndices()
 {
-  vtkm::cont::DataSet dataset = vtkm::cont::testing::MakeTestDataSet().Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataset =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
   auto cellset = dataset.GetCellSet();
   vtkm::Id numberOfPoints = cellset.GetNumberOfPoints();
 

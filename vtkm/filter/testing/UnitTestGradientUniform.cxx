@@ -10,7 +10,6 @@
 
 #include <vtkm/filter/Gradient.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -20,8 +19,8 @@ void TestCellGradientUniform3D()
 {
   std::cout << "Testing Gradient Filter with cell output on 3D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   vtkm::filter::Gradient gradient;
   gradient.SetOutputFieldName("Gradient");
@@ -48,8 +47,8 @@ void TestCellGradientUniform3D()
 void TestCellGradientUniform3DWithVectorField()
 {
   std::cout << "Testing Gradient Filter with vector cell output on 3D structured data" << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   //Verify that we can compute the gradient of a 3 component vector
   const int nVerts = 18;
@@ -107,8 +106,8 @@ void TestPointGradientUniform3DWithVectorField()
 {
   std::cout << "Testing Gradient Filter with vector point output on 3D structured data"
             << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   //Verify that we can compute the gradient of a 3 component vector
   const int nVerts = 18;

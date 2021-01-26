@@ -14,7 +14,8 @@
 #include <vtkm/io/VTKDataSetReader.h>
 #include <vtkm/io/VTKDataSetWriter.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
+#include <vtkm/cont/DataSetBuilderUniform.h>
+
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -120,79 +121,44 @@ void CheckWrittenReadData(const vtkm::cont::DataSet& originalData,
                           fileData.GetCoordinateSystem());
 }
 
-void TestVTKWriteTestData(const std::string& methodName, const vtkm::cont::DataSet& data)
+void TestVTKWriteTestData(const std::string& inputfile)
 {
-  std::cout << "Writing " << methodName << std::endl;
-  vtkm::io::VTKDataSetWriter writer(methodName + ".vtk");
+  std::cout << "Writing " << inputfile << std::endl;
+  vtkm::cont::DataSet data = vtkm::cont::testing::Testing::ReadVTKFile(inputfile);
+
+  vtkm::io::VTKDataSetWriter writer("testwrite.vtk");
   writer.WriteDataSet(data);
 
   // Read back and check.
-  vtkm::io::VTKDataSetReader reader(methodName + ".vtk");
+  vtkm::io::VTKDataSetReader reader("testwrite.vtk");
   CheckWrittenReadData(data, reader.ReadDataSet());
 }
 
 void TestVTKExplicitWrite()
 {
-  vtkm::cont::testing::MakeTestDataSet tds;
-
-  WRITE_FILE(Make1DExplicitDataSet0);
-
-  WRITE_FILE(Make2DExplicitDataSet0);
-
-  WRITE_FILE(Make3DExplicitDataSet0);
-  WRITE_FILE(Make3DExplicitDataSet1);
-  WRITE_FILE(Make3DExplicitDataSet2);
-  WRITE_FILE(Make3DExplicitDataSet3);
-  WRITE_FILE(Make3DExplicitDataSet4);
-  WRITE_FILE(Make3DExplicitDataSet5);
-  WRITE_FILE(Make3DExplicitDataSet6);
-  WRITE_FILE(Make3DExplicitDataSet7);
-  WRITE_FILE(Make3DExplicitDataSet8);
-  WRITE_FILE(Make3DExplicitDataSetZoo);
-  WRITE_FILE(Make3DExplicitDataSetPolygonal);
-  WRITE_FILE(Make3DExplicitDataSetCowNose);
-
-  std::cout << "Set writer to output an explicit grid" << std::endl;
-  vtkm::io::VTKDataSetWriter writer("Make3DExplicitDataSet0.vtk");
-  writer.WriteDataSet(tds.Make3DExplicitDataSet0());
+  TestVTKWriteTestData("unstructured/ExplicitDataSet1D_0.vtk");
+  TestVTKWriteTestData("unstructured/ExplicitDataSet2D_0.vtk");
+  TestVTKWriteTestData("unstructured/ExplicitDataSet3D_CowNose.vtk");
+  TestVTKWriteTestData("unstructured/ExplicitDataSet3D_Polygonal.vtk");
+  TestVTKWriteTestData("unstructured/ExplicitDataSet3D_Zoo.vtk");
 }
 
 void TestVTKUniformWrite()
 {
-  vtkm::cont::testing::MakeTestDataSet tds;
+  TestVTKWriteTestData("uniform/UniformDataSet1D_0.vtk");
 
-  WRITE_FILE(Make1DUniformDataSet0);
-  WRITE_FILE(Make1DUniformDataSet1);
-  WRITE_FILE(Make1DUniformDataSet2);
+  TestVTKWriteTestData("uniform/UniformDataSet2D_0.vtk");
+  TestVTKWriteTestData("uniform/UniformDataSet2D_1.vtk");
 
-  WRITE_FILE(Make2DUniformDataSet0);
-  WRITE_FILE(Make2DUniformDataSet1);
-  WRITE_FILE(Make2DUniformDataSet2);
-
-  WRITE_FILE(Make3DUniformDataSet0);
-  WRITE_FILE(Make3DUniformDataSet1);
-  // WRITE_FILE(Make3DUniformDataSet2); Skip this one. It's really big.
-  WRITE_FILE(Make3DUniformDataSet3);
-
-  WRITE_FILE(Make3DRegularDataSet0);
-  WRITE_FILE(Make3DRegularDataSet1);
-
-  std::cout << "Set writer to output an uniform grid" << std::endl;
-  vtkm::io::VTKDataSetWriter writer("Make3DUniformDataSet0.vtk");
-  writer.WriteDataSet(tds.Make3DUniformDataSet0());
+  TestVTKWriteTestData("uniform/UniformDataSet3D_0.vtk");
+  TestVTKWriteTestData("uniform/UniformDataSet3D_1.vtk");
 }
 
 void TestVTKRectilinearWrite()
 {
-  vtkm::cont::testing::MakeTestDataSet tds;
+  TestVTKWriteTestData("rectilinear/RectilinearDataSet2D_0.vtk");
 
-  WRITE_FILE(Make2DRectilinearDataSet0);
-
-  WRITE_FILE(Make3DRectilinearDataSet0);
-
-  std::cout << "Set writer to output a rectilinear grid" << std::endl;
-  vtkm::io::VTKDataSetWriter writer("Make3DRectilinearDataSet0.vtk");
-  writer.WriteDataSet(tds.Make3DRectilinearDataSet0());
+  TestVTKWriteTestData("rectilinear/RectilinearDataSet3D_0.vtk");
 }
 
 void TestVTKCompoundWrite()

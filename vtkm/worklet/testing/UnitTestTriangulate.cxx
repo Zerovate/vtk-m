@@ -13,10 +13,7 @@
 
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DataSetBuilderExplicit.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 class TestingTriangulate
 {
@@ -28,7 +25,8 @@ public:
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
     // Create the input uniform cell set
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make2DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
     CellSetType cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
 
@@ -53,7 +51,8 @@ public:
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
     // Create the input uniform cell set
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make2DExplicitDataSet0();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet2D_0.vtk");
     CellSetType cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
     vtkm::cont::ArrayHandle<vtkm::IdComponent> outCellsPerCell;

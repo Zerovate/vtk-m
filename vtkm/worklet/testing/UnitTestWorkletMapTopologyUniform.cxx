@@ -19,7 +19,6 @@
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DeviceAdapterTag.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace test_uniform
@@ -104,8 +103,8 @@ void TestWorkletMapTopologyUniform(vtkm::cont::DeviceAdapterId id)
 static void TestMaxPointOrCell()
 {
   std::cout << "Testing MaxPointOfCell worklet" << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> result;
 
@@ -133,8 +132,8 @@ static void TestMaxPointOrCell()
 static void TestAvgPointToCell()
 {
   std::cout << "Testing AvgPointToCell worklet" << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> result;
 
@@ -180,8 +179,8 @@ static void TestAvgCellToPoint()
 {
   std::cout << "Testing AvgCellToPoint worklet" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> result;
 
@@ -225,15 +224,15 @@ static void TestStructuredUniformPointCoords()
 {
   std::cout << "Testing uniform point coordinates in structured grids" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-
   vtkm::worklet::DispatcherMapTopology<::test_uniform::CheckStructuredUniformPointCoords>
     dispatcher;
 
-  vtkm::cont::DataSet dataSet3D = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet3D =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
   dispatcher.Invoke(dataSet3D.GetCellSet(), dataSet3D.GetCoordinateSystem());
 
-  vtkm::cont::DataSet dataSet2D = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet2D =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
   dispatcher.Invoke(dataSet2D.GetCellSet(), dataSet2D.GetCoordinateSystem());
 }
 

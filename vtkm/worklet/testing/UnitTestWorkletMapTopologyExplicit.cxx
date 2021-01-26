@@ -19,7 +19,6 @@
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DeviceAdapterTag.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace test_explicit
@@ -80,8 +79,8 @@ void TestWorkletMapTopologyExplicit(vtkm::cont::DeviceAdapterId id)
 static void TestMaxPointOrCell()
 {
   std::cout << "Testing MaxPointOfCell worklet" << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DExplicitDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_0.vtk");
   auto cellset = dataSet.GetCellSet().Cast<vtkm::cont::CellSetExplicit<>>();
 
   vtkm::cont::ArrayHandle<vtkm::Float32> result;
@@ -107,8 +106,8 @@ static void TestAvgPointToCell()
 {
   std::cout << "Testing AvgPointToCell worklet" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DExplicitDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_0.vtk");
   auto cellset = dataSet.GetCellSet();
 
   vtkm::cont::ArrayHandle<vtkm::Float32> result;
@@ -142,8 +141,8 @@ static void TestAvgCellToPoint()
 {
   std::cout << "Testing AvgCellToPoint worklet" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DExplicitDataSet1();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_1.vtk");
   auto field = dataSet.GetField("cellvar");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> result;

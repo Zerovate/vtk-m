@@ -9,7 +9,6 @@
 //============================================================================
 
 #include <vtkm/cont/DeviceAdapter.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/rendering/Actor.h>
 #include <vtkm/rendering/CanvasRayTracer.h>
@@ -28,21 +27,35 @@ void RenderTests()
   using V3 = vtkm::rendering::View3D;
   using V2 = vtkm::rendering::View2D;
 
-  vtkm::cont::testing::MakeTestDataSet maker;
   vtkm::cont::ColorTable colorTable("inferno");
 
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DRegularDataSet0(), "pointvar", colorTable, "rt_reg3D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_2.vtk"),
+    "pointvar",
+    colorTable,
+    "rt_reg3D.pnm");
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DRectilinearDataSet0(), "pointvar", colorTable, "rt_rect3D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet3D_0.vtk"),
+    "pointvar",
+    colorTable,
+    "rt_rect3D.pnm");
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DExplicitDataSet4(), "pointvar", colorTable, "rt_expl3D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_4.vtk"),
+    "pointvar",
+    colorTable,
+    "rt_expl3D.pnm");
 
   vtkm::rendering::testing::Render<M, C, V2>(
-    maker.Make2DUniformDataSet1(), "pointvar", colorTable, "uni2D.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk"),
+    "pointvar",
+    colorTable,
+    "uni2D.pnm");
 
   vtkm::rendering::testing::Render<M, C, V3>(
-    maker.Make3DExplicitDataSet7(), "cellvar", colorTable, "spheres.pnm");
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_7.vtk"),
+    "cellvar",
+    colorTable,
+    "spheres.pnm");
 }
 
 } //namespace

@@ -56,13 +56,10 @@
 
 #include <vtkm/filter/ContourTreeUniform.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
 {
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 class TestContourTreeUniform
 {
@@ -75,7 +72,8 @@ public:
     std::cout << "Testing ContourTree_Mesh2D Filter" << std::endl;
 
     // Create the input uniform cell set with values to contour
-    vtkm::cont::DataSet inDataSet = MakeTestDataSet().Make2DUniformDataSet1();
+    vtkm::cont::DataSet inDataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
 
 
     // Convert 2D mesh of values into contour tree, pairs of vertex ids
@@ -115,7 +113,8 @@ public:
     std::cout << "Testing ContourTree_Mesh3D Filter" << std::endl;
 
     // Create the input uniform cell set with values to contour
-    vtkm::cont::DataSet inDataSet = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet inDataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Convert 2D mesh of values into contour tree, pairs of vertex ids
     vtkm::filter::ContourTreeMesh3D contourTreeMesh3D;

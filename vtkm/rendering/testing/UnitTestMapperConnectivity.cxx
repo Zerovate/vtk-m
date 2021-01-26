@@ -9,7 +9,6 @@
 //============================================================================
 
 #include <vtkm/cont/DeviceAdapter.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/rendering/Actor.h>
 #include <vtkm/rendering/Canvas.h>
@@ -27,18 +26,26 @@ void RenderTests()
 {
   try
   {
-    vtkm::cont::testing::MakeTestDataSet maker;
     vtkm::cont::ColorTable colorTable("inferno");
     using M = vtkm::rendering::MapperConnectivity;
     using C = vtkm::rendering::CanvasRayTracer;
     using V3 = vtkm::rendering::View3D;
 
     vtkm::rendering::testing::Render<M, C, V3>(
-      maker.Make3DRegularDataSet0(), "pointvar", colorTable, "reg3D.pnm");
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk"),
+      "pointvar",
+      colorTable,
+      "reg3D.pnm");
     vtkm::rendering::testing::Render<M, C, V3>(
-      maker.Make3DRectilinearDataSet0(), "pointvar", colorTable, "rect3D.pnm");
+      vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet3D_0.vtk"),
+      "pointvar",
+      colorTable,
+      "rect3D.pnm");
     vtkm::rendering::testing::Render<M, C, V3>(
-      maker.Make3DExplicitDataSetZoo(), "pointvar", colorTable, "explicit3D.pnm");
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_Zoo.vtk"),
+      "pointvar",
+      colorTable,
+      "explicit3D.pnm");
   }
   catch (const std::exception& e)
   {

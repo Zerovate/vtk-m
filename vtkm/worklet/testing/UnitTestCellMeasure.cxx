@@ -11,7 +11,6 @@
 #include <vtkm/worklet/CellMeasure.h>
 #include <vtkm/worklet/DispatcherMapTopology.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -21,8 +20,8 @@ void TestCellMeasureUniform3D()
 {
   std::cout << "Testing CellMeasure Worklet on 3D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::FloatDefault> result;
 
@@ -71,23 +70,22 @@ void TestCellMeasure()
 
   TestCellMeasureUniform3D();
 
-  vtkm::cont::testing::MakeTestDataSet factory;
   vtkm::cont::DataSet data;
 
-  data = factory.Make3DExplicitDataSet2();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_2.vtk");
   TestCellMeasureWorklet(data, "explicit dataset 2", { -1.f }, Volume());
 
-  data = factory.Make3DExplicitDataSet3();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_3.vtk");
   TestCellMeasureWorklet(data, "explicit dataset 3", { -1.f / 6.f }, Volume());
 
-  data = factory.Make3DExplicitDataSet4();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_4.vtk");
   TestCellMeasureWorklet(data, "explicit dataset 4", { -1.f, -1.f }, Volume());
 
-  data = factory.Make3DExplicitDataSet5();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
   TestCellMeasureWorklet(
     data, "explicit dataset 5", { 1.f, 1.f / 3.f, 1.f / 6.f, -1.f / 2.f }, Volume());
 
-  data = factory.Make3DExplicitDataSet6();
+  data = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_6.vtk");
   TestCellMeasureWorklet(
     data,
     "explicit dataset 6 (all)",

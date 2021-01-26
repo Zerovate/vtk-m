@@ -19,6 +19,8 @@
 
 #include <vtkm/filter/VectorMagnitude.h>
 
+#include <vtkm/Deprecated.h>
+
 #include <vtkm/cont/testing/Testing.h>
 
 #include <numeric>
@@ -29,6 +31,16 @@ namespace cont
 {
 namespace testing
 {
+
+VTKM_DEPRECATED(1.6,
+                "Don't include MakeTestDataSet.h. Instead, load test files with "
+                "vtkm::cont::testing::Testing::ReadVTKFile().")
+inline void MakeTestDataSet_h_deprecated() {}
+
+inline void ActivateMakeTestDataSet_h_deprecated_warning()
+{
+  MakeTestDataSet_h_deprecated();
+}
 
 class MakeTestDataSet
 {

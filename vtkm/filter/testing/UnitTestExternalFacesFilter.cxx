@@ -8,13 +8,10 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
-#include <vtkm/cont/testing/Testing.h>
-
 #include <vtkm/filter/CleanGrid.h>
 #include <vtkm/filter/ExternalFaces.h>
 
-using vtkm::cont::testing::MakeTestDataSet;
+#include <vtkm/cont/testing/Testing.h>
 
 namespace
 {
@@ -22,7 +19,8 @@ namespace
 // convert a 5x5x5 uniform grid to unstructured grid
 vtkm::cont::DataSet MakeDataTestSet1()
 {
-  vtkm::cont::DataSet ds = MakeTestDataSet().Make3DUniformDataSet1();
+  vtkm::cont::DataSet ds =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
   vtkm::filter::CleanGrid clean;
   clean.SetCompactPointFields(false);
@@ -32,22 +30,22 @@ vtkm::cont::DataSet MakeDataTestSet1()
 
 vtkm::cont::DataSet MakeDataTestSet2()
 {
-  return MakeTestDataSet().Make3DExplicitDataSet5();
+  return vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 }
 
 vtkm::cont::DataSet MakeDataTestSet3()
 {
-  return MakeTestDataSet().Make3DUniformDataSet1();
+  return vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 }
 
 vtkm::cont::DataSet MakeDataTestSet4()
 {
-  return MakeTestDataSet().Make3DRectilinearDataSet0();
+  return vtkm::cont::testing::Testing::ReadVTKFile("rectilinear/RectilinearDataSet3D_0.vtk");
 }
 
 vtkm::cont::DataSet MakeDataTestSet5()
 {
-  return MakeTestDataSet().Make3DExplicitDataSet6();
+  return vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_6.vtk");
 }
 
 void TestExternalFacesExplicitGrid(const vtkm::cont::DataSet& ds,

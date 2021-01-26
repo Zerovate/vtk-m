@@ -16,7 +16,6 @@
 #include <vtkm/cont/CellLocatorUniformGrid.h>
 #include <vtkm/cont/DataSet.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/exec/CellLocatorUniformGrid.h>
@@ -92,7 +91,8 @@ public:
 
   void TestTest() const
   {
-    vtkm::cont::DataSet dataset = vtkm::cont::testing::MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
     vtkm::cont::CoordinateSystem coords = dataset.GetCoordinateSystem();
     vtkm::cont::DynamicCellSet cellSet = dataset.GetCellSet();
 

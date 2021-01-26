@@ -11,7 +11,6 @@
 #include <vtkm/worklet/CellAverage.h>
 #include <vtkm/worklet/DispatcherMapTopology.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -21,8 +20,8 @@ void TestCellAverageUniform3D()
 {
   std::cout << "Testing CellAverage Worklet on 3D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> result;
 
@@ -41,8 +40,8 @@ void TestCellAverageUniform2D()
 {
   std::cout << "Testing CellAverage Worklet on 2D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> result;
 
@@ -62,8 +61,8 @@ void TestCellAverageExplicit()
 {
   std::cout << "Testing CellAverage Worklet on Explicit data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DExplicitDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> result;
 

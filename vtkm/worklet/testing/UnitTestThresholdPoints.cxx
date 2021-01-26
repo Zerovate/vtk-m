@@ -10,7 +10,6 @@
 
 #include <vtkm/worklet/ThresholdPoints.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/cont/ArrayPortalToIterators.h>
@@ -86,8 +85,6 @@ private:
   vtkm::FloatDefault Upper;
 };
 
-using vtkm::cont::testing::MakeTestDataSet;
-
 class TestingThresholdPoints
 {
 public:
@@ -97,7 +94,8 @@ public:
 
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make2DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;
@@ -130,7 +128,8 @@ public:
 
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;
@@ -158,7 +157,8 @@ public:
 
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     // Output dataset contains input coordinate system and point data
     vtkm::cont::DataSet outDataSet;

@@ -12,13 +12,15 @@
 #include <vtkm/rendering/ScalarRenderer.h>
 #include <vtkm/rendering/testing/RenderTest.h>
 
+#include <vtkm/cont/testing/Testing.h>
+
 namespace
 {
 
 void RenderTests()
 {
-  vtkm::cont::testing::MakeTestDataSet maker;
-  vtkm::cont::DataSet dataset = maker.Make3DRegularDataSet0();
+  vtkm::cont::DataSet dataset =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_2.vtk");
   vtkm::Bounds bounds = dataset.GetCoordinateSystem().GetBounds();
 
   vtkm::rendering::Camera camera;

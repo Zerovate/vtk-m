@@ -29,8 +29,8 @@ namespace vtkm_ut_zfp_filter
 
 void TestZFP1DFilter(vtkm::Float64 rate)
 {
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataset = testDataSet.Make1DUniformDataSet2();
+  vtkm::cont::DataSet dataset =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet1D_2.vtk");
   auto dynField = dataset.GetField("pointvar").GetData();
   vtkm::cont::ArrayHandle<vtkm::Float64> field;
   dynField.AsArrayHandle(field);
@@ -59,8 +59,8 @@ void TestZFP1DFilter(vtkm::Float64 rate)
 
 void TestZFP2DFilter(vtkm::Float64 rate)
 {
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataset = testDataSet.Make2DUniformDataSet2();
+  vtkm::cont::DataSet dataset =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_2.vtk");
   auto dynField = dataset.GetField("pointvar").GetData();
 
   vtkm::cont::ArrayHandle<vtkm::Float64> field;

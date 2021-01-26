@@ -10,7 +10,6 @@
 
 #include <vtkm/worklet/Threshold.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/cont/ArrayPortalToIterators.h>
@@ -41,8 +40,6 @@ private:
   vtkm::Float32 Value;
 };
 
-using vtkm::cont::testing::MakeTestDataSet;
-
 class TestingThreshold
 {
 public:
@@ -53,7 +50,8 @@ public:
     using CellSetType = vtkm::cont::CellSetStructured<2>;
     using OutCellSetType = vtkm::cont::CellSetPermutation<CellSetType>;
 
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make2DUniformDataSet0();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
     CellSetType cellset;
     dataset.GetCellSet().CopyTo(cellset);
@@ -83,7 +81,8 @@ public:
     using CellSetType = vtkm::cont::CellSetStructured<3>;
     using OutCellSetType = vtkm::cont::CellSetPermutation<CellSetType>;
 
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet0();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
     CellSetType cellset;
     dataset.GetCellSet().CopyTo(cellset);
@@ -114,7 +113,8 @@ public:
     using CellSetType = vtkm::cont::CellSetExplicit<>;
     using OutCellSetType = vtkm::cont::CellSetPermutation<CellSetType>;
 
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet0();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_0.vtk");
 
     CellSetType cellset;
     dataset.GetCellSet().CopyTo(cellset);

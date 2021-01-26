@@ -8,12 +8,9 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
-#include <vtkm/cont/testing/Testing.h>
-
 #include <vtkm/filter/ExtractPoints.h>
 
-using vtkm::cont::testing::MakeTestDataSet;
+#include <vtkm/cont/testing/Testing.h>
 
 namespace
 {
@@ -24,7 +21,8 @@ public:
   void TestUniformByBox0() const
   {
     std::cout << "Testing extract points with implicit function (box):" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(1.f, 1.f, 1.f);
@@ -54,7 +52,8 @@ public:
   void TestUniformByBox1() const
   {
     std::cout << "Testing extract points with implicit function (box):" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(1.f, 1.f, 1.f);
@@ -86,7 +85,8 @@ public:
   void TestUniformBySphere() const
   {
     std::cout << "Testing extract points with implicit function (sphere):" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f center(2.f, 2.f, 2.f);
@@ -105,7 +105,8 @@ public:
   void TestExplicitByBox0() const
   {
     std::cout << "Testing extract points with implicit function (box):" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(0.f, 0.f, 0.f);
@@ -124,7 +125,8 @@ public:
   void TestExplicitByBox1() const
   {
     std::cout << "Testing extract points with implicit function (box):" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(0.f, 0.f, 0.f);

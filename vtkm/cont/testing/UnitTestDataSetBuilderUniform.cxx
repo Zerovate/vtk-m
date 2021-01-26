@@ -11,7 +11,6 @@
 #include <vtkm/cont/CellSetStructured.h>
 #include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/DynamicCellSet.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <algorithm>

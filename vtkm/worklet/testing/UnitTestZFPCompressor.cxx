@@ -19,7 +19,6 @@
 
 #include <vtkm/source/Tangle.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/worklet/zfp/ZFPTools.h>
 
@@ -48,8 +47,8 @@ template <typename Scalar>
 void Test1D(int rate)
 {
   vtkm::Id dims = 256;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataset = testDataSet.Make1DUniformDataSet2();
+  vtkm::cont::DataSet dataset =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet1D_2.vtk");
   auto dynField = dataset.GetField("pointvar").GetData();
 
   vtkm::worklet::ZFP1DCompressor compressor;
@@ -83,8 +82,8 @@ template <typename Scalar>
 void Test2D(int rate)
 {
   vtkm::Id2 dims(16, 16);
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataset = testDataSet.Make2DUniformDataSet2();
+  vtkm::cont::DataSet dataset =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_2.vtk");
   auto dynField = dataset.GetField("pointvar").GetData();
 
   vtkm::worklet::ZFP2DCompressor compressor;

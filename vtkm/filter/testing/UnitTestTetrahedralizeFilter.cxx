@@ -8,12 +8,9 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/Tetrahedralize.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 namespace
 {
@@ -24,7 +21,8 @@ public:
   void TestStructured() const
   {
     std::cout << "Testing tetrahedralize structured" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet0();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
     vtkm::filter::Tetrahedralize tetrahedralize;
     tetrahedralize.SetFieldsToPass({ "pointvar", "cellvar" });
@@ -47,7 +45,8 @@ public:
   void TestExplicit() const
   {
     std::cout << "Testing tetrahedralize explicit" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     vtkm::filter::Tetrahedralize tetrahedralize;
     tetrahedralize.SetFieldsToPass({ "pointvar", "cellvar" });

@@ -10,7 +10,6 @@
 
 #include <vtkm/worklet/Gradient.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -20,8 +19,8 @@ void TestCellGradientUniform2D()
 {
   std::cout << "Testing CellGradient Worklet on 2D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> input;
   vtkm::cont::ArrayHandle<vtkm::Vec3f_32> result;
@@ -43,8 +42,8 @@ void TestCellGradientUniform3D()
 {
   std::cout << "Testing CellGradient Worklet on 3D structured data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> input;
   vtkm::cont::ArrayHandle<vtkm::Vec3f_32> result;
@@ -72,8 +71,8 @@ void TestCellGradientUniform3DWithVectorField()
   std::cout
     << "Testing CellGradient and QCriterion Worklet with a vector field on 3D structured data"
     << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   //Verify that we can compute the gradient of a 3 component vector
   const int nVerts = 18;
@@ -148,8 +147,8 @@ void TestCellGradientUniform3DWithVectorField2()
 {
   std::cout << "Testing CellGradient Worklet with a vector field on 3D structured data" << std::endl
             << "Disabling Gradient computation and enabling Divergence, and Vorticity" << std::endl;
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
   //Verify that we can compute the gradient of a 3 component vector
   const int nVerts = 18;
@@ -213,8 +212,8 @@ void TestCellGradientExplicit()
 {
   std::cout << "Testing CellGradient Worklet on Explicit data" << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet testDataSet;
-  vtkm::cont::DataSet dataSet = testDataSet.Make3DExplicitDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_0.vtk");
 
   vtkm::cont::ArrayHandle<vtkm::Float32> input;
   vtkm::cont::ArrayHandle<vtkm::Vec3f_32> result;

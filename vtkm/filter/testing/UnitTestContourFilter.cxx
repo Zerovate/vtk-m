@@ -10,7 +10,6 @@
 
 #include <vtkm/Math.h>
 #include <vtkm/cont/DataSet.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/CleanGrid.h>
@@ -117,10 +116,10 @@ public:
 
   void Test3DUniformDataSet0() const
   {
-    vtkm::cont::testing::MakeTestDataSet maker;
-    vtkm::cont::DataSet inputData = maker.Make3DUniformDataSet0();
+    vtkm::cont::DataSet inputData =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
     std::string fieldName = "pointvar";
-    // Defend the test against changes to Make3DUniformDataSet0():
+    // Defend the test against changes to uniform/UniformDataSet3D_0.vtk:
     VTKM_TEST_ASSERT(inputData.HasField(fieldName));
     vtkm::cont::Field pointField = inputData.GetField(fieldName);
     vtkm::Range range;

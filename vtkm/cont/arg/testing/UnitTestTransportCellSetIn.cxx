@@ -16,7 +16,6 @@
 
 #include <vtkm/cont/serial/DeviceAdapterSerial.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace

@@ -18,7 +18,6 @@
 #include <vtkm/worklet/DispatcherMapField.h>
 #include <vtkm/worklet/WorkletMapField.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 struct TestWholeCellSetIn
@@ -186,7 +185,8 @@ VTKM_CONT
 void TryExplicitGrid()
 {
   std::cout << "Testing explicit grid." << std::endl;
-  vtkm::cont::DataSet dataSet = vtkm::cont::testing::MakeTestDataSet().Make3DExplicitDataSet5();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
   vtkm::cont::CellSetExplicit<> cellSet;
   dataSet.GetCellSet().CopyTo(cellSet);
 
@@ -222,7 +222,8 @@ VTKM_CONT
 void TryCellSetPermutation()
 {
   std::cout << "Testing permutation grid." << std::endl;
-  vtkm::cont::DataSet dataSet = vtkm::cont::testing::MakeTestDataSet().Make3DExplicitDataSet5();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
   vtkm::cont::CellSetExplicit<> originalCellSet;
   dataSet.GetCellSet().CopyTo(originalCellSet);
 
@@ -254,7 +255,8 @@ VTKM_CONT
 void TryStructuredGrid3D()
 {
   std::cout << "Testing 3D structured grid." << std::endl;
-  vtkm::cont::DataSet dataSet = vtkm::cont::testing::MakeTestDataSet().Make3DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
   vtkm::cont::CellSetStructured<3> cellSet;
   dataSet.GetCellSet().CopyTo(cellSet);
 
@@ -284,7 +286,8 @@ VTKM_CONT
 void TryStructuredGrid2D()
 {
   std::cout << "Testing 2D structured grid." << std::endl;
-  vtkm::cont::DataSet dataSet = vtkm::cont::testing::MakeTestDataSet().Make2DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
   vtkm::cont::CellSetStructured<2> cellSet;
   dataSet.GetCellSet().CopyTo(cellSet);
 
@@ -313,7 +316,8 @@ VTKM_CONT
 void TryStructuredGrid1D()
 {
   std::cout << "Testing 1D structured grid." << std::endl;
-  vtkm::cont::DataSet dataSet = vtkm::cont::testing::MakeTestDataSet().Make1DUniformDataSet0();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet1D_0.vtk");
   vtkm::cont::CellSetStructured<1> cellSet;
   dataSet.GetCellSet().CopyTo(cellSet);
 

@@ -13,7 +13,6 @@
 
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DeviceAdapterAlgorithm.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <set>
@@ -56,8 +55,8 @@ private:
 
   static void TestDataSet_Explicit()
   {
-    vtkm::cont::testing::MakeTestDataSet tds;
-    vtkm::cont::DataSet ds = tds.Make3DExplicitDataSet0();
+    vtkm::cont::DataSet ds =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_0.vtk");
 
     VTKM_TEST_ASSERT(ds.GetNumberOfFields() == 2, "Incorrect number of fields");
 

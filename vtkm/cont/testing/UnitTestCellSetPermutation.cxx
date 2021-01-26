@@ -12,7 +12,6 @@
 #include <vtkm/cont/Algorithm.h>
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/ArrayHandleCounting.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/worklet/DispatcherMapTopology.h>
 #include <vtkm/worklet/WorkletMapTopology.h>
@@ -166,22 +165,22 @@ void RunTests(const CellSetType& cellset)
 void TestCellSetPermutation()
 {
   vtkm::cont::DataSet dataset;
-  vtkm::cont::testing::MakeTestDataSet maker;
 
   std::cout << "Testing CellSetStructured<2>\n";
-  dataset = maker.Make2DUniformDataSet1();
+  dataset = vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
   RunTests(dataset.GetCellSet().Cast<vtkm::cont::CellSetStructured<2>>());
 
   std::cout << "Testing CellSetStructured<3>\n";
-  dataset = maker.Make3DUniformDataSet1();
+  dataset = vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
   RunTests(dataset.GetCellSet().Cast<vtkm::cont::CellSetStructured<3>>());
 
   std::cout << "Testing CellSetExplicit\n";
-  dataset = maker.Make3DExplicitDataSetPolygonal();
+  dataset =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_Polygonal.vtk");
   RunTests(dataset.GetCellSet().Cast<vtkm::cont::CellSetExplicit<>>());
 
   std::cout << "Testing CellSetSingleType\n";
-  dataset = maker.Make3DExplicitDataSetCowNose();
+  dataset = vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_CowNose.vtk");
   RunTests(dataset.GetCellSet().Cast<vtkm::cont::CellSetSingleType<>>());
 }
 

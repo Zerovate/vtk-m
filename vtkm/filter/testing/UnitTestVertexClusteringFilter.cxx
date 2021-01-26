@@ -8,12 +8,9 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/VertexClustering.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 namespace
 {
@@ -21,8 +18,8 @@ namespace
 
 void TestVertexClustering()
 {
-  vtkm::cont::testing::MakeTestDataSet maker;
-  vtkm::cont::DataSet dataSet = maker.Make3DExplicitDataSetCowNose();
+  vtkm::cont::DataSet dataSet =
+    vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_CowNose.vtk");
 
   vtkm::filter::VertexClustering clustering;
 

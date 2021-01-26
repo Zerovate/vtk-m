@@ -14,7 +14,6 @@
 
 #include <vtkm/source/Tangle.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 namespace
@@ -24,9 +23,8 @@ void TestUniformGrid(vtkm::filter::CleanGrid clean)
 {
   std::cout << "Testing 'clean' uniform grid." << std::endl;
 
-  vtkm::cont::testing::MakeTestDataSet makeData;
-
-  vtkm::cont::DataSet inData = makeData.Make2DUniformDataSet0();
+  vtkm::cont::DataSet inData =
+    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
   clean.SetFieldsToPass({ "pointvar", "cellvar" });
   vtkm::cont::DataSet outData = clean.Execute(inData);

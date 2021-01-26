@@ -13,7 +13,6 @@
 
 #include <vtkm/worklet/connectivities/CellSetConnectivity.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/source/Tangle.h>
 
@@ -46,7 +45,8 @@ public:
 
   void TestExplicitDataSet() const
   {
-    vtkm::cont::DataSet dataSet = vtkm::cont::testing::MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     auto cellSet = dataSet.GetCellSet().Cast<vtkm::cont::CellSetExplicit<>>();
     vtkm::cont::ArrayHandle<vtkm::Id> componentArray;
@@ -61,7 +61,8 @@ public:
 
   void TestUniformDataSet() const
   {
-    vtkm::cont::DataSet dataSet = vtkm::cont::testing::MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     auto cellSet = dataSet.GetCellSet();
     vtkm::cont::ArrayHandle<vtkm::Id> componentArray;

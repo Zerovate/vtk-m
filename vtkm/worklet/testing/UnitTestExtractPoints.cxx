@@ -10,10 +10,7 @@
 
 #include <vtkm/worklet/ExtractPoints.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 class TestingExtractPoints
 {
@@ -25,7 +22,8 @@ public:
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
     // Input data set created
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Points to extract
     vtkm::cont::ArrayHandle<vtkm::Id> pointIds =
@@ -51,7 +49,8 @@ public:
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
     // Input data set created
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(1.f, 1.f, 1.f);
@@ -82,7 +81,8 @@ public:
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
     // Input data set created
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(1.f, 1.f, 1.f);
@@ -113,7 +113,8 @@ public:
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
     // Input data set created
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     // Implicit function
     vtkm::Vec3f center(2.f, 2.f, 2.f);
@@ -144,7 +145,8 @@ public:
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
     // Input data set created
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(0.f, 0.f, 0.f);
@@ -175,7 +177,8 @@ public:
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
     // Input data set created
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     // Implicit function
     vtkm::Vec3f minPoint(0.f, 0.f, 0.f);
@@ -206,7 +209,8 @@ public:
     using OutCellSetType = vtkm::cont::CellSetSingleType<>;
 
     // Input data set created
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet5();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_5.vtk");
 
     // Points to extract
     vtkm::cont::ArrayHandle<vtkm::Id> pointIds =

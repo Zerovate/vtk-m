@@ -54,7 +54,6 @@
 #include <vtkm/worklet/contourtree_augmented/ContourTree.h>
 #include <vtkm/worklet/contourtree_augmented/Types.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/worklet/contourtree_augmented/PrintVectors.h>
@@ -68,9 +67,6 @@
 
 namespace
 {
-
-using vtkm::cont::testing::MakeTestDataSet;
-
 
 class TestContourTreeUniform
 {
@@ -368,7 +364,8 @@ private:
                                        ExpectedStepResults& expectedResults) const
   {
     // Create the input uniform cell set with values to contour
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::cont::CellSetStructured<3> cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
@@ -716,7 +713,8 @@ public:
     std::cout << "Testing ContourTree_Augmented 2D Mesh" << std::endl;
 
     // Create the input uniform cell set with values to contour
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make2DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
 
     vtkm::cont::CellSetStructured<2> cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
@@ -783,7 +781,8 @@ public:
     std::cout << "Testing ContourTree_Augmented 3D Mesh" << std::endl;
 
     // Create the input uniform cell set with values to contour
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::cont::CellSetStructured<3> cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);
@@ -856,7 +855,8 @@ public:
     std::cout << "Testing ContourTree_Augmented 3D Mesh Marching Cubes" << std::endl;
 
     // Create the input uniform cell set with values to contour
-    vtkm::cont::DataSet dataSet = MakeTestDataSet().Make3DUniformDataSet1();
+    vtkm::cont::DataSet dataSet =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
 
     vtkm::cont::CellSetStructured<3> cellSet;
     dataSet.GetCellSet().CopyTo(cellSet);

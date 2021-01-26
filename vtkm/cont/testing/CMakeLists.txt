@@ -10,7 +10,7 @@
 
 set(headers
   ExplicitTestData.h
-  MakeTestDataSet.h
+  MakeTestDataSet.h # Deprecated
   Testing.h
   TestingArrayHandles.h
   TestingArrayHandleMultiplexer.h

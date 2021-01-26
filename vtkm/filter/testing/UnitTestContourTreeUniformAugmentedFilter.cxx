@@ -54,7 +54,6 @@
 #include <vtkm/worklet/contourtree_augmented/ContourTree.h>
 #include <vtkm/worklet/contourtree_augmented/Types.h>
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/worklet/contourtree_augmented/PrintVectors.h>
@@ -66,8 +65,6 @@
 
 namespace
 {
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 //
 //  Test regular single block contour tree construction
@@ -88,16 +85,16 @@ private:
     switch (dataSetNo)
     {
       case 0:
-        dataSet = MakeTestDataSet().Make2DUniformDataSet1();
+        dataSet = vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk");
         break;
       case 1:
-        dataSet = MakeTestDataSet().Make2DUniformDataSet3();
+        dataSet = vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_3.vtk");
         break;
       case 2:
-        dataSet = MakeTestDataSet().Make3DUniformDataSet1();
+        dataSet = vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_1.vtk");
         break;
       case 3:
-        dataSet = MakeTestDataSet().Make3DUniformDataSet4();
+        dataSet = vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_4.vtk");
         break;
       default:
         VTKM_TEST_ASSERT(false);

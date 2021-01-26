@@ -8,13 +8,10 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/CleanGrid.h>
 #include <vtkm/filter/Threshold.h>
-
-using vtkm::cont::testing::MakeTestDataSet;
 
 namespace
 {
@@ -26,7 +23,8 @@ public:
   {
     std::cout << "Testing threshold on 2D regular dataset" << std::endl;
 
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make2DUniformDataSet0();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_0.vtk");
 
     vtkm::filter::Threshold threshold;
     threshold.SetLowerThreshold(60.1);
@@ -54,7 +52,8 @@ public:
   void TestRegular3D() const
   {
     std::cout << "Testing threshold on 3D regular dataset" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DUniformDataSet0();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet3D_0.vtk");
 
     vtkm::filter::Threshold threshold;
 
@@ -84,7 +83,8 @@ public:
   void TestExplicit3D() const
   {
     std::cout << "Testing threshold on 3D explicit dataset" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_1.vtk");
 
     vtkm::filter::Threshold threshold;
 
@@ -114,7 +114,8 @@ public:
   void TestExplicit3DZeroResults() const
   {
     std::cout << "Testing threshold on 3D explicit dataset with empty results" << std::endl;
-    vtkm::cont::DataSet dataset = MakeTestDataSet().Make3DExplicitDataSet1();
+    vtkm::cont::DataSet dataset =
+      vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_1.vtk");
 
     vtkm::filter::Threshold threshold;
 
