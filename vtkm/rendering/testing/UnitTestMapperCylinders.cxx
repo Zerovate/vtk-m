@@ -25,7 +25,6 @@ void RenderTests()
   typedef vtkm::rendering::MapperCylinder M;
   typedef vtkm::rendering::CanvasRayTracer C;
   typedef vtkm::rendering::View3D V3;
-  typedef vtkm::rendering::View2D V2;
 
   vtkm::cont::ColorTable colorTable("inferno");
 
@@ -44,12 +43,6 @@ void RenderTests()
     "pointvar",
     colorTable,
     "rt_expl3D.pnm");
-
-  vtkm::rendering::testing::Render<M, C, V2>(
-    vtkm::cont::testing::Testing::ReadVTKFile("uniform/UniformDataSet2D_1.vtk"),
-    "pointvar",
-    colorTable,
-    "uni2D.pnm");
 
   vtkm::rendering::testing::Render<M, C, V3>(
     vtkm::cont::testing::Testing::ReadVTKFile("unstructured/ExplicitDataSet3D_8.vtk"),
