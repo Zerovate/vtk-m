@@ -33,9 +33,9 @@ set(common_headers
   FilterDataSet.h
   FilterDataSetWithField.h
   FilterField.h
-  Filter.h
   FilterParticleAdvection.h
   FilterTemporalParticleAdvection.h
+  Filter.h
   FilterTraits.h
   MapFieldMergeAverage.h
   MapFieldPermutation.h
@@ -57,9 +57,9 @@ set(common_header_template_sources
   FilterDataSet.hxx
   FilterDataSetWithField.hxx
   FilterField.hxx
-  Filter.hxx
   FilterParticleAdvection.hxx
   FilterTemporalParticleAdvection.hxx
+  Filter.hxx
   PointAverage.hxx
   Threshold.hxx
   ThresholdPoints.hxx
@@ -102,12 +102,12 @@ set(extra_headers
   MeshQuality.h
   NDEntropy.h
   NDHistogram.h
+  PathParticle.h
   ParticleDensityBase.h
   ParticleDensityCloudInCell.h
   ParticleDensityNearestGridPoint.h
   ParticleAdvection.h
   Pathline.h
-  PathParticle.h
   PointAverage.h
   PointElevation.h
   PointTransform.h
@@ -157,11 +157,11 @@ set(extra_header_template_sources
   MeshQuality.hxx
   NDEntropy.hxx
   NDHistogram.hxx
+  PathParticle.hxx
   ParticleDensityCloudInCell.hxx
   ParticleDensityNearestGridPoint.hxx
   ParticleAdvection.hxx
   Pathline.hxx
-  PathParticle.hxx
   PointElevation.hxx
   PointTransform.hxx
   Probe.hxx
@@ -299,5 +299,5 @@ add_subdirectory(particleadvection)
 
 #-----------------------------------------------------------------------------
 if (VTKm_ENABLE_TESTING)
-  add_subdirectory(testing)
+#  add_subdirectory(testing)
 endif ()
