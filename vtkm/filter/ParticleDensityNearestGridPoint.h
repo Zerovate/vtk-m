@@ -36,6 +36,7 @@ class ParticleDensityNearestGridPoint : public ParticleDensityBase<ParticleDensi
 {
 public:
   using Superclass = ParticleDensityBase<ParticleDensityNearestGridPoint>;
+  using SupportedTypes = vtkm::List<vtkm::Float32>;
 
   ParticleDensityNearestGridPoint(const vtkm::Id3& dimension,
                                   const vtkm::Vec3f& origin,
