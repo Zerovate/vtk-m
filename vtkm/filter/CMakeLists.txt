@@ -20,6 +20,7 @@ set(common_headers
   FilterDataSet.h
   FilterDataSetWithField.h
   FilterField.h
+  FieldGaussianSimilarity.h
   Filter.h
   FilterParticleAdvection.h
   FilterTemporalParticleAdvection.h
@@ -28,6 +29,7 @@ set(common_headers
   MapFieldPermutation.h
   PolicyBase.h
   PolicyDefault.h
+  SLIC.h
   Threshold.h
   ThresholdPoints.h
   )
@@ -39,6 +41,7 @@ set(common_header_template_sources
   ExtractGeometry.hxx
   ExtractPoints.hxx
   ExtractStructured.hxx
+  FieldGaussianSimilarity.hxx
   FilterDataSet.hxx
   FilterDataSetWithField.hxx
   FilterField.hxx
@@ -46,6 +49,7 @@ set(common_header_template_sources
   FilterParticleAdvection.hxx
   FilterTemporalParticleAdvection.hxx
   PointAverage.hxx
+  SLIC.hxx
   Threshold.hxx
   ThresholdPoints.hxx
   )
@@ -53,11 +57,13 @@ set(common_header_template_sources
 set(common_sources_device
   CellAverage.cxx
   CleanGrid.cxx
+  FieldGaussianSimilarity.cxx
   ExtractGeometry.cxx
   ExtractStructured.cxx
   MapFieldMergeAverage.cxx
   MapFieldPermutation.cxx
   PointAverage.cxx
+  SLIC.cxx
   Threshold.cxx
 )
 

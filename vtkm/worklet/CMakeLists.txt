@@ -16,6 +16,7 @@ set(headers
   CellDeepCopy.h
   CellMeasure.h
   Clip.h
+  ComputeBhattacharyyaDist.h
   ContourTreeUniform.h
   ContourTreeUniformAugmented.h
   CoordinateSystemTransform.h
@@ -72,6 +73,7 @@ set(headers
   ScatterUniform.h
   SplitSharpEdges.h
   StableSortIndices.h
+  StdevByKey.h
   DescriptiveStatistics.h
   StreamLineUniformGrid.h
   StreamSurface.h

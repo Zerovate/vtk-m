@@ -24,8 +24,6 @@
 #include <vtkm/cont/DynamicCellSet.h>
 #include <vtkm/cont/UnknownArrayHandle.h>
 
-#include <vtkm/cont/testing/vtkm_cont_testing_export.h>
-
 #include <sstream>
 #include <vtkm/thirdparty/diy/diy.h>
 
@@ -414,7 +412,7 @@ test_equal_ArrayHandles(const vtkm::cont::ArrayHandle<T1, StorageTag1>& array1,
   return result;
 }
 
-VTKM_CONT_TESTING_EXPORT TestEqualResult
+TestEqualResult
 test_equal_ArrayHandles(const vtkm::cont::UnknownArrayHandle& array1,
                         const vtkm::cont::UnknownArrayHandle& array2);
 
