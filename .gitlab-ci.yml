@@ -105,11 +105,23 @@
   extends:
     - .docker_image
 
+.ubuntu2004_hip_kokkos: &ubuntu2004_hip_kokkos
+  image: "kitware/vtkm:ci-ubuntu2004_hip_kokkos-20210827"
+  extends:
+    - .docker_image
+
 .only-default: &only-default
   only:
     - master@vtk/vtk-m
     - tags@vtk/vtk-m
     - merge_requests
+
+.only-scheduled: &only-scheduled
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: always
+      allow_failure: true
+    - when: manual
 
 .only-master: &only-master
   only:
@@ -150,7 +162,7 @@ stages:
     - "cmake --version"
     - "cmake -V -P .gitlab/ci/config/fetch_vtkm_tags.cmake"
     - "cmake -V -P .gitlab/ci/config/gitlab_ci_setup.cmake"
-    - "ctest -VV -S .gitlab/ci/ctest_configure.cmake"
+    - "ctest -VV -S .gitlab/ci/ctest_configure.cmake || sleep 1000"
   script:
     - "ctest -VV -S .gitlab/ci/ctest_build.cmake"
     - sccache --show-stats
