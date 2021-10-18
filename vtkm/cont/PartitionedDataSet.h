@@ -102,7 +102,7 @@ public:
   VTKM_CONT
   const_iterator cend() const noexcept { return this->Partitions.cend(); }
   //@}
-private:
+protected:
   std::vector<vtkm::cont::DataSet> Partitions;
 };
 }

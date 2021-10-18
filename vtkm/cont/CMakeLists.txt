@@ -10,6 +10,7 @@
 
 set(headers
   Algorithm.h
+  AmrDataSet.h
   ArrayCopy.h
   ArrayExtractComponent.h
   ArrayGetValues.h
@@ -134,6 +135,7 @@ set(template_sources
   )
 
 set(sources
+  AmrDataSet.cxx
   ArrayHandle.cxx
   ArrayHandleBasic.cxx
   ArrayHandleSOA.cxx
