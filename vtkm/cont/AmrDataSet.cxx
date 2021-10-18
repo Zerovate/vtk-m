@@ -20,11 +20,11 @@
 #include <vtkm/worklet/WorkletMapField.h>
 #include <vtkm/worklet/WorkletMapTopology.h>
 
-
 namespace vtkm
 {
 namespace worklet
 {
+
 template <vtkm::IdComponent Dim>
 struct GenerateGhostTypeWorklet : vtkm::worklet::WorkletVisitCellsWithPoints
 {

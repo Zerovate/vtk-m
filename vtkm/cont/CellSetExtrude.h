@@ -80,6 +80,7 @@ public:
   VTKM_CONT vtkm::Id2 GetSchedulingRange(vtkm::TopologyElementTagPoint) const;
 
   vtkm::UInt8 GetCellShape(vtkm::Id id) const override;
+
   vtkm::IdComponent GetNumberOfPointsInCell(vtkm::Id id) const override;
   void GetCellPointIds(vtkm::Id id, vtkm::Id* ptids) const override;
 

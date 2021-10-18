@@ -16,6 +16,10 @@ set(headers
   Wavelet.h
   )
 
+set(sources
+  Amr.cxx
+  )
+
 set(device_sources
   Amr.cxx
   Oscillator.cxx
