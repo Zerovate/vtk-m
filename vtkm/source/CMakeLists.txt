@@ -9,10 +9,15 @@
 ##============================================================================
 
 set(headers
+  Amr.h
   Oscillator.h
   Source.h
   Tangle.h
   Wavelet.h
+  )
+
+set(sources
+  Amr.cxx
   )
 
 set(device_sources
@@ -23,6 +28,7 @@ set(device_sources
   )
 
 vtkm_library(NAME vtkm_source
+  SOURCES ${sources}
   DEVICE_SOURCES ${device_sources}
   HEADERS ${headers}
   )
