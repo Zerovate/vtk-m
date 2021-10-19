@@ -1,25 +1,31 @@
 # New Fileter Design
 
 The structure of filter classes is due for a redesign. After gathering requirements from the
-developer and user community, we are proposing the following new design. This design document
-should be considered as "living document" and could/should be revisited upon new findings and
-feedback from its intended users.
+developer and user community, we are proposing the following new design. This design document should
+be considered as "living document" and could/should be revisited upon new findings and feedback from
+its intended users.
 
-## Filters are compiled into libraries
+## Decoupling client codes from device compiler
 
-Originally, VTK-m was considered a header-only library, but those days are long gone. Having filter
-implementations in header files is problematic on many fronts. One of the biggest issues is that to
-use any filter in VTK-m, you have to use the device compiler and satisfy all the compiler flags that
-VTK-m wants. This is a big no-no for many downstream users including ECP customers. Rather, you
-should be able to use VTK-m filters using only a standard C++ compiler.
+### Problem
 
-## Filters can be used without using a device compiler
-
-For example, say VTK-m is compiled with CUDA. VTK should be able to completely include all the VTK-m
-accelerator code without ever having to use nvcc.
+Originally, VTK-m was considered a header-only library, partially due to its highly templated code
+base. Having filter implementations in header files is problematic on many fronts. One of the
+biggest issues is that to use any filter in VTK-m, client code has to be compiled by a device
+compiler with all the compiler flags that VTK-m wants. This is a big no-no for many downstream users
+including ECP customers. Rather, clients should be able to use VTK-m filters using only a standard
+C++ compiler. For example, say VTK-m is compiled with CUDA. VTK should be able to completely include
+all the VTK-m accelerator code without ever having to use nvcc.
 
 Currently this is not possible because the filter headers include worklets that need to be compiled
 on devices. These should be removed (using some of the following requirements).
+
+### Solution
+
+While the details are still being worked out, we propose to adopt a more *traditional* library
+design. A filter will have two parts, the declaration of the Filter subclass resides in a `.h`
+header file while the implementation resides in a `.cxx` file. The `.cxx` files, if necessary, will
+be compiled by the device compiler.
 
 ## Policy objects no longer supported
 
@@ -70,7 +76,7 @@ factors such as the filter traits. When policies go away, these functions should
 implemented with the policy part removed. (Perhaps they should be protected methods
 in `vtkm::filter::Filter`.)
 
-## Restrucuring the `vtkm/filter' directory and compiling into seperate filter libraries
+## Restructuring the `vtkm/filter' directory and compiling into seperate filter libraries
 
 ### Problem
 
@@ -91,6 +97,10 @@ account.
 We propose to split the set of filters into the following categories each in their own
 sub-directories in `vtkm/filter/SubDir`:
 
+#### CleanGrid
+
+CleanGrid
+
 #### Compression
 
 ZFPCompressor1D, ZFPCompressor2D, ZFPCompressor3D
@@ -101,7 +111,7 @@ CellSetConnectivity, ImageConnectivity
 
 #### Contour
 
-ClipWithField, ClipWithImplicitFunction, Contour, Slice
+ClipWithField, ClipWithImplicitFunction, Contour,  MIRFilter, Slice
 
 #### DensityEstimate
 
@@ -110,20 +120,25 @@ ParticleDensityNearestGridPoint
 
 #### EntityExtraction
 
-CleanGrid, ExternalFaces, ExtractGeometry, ExtractPoints, ExtractStructured, GhostCellRemove, Mask,
-MaskPoints, Threshold, ThresholdPoints
+ExternalFaces, ExtractGeometry, ExtractPoints, ExtractStructured, GhostCellRemove, Mask, MaskPoints,
+Threshold, ThresholdPoints
 
 #### FieldConversion
 
-CellAverage, PointAverage, GenerateIds, GhostCellClassify, PointElevation, PointTransform
+CellAverage, PointAverage
 
 #### FieldTransform
 
-CellMeasures, CoordinateSystemTransform, FieldToColors, MeshQuality
+CoordinateSystemTransform, GenerateIds, FieldToColors, PointElevation, PointTransform, WarpScalar,
+WarpVector
 
-#### GeometryGenerator
+#### MeshInfo
 
-MIRFilter, SplitSharpEdges, Tetrahedralize, Triangulate, Tube, WarpScalar, WarpVector
+CellMeasures, GhostCellClassify, MeshQuality
+
+#### GeometryRefinement
+
+SplitSharpEdges, Tetrahedralize, Triangulate, Tube
 
 #### ImageProcessing
 
@@ -146,8 +161,8 @@ CrossProduct, DotProduct, Gradient, SurfaceNormal, VectorMagnitude
 
 Probe, VertexClustering
 
-Each `vtkm/filter/SubDir` will also contain its own `worklet` subdirectory for standalone worklet
-implementation and `testing` subdirectory for unit tests.
+Each `vtkm/filter/SubDir` could also contain its own `worklet` subdirectory for standalone worklet
+implementation when necessary and `testing` subdirectory for unit tests.
 
 ## Filter code should be colocated with the worklets that implement them
 
@@ -198,15 +213,15 @@ namespace filter
 ```
 
 Since now the `worklet` namespace for the particular worklet does not provide too much meaning and
-isolation, we can put the Worklet implenentation in an *internal* or *detail* namespace as is done
-for vtkm dataset sources in the `vtkm/source`. For example, in `Tangle.cxx`:
+isolation, we can put the Worklet implenentation in an *anonymous*, *internal* or *detail* namespace
+as is done for vtkm dataset sources in the `vtkm/source`. For example, in `Tangle.cxx`:
 
 ```c++
 namespace vtkm
 {
 namespace source
 {
-namespace tangle
+namespace tangle // could be empty as well
 {
 class TangleField : public vtkm::worklet::WorkletVisitPointsWithCells
 {
