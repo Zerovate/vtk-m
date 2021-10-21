@@ -9,13 +9,9 @@
 //============================================================================
 #ifndef vtk_m_cont_AmrDataSet_h
 #define vtk_m_cont_AmrDataSet_h
-#include <limits>
-#include <vtkm/StaticAssert.h>
 
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/DataSet.h>
-#include <vtkm/cont/DeviceAdapterAlgorithm.h>
-#include <vtkm/cont/Field.h>
 #include <vtkm/cont/PartitionedDataSet.h>
 
 namespace vtkm
