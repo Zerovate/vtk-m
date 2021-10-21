@@ -14,8 +14,6 @@
 
 
 #include <vtkm/TopologyElementTag.h>
-#include <vtkm/cont/ArrayCopy.h>
-#include <vtkm/cont/ArrayHandleConstant.h>
 #include <vtkm/cont/CellSet.h>
 #include <vtkm/cont/ErrorBadType.h>
 #include <vtkm/exec/ConnectivityStructured.h>
