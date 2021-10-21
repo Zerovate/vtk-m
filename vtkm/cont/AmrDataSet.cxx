@@ -16,9 +16,7 @@
 #include <vtkm/cont/BoundsCompute.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DeviceAdapterAlgorithm.h>
-#include <vtkm/cont/EnvironmentTracker.h>
 #include <vtkm/cont/Field.h>
-#include <vtkm/exec/ParametricCoordinates.h>
 #include <vtkm/worklet/WorkletMapField.h>
 #include <vtkm/worklet/WorkletMapTopology.h>
 
