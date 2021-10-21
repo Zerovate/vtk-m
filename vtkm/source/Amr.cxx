@@ -9,13 +9,10 @@
 //============================================================================
 
 #include <vtkm/cont/AmrDataSet.h>
-#include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/PartitionedDataSet.h>
 #include <vtkm/filter/CellAverage.h>
 #include <vtkm/source/Amr.h>
 #include <vtkm/source/Wavelet.h>
-#include <vtkm/worklet/WorkletMapField.h>
-#include <vtkm/worklet/WorkletMapTopology.h>
 
 
 namespace vtkm
