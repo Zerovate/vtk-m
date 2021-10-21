@@ -11,8 +11,6 @@
 #define vtk_m_cont_CellSetExplicit_hxx
 #include <vtkm/cont/CellSetExplicit.h>
 
-#include <vtkm/cont/Algorithm.h>
-#include <vtkm/cont/ArrayCopy.h>
 #include <vtkm/cont/ArrayGetValues.h>
 #include <vtkm/cont/Logging.h>
 
