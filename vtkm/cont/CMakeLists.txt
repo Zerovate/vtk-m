@@ -135,7 +135,6 @@ set(template_sources
   )
 
 set(sources
-  AmrDataSet.cxx
   ArrayHandle.cxx
   ArrayHandleBasic.cxx
   ArrayHandleSOA.cxx

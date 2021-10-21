@@ -12,8 +12,6 @@
 #include <vtkm/filter/CellAverage.h>
 #include <vtkm/source/Amr.h>
 #include <vtkm/source/Wavelet.h>
-#include <vtkm/worklet/WorkletMapField.h>
-#include <vtkm/worklet/WorkletMapTopology.h>
 
 namespace vtkm
 {
