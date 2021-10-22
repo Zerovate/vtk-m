@@ -12,7 +12,6 @@
 
 #include <vtkm/cont/vtkm_cont_export.h>
 
-
 #include <vtkm/TopologyElementTag.h>
 #include <vtkm/cont/CellSet.h>
 #include <vtkm/cont/ErrorBadType.h>
