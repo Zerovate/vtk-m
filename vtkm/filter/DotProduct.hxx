@@ -30,13 +30,25 @@ inline VTKM_CONT DotProduct::DotProduct()
 }
 
 //-----------------------------------------------------------------------------
-template <typename T, typename StorageType, typename DerivedPolicy>
+//template <typename T, typename StorageType, typename DerivedPolicy>
 inline VTKM_CONT vtkm::cont::DataSet DotProduct::DoExecute(
-  const vtkm::cont::DataSet& inDataSet,
-  const vtkm::cont::ArrayHandle<T, StorageType>& primary,
-  const vtkm::filter::FieldMetadata& fieldMetadata,
-  vtkm::filter::PolicyBase<DerivedPolicy> policy)
+  const vtkm::cont::DataSet& inDataSet) const
+//  const vtkm::cont::ArrayHandle<T, StorageType>& primary,
+//  const vtkm::filter::FieldMetadata& fieldMetadata,
+//  vtkm::filter::PolicyBase<DerivedPolicy> policy) const
 {
+  vtkm::cont::Field firstField;
+
+  if (this->GetUseCoordinateSystemAsPrimaryField())
+  {
+    firstField = inDataSet.GetCoordinateSystem(this->GetPrimaryCoordinateSystemIndex());
+  }
+  else
+  {
+    firstField = inDataSet.GetField(this->GetActiveFieldName(), this->GetActiveFieldAssociation());
+  }
+  auto primary = firstField.GetData().AsArrayHandle<vtkm::cont::ArrayHandle<vtkm::Vec3f>>();
+
   vtkm::cont::Field secondaryField;
   if (this->UseCoordinateSystemAsSecondaryField)
   {
@@ -46,12 +58,14 @@ inline VTKM_CONT vtkm::cont::DataSet DotProduct::DoExecute(
   {
     secondaryField = inDataSet.GetField(this->SecondaryFieldName, this->SecondaryFieldAssociation);
   }
-  auto secondary = vtkm::filter::ApplyPolicyFieldOfType<T>(secondaryField, policy, *this);
+  //  auto secondary = vtkm::filter::ApplyPolicyFieldOfType<T>(secondaryField, policy, *this);
+  auto secondary = secondaryField.GetData().AsArrayHandle<vtkm::cont::ArrayHandle<vtkm::Vec3f>>();
 
-  vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> output;
+  //  vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> output;
+  vtkm::cont::ArrayHandle<vtkm::FloatDefault> output;
   this->Invoke(vtkm::worklet::DotProduct{}, primary, secondary, output);
 
-  return CreateResult(inDataSet, output, this->GetOutputFieldName(), fieldMetadata);
+  return CreateResultFieldPoint(inDataSet, output, this->GetOutputFieldName());
 }
 }
 } // namespace vtkm::filter

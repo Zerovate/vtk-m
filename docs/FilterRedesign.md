@@ -25,7 +25,7 @@ on devices. These should be removed (using some of the following requirements).
 While the details are still being worked out, we propose to adopt a more *traditional* library
 design. A filter will have two parts, the declaration of the Filter subclass resides in a `.h`
 header file while the implementation resides in a `.cxx` file. The `.cxx` files, if necessary, will
-be compiled by the device compiler.
+be compiled by the device compiler. *To be continued...*
 
 ## Policy objects no longer supported
 
@@ -111,7 +111,7 @@ CellSetConnectivity, ImageConnectivity
 
 #### Contour
 
-ClipWithField, ClipWithImplicitFunction, Contour,  MIRFilter, Slice
+ClipWithField, ClipWithImplicitFunction, Contour, MIRFilter, Slice
 
 #### DensityEstimate
 
@@ -353,16 +353,46 @@ compile time/memory usage tradeoff for particular filter implementation and/or p
 
 ### Problem
 
-The current implementation of filters has thread safety issues. Many filters store an array during
-their `DoExecute` in the state that is later used to compute the `MapField` part of their execution.
-If multiple threads are using the same filter object, they are liable to overwrite the arrays used
-in the state. The problem gets even worse when considering temporal objects that have to hold the
-data and results from one `Execute` to the next.
+The current implementation of filters has thread safety issues. Operation of filters in
+the `FilterDataSet` and `FilterDataSetWithFilter` contain two parts. The first part, creation of the
+output `CellSet` from input `DataSet`, is implemented by `DeExecute()`. The second part, the
+interpolation of input `Field`s to output `Field`s is implemented by overriding `MapFieldOntoOpeput`
+which might in tern call filter's specific `DoMapField`. Many filters store intermediate results
+either in the form of `ArrayHandle`s or a stateful `Worklet` during their `DoExecute()` whaich are
+later used to compute the `DoMapField()` part of their execution. If multiple threads are using the
+same filter object, they are liable to overwrite the arrays used in the state. The problem gets even
+worse when considering temporal objects that have to hold the data and results from one `Execute` to
+the next.
 
 The filter structure should have an elegant way of running a filter on multiple threads without
 having to perform the same initialization on every thread (which is likely not reasonable).
 
 ### Solution
+
+We propose to combine `DoExecute()` and `DoMapField()` into `DoExecute()` thus making `Filter`
+invocation atomic from implementor's perspective. This new `DoExecute` will both perform
+the `CellSet` creation part, as the current `DoExecute` while also perform the *field interpolation*
+part, pervieous done by `DoMapField`. Any intermediate results that are required for field
+inerpolation will become local variables of `DoExecute` and reside on the program stack rahter than
+shared among threads. Furthermore, we will change `DoExecute` to be `const-`qualified, further
+discourage mutable `Filter` implementations.
+
+```c++
+vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) const
+{
+  vtkm::cont::Field inputField = this->GetActiveField(input, 0);
+  vtkm::cont::UnknownArrayHandle outputArray;
+  this->FieldCastAndCallHelperThingy(inputField, [&](auto inputArray) {
+    MyArrayComputationFunction(inputArray, outputArray);
+  });
+
+  vtkm::cont::DataSet output = input; // Copies input fields.
+  input.AddField(vtkm::cont::Field(this->GetOutputFieldName(0),
+                                   inputField.GetAssociation(),
+                                   outputArray);
+  return output;
+}
+```
 
 Recent updates to the Filter interface added several virtual functions to address thread safety
 issues and allows filter implementor to selectively support multi-threaded execution.

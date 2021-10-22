@@ -13,70 +13,70 @@ set(headers
 )
 
 set(unit_tests
-  UnitTestCellAverageFilter.cxx
-  UnitTestCellMeasuresFilter.cxx
-  UnitTestCellSetConnectivityFilter.cxx
-  UnitTestCleanGrid.cxx
-  UnitTestClipWithFieldFilter.cxx
-  UnitTestClipWithImplicitFunctionFilter.cxx
-  UnitTestContourFilter.cxx
-  UnitTestContourFilterNormals.cxx
-  UnitTestContourTreeUniformFilter.cxx
-  UnitTestContourTreeUniformAugmentedFilter.cxx
-  UnitTestContourTreeUniformDistributedFilter.cxx
-  UnitTestCoordinateSystemTransform.cxx
-  UnitTestCrossProductFilter.cxx
+#  UnitTestCellAverageFilter.cxx
+#  UnitTestCellMeasuresFilter.cxx
+#  UnitTestCellSetConnectivityFilter.cxx
+#  UnitTestCleanGrid.cxx
+#  UnitTestClipWithFieldFilter.cxx
+#  UnitTestClipWithImplicitFunctionFilter.cxx
+#  UnitTestContourFilter.cxx
+#  UnitTestContourFilterNormals.cxx
+#  UnitTestContourTreeUniformFilter.cxx
+#  UnitTestContourTreeUniformAugmentedFilter.cxx
+#  UnitTestContourTreeUniformDistributedFilter.cxx
+#  UnitTestCoordinateSystemTransform.cxx
+#  UnitTestCrossProductFilter.cxx
   UnitTestDotProductFilter.cxx
-  UnitTestEntropyFilter.cxx
-  UnitTestExternalFacesFilter.cxx
-  UnitTestExtractGeometryFilter.cxx
-  UnitTestExtractPointsFilter.cxx
-  UnitTestExtractStructuredFilter.cxx
-  UnitTestFieldMetadata.cxx
-  UnitTestFieldSelection.cxx
-  UnitTestFieldToColors.cxx
-  UnitTestGradientExplicit.cxx
-  UnitTestGradientUniform.cxx
+#  UnitTestEntropyFilter.cxx
+#  UnitTestExternalFacesFilter.cxx
+#  UnitTestExtractGeometryFilter.cxx
+#  UnitTestExtractPointsFilter.cxx
+#  UnitTestExtractStructuredFilter.cxx
+#  UnitTestFieldMetadata.cxx
+#  UnitTestFieldSelection.cxx
+#  UnitTestFieldToColors.cxx
+#  UnitTestGradientExplicit.cxx
+#  UnitTestGradientUniform.cxx
   UnitTestGenerateIds.cxx
-  UnitTestGhostCellClassify.cxx
-  UnitTestGhostCellRemove.cxx
-  UnitTestHistogramFilter.cxx
-  UnitTestImageConnectivityFilter.cxx
-  UnitTestImageDifferenceFilter.cxx
-  UnitTestImageMedianFilter.cxx
-  UnitTestLagrangianFilter.cxx
-  UnitTestLagrangianStructuresFilter.cxx
-  UnitTestMapFieldMergeAverage.cxx
-  UnitTestMapFieldPermutation.cxx
-  UnitTestMaskFilter.cxx
-  UnitTestMaskPointsFilter.cxx
-  UnitTestMeshQualityFilter.cxx
-  UnitTestMIRFilter.cxx
-  UnitTestMultiBlockFilter.cxx
-  UnitTestNDEntropyFilter.cxx
-  UnitTestNDHistogramFilter.cxx
-  UnitTestParticleDensity.cxx
-  UnitTestPartitionedDataSetFilters.cxx
-  UnitTestPartitionedDataSetHistogramFilter.cxx
-  UnitTestPointAverageFilter.cxx
-  UnitTestPointAverageCellSetExtrude.cxx
-  UnitTestPointElevationFilter.cxx
-  UnitTestPointTransform.cxx
-  UnitTestProbe.cxx
-  UnitTestSplitSharpEdgesFilter.cxx
-  UnitTestStreamlineFilter.cxx
-  UnitTestStreamSurfaceFilter.cxx
-  UnitTestSurfaceNormalsFilter.cxx
-  UnitTestTetrahedralizeFilter.cxx
-  UnitTestThresholdFilter.cxx
-  UnitTestThresholdPointsFilter.cxx
-  UnitTestTriangulateFilter.cxx
-  UnitTestTubeFilter.cxx
-  UnitTestVectorMagnitudeFilter.cxx
-  UnitTestVertexClusteringFilter.cxx
-  UnitTestWarpScalarFilter.cxx
-  UnitTestWarpVectorFilter.cxx
-  UnitTestZFP.cxx
+#  UnitTestGhostCellClassify.cxx
+#  UnitTestGhostCellRemove.cxx
+#  UnitTestHistogramFilter.cxx
+#  UnitTestImageConnectivityFilter.cxx
+#  UnitTestImageDifferenceFilter.cxx
+#  UnitTestImageMedianFilter.cxx
+#  UnitTestLagrangianFilter.cxx
+#  UnitTestLagrangianStructuresFilter.cxx
+#  UnitTestMapFieldMergeAverage.cxx
+#  UnitTestMapFieldPermutation.cxx
+#  UnitTestMaskFilter.cxx
+#  UnitTestMaskPointsFilter.cxx
+#  UnitTestMeshQualityFilter.cxx
+#  UnitTestMIRFilter.cxx
+#  UnitTestMultiBlockFilter.cxx
+#  UnitTestNDEntropyFilter.cxx
+#  UnitTestNDHistogramFilter.cxx
+#  UnitTestParticleDensity.cxx
+#  UnitTestPartitionedDataSetFilters.cxx
+#  UnitTestPartitionedDataSetHistogramFilter.cxx
+#  UnitTestPointAverageFilter.cxx
+#  UnitTestPointAverageCellSetExtrude.cxx
+#  UnitTestPointElevationFilter.cxx
+#  UnitTestPointTransform.cxx
+#  UnitTestProbe.cxx
+#  UnitTestSplitSharpEdgesFilter.cxx
+#  UnitTestStreamlineFilter.cxx
+#  UnitTestStreamSurfaceFilter.cxx
+#  UnitTestSurfaceNormalsFilter.cxx
+#  UnitTestTetrahedralizeFilter.cxx
+#  UnitTestThresholdFilter.cxx
+#  UnitTestThresholdPointsFilter.cxx
+#  UnitTestTriangulateFilter.cxx
+#  UnitTestTubeFilter.cxx
+#  UnitTestVectorMagnitudeFilter.cxx
+#  UnitTestVertexClusteringFilter.cxx
+#  UnitTestWarpScalarFilter.cxx
+#  UnitTestWarpVectorFilter.cxx
+#  UnitTestZFP.cxx
 )
 
 #Taking too long to compile with HIPCC
@@ -95,18 +95,18 @@ set(libraries
   vtkm_source
 )
 
-if (VTKm_ENABLE_RENDERING)
-  list(APPEND libraries vtkm_rendering)
-
-  list(APPEND unit_tests
-    RegressionTestContourFilter.cxx
-    RegressionTestPointTransform.cxx
-    RegressionTestSliceFilter.cxx
-    RegressionTestSplitSharpEdges.cxx
-    RegressionTestStreamline.cxx
-    RegressionTestSurfaceNormals.cxx
-  )
-endif()
+#if (VTKm_ENABLE_RENDERING)
+#  list(APPEND libraries vtkm_rendering)
+#
+#  list(APPEND unit_tests
+#    RegressionTestContourFilter.cxx
+#    RegressionTestPointTransform.cxx
+#    RegressionTestSliceFilter.cxx
+#    RegressionTestSplitSharpEdges.cxx
+#    RegressionTestStreamline.cxx
+#    RegressionTestSurfaceNormals.cxx
+#  )
+#endif()
 
 if ((TARGET vtkm::cuda) OR (TARGET vtkm::kokkos_cuda))
 #CUDA architecture has a limited amount of memory available for constants.The CUDA

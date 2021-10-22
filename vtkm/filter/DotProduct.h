@@ -119,11 +119,11 @@ public:
   }
   //@}
 
-  template <typename T, typename StorageType, typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input,
-                                          const vtkm::cont::ArrayHandle<T, StorageType>& field,
-                                          const vtkm::filter::FieldMetadata& fieldMeta,
-                                          vtkm::filter::PolicyBase<DerivedPolicy> policy);
+  //  template <typename T, typename StorageType, typename DerivedPolicy>
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) const;
+  //                                          const vtkm::cont::ArrayHandle<T, StorageType>& field,
+  //                                          const vtkm::filter::FieldMetadata& fieldMeta,
+  //                                          vtkm::filter::PolicyBase<DerivedPolicy> policy) const;
 
 private:
   std::string SecondaryFieldName;

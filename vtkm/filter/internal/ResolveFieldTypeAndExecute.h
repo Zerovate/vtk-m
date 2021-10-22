@@ -38,7 +38,7 @@ struct VTKM_ALWAYS_EXPORT ResolveFieldTypeAndExecute
                   vtkm::filter::PolicyBase<DerivedPolicy> policy,
                   ResultType& result)
   {
-    result = derivedClass->DoExecute(inputData, field, fieldMeta, policy);
+    result = derivedClass->DoExecute(inputData); //, field, fieldMeta, policy);
   }
 };
 }

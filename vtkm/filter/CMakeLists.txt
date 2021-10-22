@@ -66,14 +66,14 @@ set(common_header_template_sources
   )
 
 set(common_sources_device
-  CellAverage.cxx
-  CleanGrid.cxx
-  ExtractGeometry.cxx
-  ExtractStructured.cxx
+#  CellAverage.cxx
+#  CleanGrid.cxx
+#  ExtractGeometry.cxx
+#  ExtractStructured.cxx
   MapFieldMergeAverage.cxx
   MapFieldPermutation.cxx
-  PointAverage.cxx
-  Threshold.cxx
+#  PointAverage.cxx
+#  Threshold.cxx
 )
 
 set(extra_headers
@@ -188,13 +188,13 @@ set(extra_header_template_sources
   )
 
 set(extra_sources_device
-  ${ClipWithFieldInstantiations}
-  ${ClipWithImplicitFunctionInstantiations}
-  ExternalFaces.cxx
+#  ${ClipWithFieldInstantiations}
+#  ${ClipWithImplicitFunctionInstantiations}
+#  ExternalFaces.cxx
   GenerateIds.cxx
-  VectorMagnitude.cxx
-  particleadvection/Messenger.cxx
-  particleadvection/ParticleMessenger.cxx
+#  VectorMagnitude.cxx
+#  particleadvection/Messenger.cxx
+#  particleadvection/ParticleMessenger.cxx
 )
 
 set(contour_headers
