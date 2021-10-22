@@ -25,7 +25,7 @@ namespace vtkm
 {
 namespace worklet
 {
-template <int Dim>
+template <vtkm::IdComponent Dim>
 struct GenerateGhostTypeWorklet : vtkm::worklet::WorkletVisitCellsWithPoints
 {
   using ControlSignature = void(CellSetIn cellSet,
@@ -45,7 +45,7 @@ struct GenerateGhostTypeWorklet : vtkm::worklet::WorkletVisitCellsWithPoints
                             cellArrayType& ghostArray) const
   {
     vtkm::Bounds boundsCell = vtkm::Bounds();
-    for (int pointId = 0; pointId < numPoints; pointId++)
+    for (vtkm::IdComponent pointId = 0; pointId < numPoints; pointId++)
     {
       boundsCell.Include(pointArray[pointId]);
     }
@@ -74,9 +74,9 @@ AmrDataSet::AmrDataSet(const std::vector<std::vector<vtkm::Id>> partitionIds)
 {
   this->NumberOfLevels = partitionIds.size();
   this->StartPartitionIds.Allocate(this->NumberOfLevels);
-  unsigned int numberOfPartitions = 0;
+  vtkm::Id numberOfPartitions = 0;
 
-  for (unsigned int l = 0; l < this->NumberOfLevels; l++)
+  for (vtkm::Id l = 0; l < this->NumberOfLevels; l++)
   {
     this->StartPartitionIds.WritePortal().Set(l, numberOfPartitions);
     numberOfPartitions += partitionIds.at(l).size();
@@ -85,9 +85,9 @@ AmrDataSet::AmrDataSet(const std::vector<std::vector<vtkm::Id>> partitionIds)
   this->PartitionIds.Allocate(numberOfPartitions);
   this->Level.Allocate(numberOfPartitions);
   this->BlockId.Allocate(numberOfPartitions);
-  for (unsigned int l = 0; l < this->NumberOfLevels; l++)
+  for (vtkm::Id l = 0; l < this->NumberOfLevels; l++)
   {
-    for (unsigned int b = 0; b < this->GetNumberOfPartitions(l); b++)
+    for (vtkm::Id b = 0; b < this->GetNumberOfPartitions(l); b++)
     {
       this->Level.WritePortal().Set(partitionIds.at(l).at(b), l);
       this->BlockId.WritePortal().Set(partitionIds.at(l).at(b), b);
@@ -287,13 +287,13 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
   // compute in vector
   std::vector<std::vector<vtkm::Id>> parentsIdsVector(this->GetNumberOfPartitions());
   std::vector<std::vector<vtkm::Id>> childrenIdsVector(this->GetNumberOfPartitions());
-  for (unsigned int l = 0; l < this->GetNumberOfLevels() - 1; l++)
+  for (vtkm::Id l = 0; l < this->GetNumberOfLevels() - 1; l++)
   {
-    for (unsigned int bParent = 0; bParent < this->GetNumberOfPartitions(l); bParent++)
+    for (vtkm::Id bParent = 0; bParent < this->GetNumberOfPartitions(l); bParent++)
     {
       //      std::cout<<std::endl<<"level  "<<l<<" block  "<<bParent<<std::endl;
       vtkm::Bounds boundsParent = this->GetPartition(l, bParent).GetCoordinateSystem().GetBounds();
-      for (unsigned int bChild = 0; bChild < this->GetNumberOfPartitions(l + 1); bChild++)
+      for (vtkm::Id bChild = 0; bChild < this->GetNumberOfPartitions(l + 1); bChild++)
       {
         vtkm::Bounds boundsChild =
           this->GetPartition(l + 1, bChild).GetCoordinateSystem().GetBounds();
@@ -316,9 +316,9 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
   // translate to ArrayHandles
   this->StartParentsIds.Allocate(this->GetNumberOfPartitions());
   this->StartChildrenIds.Allocate(this->GetNumberOfPartitions());
-  unsigned int numberOfParents = 0;
-  unsigned int numberOfChildren = 0;
-  for (unsigned int p = 0; p < this->GetNumberOfPartitions(); p++)
+  vtkm::Id numberOfParents = 0;
+  vtkm::Id numberOfChildren = 0;
+  for (vtkm::Id p = 0; p < this->GetNumberOfPartitions(); p++)
   {
     this->StartParentsIds.WritePortal().Set(p, numberOfParents);
     this->StartChildrenIds.WritePortal().Set(p, numberOfChildren);
@@ -329,16 +329,16 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
 
   this->ParentsIds.Allocate(numberOfParents);
   this->ChildrenIds.Allocate(numberOfChildren);
-  for (unsigned int p = 0; p < this->GetNumberOfPartitions() - 1; p++)
+  for (vtkm::Id p = 0; p < this->GetNumberOfPartitions() - 1; p++)
   {
-    for (unsigned int parentId = this->StartParentsIds.ReadPortal().Get(p);
+    for (vtkm::Id parentId = this->StartParentsIds.ReadPortal().Get(p);
          parentId < this->StartParentsIds.ReadPortal().Get(p + 1);
          parentId++)
     {
       this->ParentsIds.WritePortal().Set(
         parentId, parentsIdsVector.at(p).at(parentId - this->StartParentsIds.ReadPortal().Get(p)));
     }
-    for (unsigned int childId = this->StartChildrenIds.ReadPortal().Get(p);
+    for (vtkm::Id childId = this->StartChildrenIds.ReadPortal().Get(p);
          childId < this->StartChildrenIds.ReadPortal().Get(p + 1);
          childId++)
     {
@@ -346,7 +346,7 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
         childId, childrenIdsVector.at(p).at(childId - this->StartChildrenIds.ReadPortal().Get(p)));
     }
   }
-  for (unsigned int parentId =
+  for (vtkm::Id parentId =
          this->StartParentsIds.ReadPortal().Get(this->GetNumberOfPartitions() - 1);
        parentId < numberOfParents;
        parentId++)
@@ -356,7 +356,7 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
       parentsIdsVector.at(this->GetNumberOfPartitions() - 1)
         .at(parentId - this->StartParentsIds.ReadPortal().Get(this->GetNumberOfPartitions() - 1)));
   }
-  for (unsigned int childId =
+  for (vtkm::Id childId =
          this->StartChildrenIds.ReadPortal().Get(this->GetNumberOfPartitions() - 1);
        childId < numberOfChildren;
        childId++)
@@ -392,9 +392,9 @@ void AmrDataSet::ComputeGenerateGhostType()
 {
   assert(ParentChildInfoComputed);
 
-  for (unsigned int l = 0; l < this->GetNumberOfLevels(); l++)
+  for (vtkm::Id l = 0; l < this->GetNumberOfLevels(); l++)
   {
-    for (unsigned int b = 0; b < this->GetNumberOfPartitions(l); b++)
+    for (vtkm::Id b = 0; b < this->GetNumberOfPartitions(l); b++)
     {
       //      std::cout<<std::endl<<"level  "<<l<<" block  "<<b<<" has  "<<this->GetNumberOfChildren(l, b)<<" children"<<std::endl;
       vtkm::cont::DataSet partition = this->GetPartition(l, b);
@@ -405,7 +405,7 @@ void AmrDataSet::ComputeGenerateGhostType()
         vtkm::cont::ArrayHandleConstant<vtkm::UInt8>(0, partition.GetNumberOfCells()), ghostField);
       auto pointField = partition.GetCoordinateSystem().GetDataAsMultiplexer();
 
-      for (unsigned int childId = 0; childId < this->GetNumberOfChildren(l, b); childId++)
+      for (vtkm::Id childId = 0; childId < this->GetNumberOfChildren(l, b); childId++)
       {
         vtkm::Bounds boundsChild = this->GetChild(l, b, childId).GetCoordinateSystem().GetBounds();
         vtkm::cont::Invoker invoke;
@@ -424,9 +424,9 @@ void AmrDataSet::ComputeGenerateGhostType()
 VTKM_CONT
 void AmrDataSet::GenerateIndexArrays()
 {
-  for (unsigned int l = 0; l < this->GetNumberOfLevels(); l++)
+  for (vtkm::Id l = 0; l < this->GetNumberOfLevels(); l++)
   {
-    for (unsigned int b = 0; b < this->GetNumberOfPartitions(l); b++)
+    for (vtkm::Id b = 0; b < this->GetNumberOfPartitions(l); b++)
     {
       vtkm::cont::DataSet partition = this->GetPartition(l, b);
 
@@ -485,7 +485,7 @@ void AmrDataSet::PrintSummary(std::ostream& stream) const
     this->Partitions[part].PrintSummary(stream);
   }
   stream << "Number of levels " << this->GetNumberOfLevels() << ":\n";
-  for (unsigned int l = 0; l < this->GetNumberOfLevels(); l++)
+  for (vtkm::Id l = 0; l < this->GetNumberOfLevels(); l++)
   {
     stream << "Level " << l << " has " << this->GetNumberOfPartitions(l)
            << " blocks/partitions starting at index " << this->GetStartPartitionId(l) << ".\n";
@@ -497,18 +497,18 @@ void AmrDataSet::PrintSummary(std::ostream& stream) const
   else
   {
     stream << "The parent child Relationships are as follows:\n";
-    for (unsigned int l = 0; l < this->GetNumberOfLevels(); l++)
+    for (vtkm::Id l = 0; l < this->GetNumberOfLevels(); l++)
     {
       stream << "Level " << l << ":\n";
-      for (unsigned int b = 0; b < this->GetNumberOfPartitions(l); b++)
+      for (vtkm::Id b = 0; b < this->GetNumberOfPartitions(l); b++)
       {
         stream << "BlockId " << b << ":\n has parents ids: ";
-        for (unsigned int p = 0; p < this->GetNumberOfParents(l, b); p++)
+        for (vtkm::Id p = 0; p < this->GetNumberOfParents(l, b); p++)
         {
           stream << this->GetParentId(l, b, p) << " ";
         }
         stream << "\n has children ids: ";
-        for (unsigned int c = 0; c < this->GetNumberOfChildren(l, b); c++)
+        for (vtkm::Id c = 0; c < this->GetNumberOfChildren(l, b); c++)
         {
           stream << this->GetChildId(l, b, c) << " ";
         }
