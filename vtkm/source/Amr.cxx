@@ -34,17 +34,10 @@ vtkm::cont::DataSet Amr::GenerateDataSet(unsigned int level, unsigned int amrInd
 {
   vtkm::Id3 extent = { vtkm::Id(this->CellsPerDimension / 2) };
   vtkm::Id3 dimensions = { this->CellsPerDimension + 1 };
-<<<<<<< HEAD
   vtkm::Vec3f origin = { float(1 / pow(2, level) * amrIndex) };
   vtkm::Vec3f spacing = { float(1. / this->CellsPerDimension / pow(2, level)) };
   vtkm::Vec3f center = 0.5f - (origin + spacing * extent);
   vtkm::Vec3f frequency = { 60.f, 30.f, 40.f };
-=======
-  vtkm::Vec3f origin = { 1. / pow(2, level) * amrIndex };
-  vtkm::Vec3f spacing = { 1. / this->CellsPerDimension / pow(2, level) };
-  vtkm::Vec3f center = 0.5 - (origin + spacing * extent);
-  vtkm::Vec3f frequency = { 60, 30., 40. };
->>>>>>> add AMR capabilities
   frequency = frequency * this->CellsPerDimension;
   vtkm::FloatDefault deviation = 0.5 / this->CellsPerDimension;
 

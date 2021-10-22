@@ -95,9 +95,6 @@ public:
     this->StandardDeviation = stdev;
   }
 
-  template <vtkm::IdComponent Dim>
-  vtkm::cont::DataSet GenerateDataSet(vtkm::cont::CoordinateSystem coords) const;
-
   vtkm::cont::DataSet Execute() const;
 
 private:
