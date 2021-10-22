@@ -186,6 +186,7 @@ vtkm::UInt8 CellSetExplicit<SST, CST, OST>
   return this->ShapesReadPortal().Get(cellid);
 }
 
+
 template <typename SST, typename CST, typename OST>
 template <vtkm::IdComponent NumVecIndices>
 VTKM_CONT
@@ -382,6 +383,8 @@ auto CellSetExplicit<SST, CST, OST>
                      connectivity.Connectivity.PrepareForInput(device, token),
                      connectivity.Offsets.PrepareForInput(device, token));
 }
+
+//----------------------------------------------------------------------------
 
 template <typename SST, typename CST, typename OST>
 template <typename VisitTopology, typename IncidentTopology>
