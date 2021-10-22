@@ -95,15 +95,15 @@ public:
     this->StandardDeviation = stdev;
   }
 
-  template <vtkm::IdComponent Dim>
-  vtkm::cont::DataSet GenerateDataSet(vtkm::cont::CoordinateSystem coords) const;
-
   vtkm::cont::DataSet Execute() const;
 
 private:
   template <vtkm::IdComponent Dim>
   vtkm::cont::Field GeneratePointField(const vtkm::cont::CellSetStructured<Dim>& cellset,
                                        const std::string& name) const;
+
+  template <vtkm::IdComponent Dim>
+  vtkm::cont::DataSet GenerateDataSet(vtkm::cont::CoordinateSystem coords) const;
 
   vtkm::Vec3f Center;
   vtkm::Vec3f Origin;
