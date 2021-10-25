@@ -62,11 +62,8 @@ VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
 
   // Assume the field associated should be the same as the first field. The second field is
   // also assumed to have the same association as the first.
-  // TODO: how does the old infrastructure know which field accociation to put in FieldMetaData?
-  if (firstField.GetAssociation() == vtkm::cont::Field::Association::POINTS)
-    return CreateResultFieldPoint(inDataSet, output, this->GetOutputFieldName());
-  else
-    return CreateResultFieldCell(inDataSet, output, this->GetOutputFieldName());
+  return CreateResult(
+    inDataSet, output, this->GetOutputFieldName(), vtkm::filter::FieldMetadata{ firstField });
 }
 }
 } // namespace vtkm::filter
