@@ -31,9 +31,6 @@ VTKM_CONT_EXPORT DotProduct::DotProduct()
 //template <typename T, typename StorageType, typename DerivedPolicy>
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
-//  const vtkm::cont::ArrayHandle<T, StorageType>& primary,
-//  const vtkm::filter::FieldMetadata& fieldMetadata,
-//  vtkm::filter::PolicyBase<DerivedPolicy> policy) const
 {
   vtkm::cont::Field firstField;
 
@@ -63,7 +60,13 @@ VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   vtkm::cont::ArrayHandle<vtkm::FloatDefault> output;
   this->Invoke(vtkm::worklet::DotProduct{}, primary, secondary, output);
 
-  return CreateResultFieldPoint(inDataSet, output, this->GetOutputFieldName());
+  // Assume the field associated should be the same as the first field. The second field is
+  // also assumed to have the same association as the first.
+  // TODO: how does the old infrastructure know which field accociation to put in FieldMetaData?
+  if (firstField.GetAssociation() == vtkm::cont::Field::Association::POINTS)
+    return CreateResultFieldPoint(inDataSet, output, this->GetOutputFieldName());
+  else
+    return CreateResultFieldCell(inDataSet, output, this->GetOutputFieldName());
 }
 }
 } // namespace vtkm::filter
