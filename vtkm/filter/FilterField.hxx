@@ -75,14 +75,15 @@ VTKM_CONT vtkm::cont::DataSet FilterField<Derived>::PrepareForExecution(
   vtkm::filter::FieldMetadata metaData(field);
   vtkm::cont::DataSet result;
 
-  vtkm::cont::CastAndCall(
-    vtkm::filter::ApplyPolicyFieldActive(field, policy, vtkm::filter::FilterTraits<Derived>()),
-    internal::ResolveFieldTypeAndExecute(),
-    static_cast<Derived*>(this),
-    input,
-    metaData,
-    policy,
-    result);
+  //  vtkm::cont::CastAndCall(
+  //    vtkm::filter::ApplyPolicyFieldActive(field, policy, vtkm::filter::FilterTraits<Derived>()),
+  //    internal::ResolveFieldTypeAndExecute(),
+  //    static_cast<Derived*>(this),
+  //    input,
+  //    metaData,
+  //    policy,
+  //    result);
+  result = static_cast<Derived*>(this)->DoExecute(input);
   return result;
 }
 
