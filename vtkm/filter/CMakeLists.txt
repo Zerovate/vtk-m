@@ -142,7 +142,6 @@ set(extra_header_template_sources
   ComputeMoments.hxx
   CoordinateSystemTransform.hxx
   CrossProduct.hxx
-  DotProduct.hxx
   Entropy.hxx
   ExternalFaces.hxx
   FieldToColors.hxx
@@ -191,6 +190,7 @@ set(extra_sources_device
 #  ${ClipWithFieldInstantiations}
 #  ${ClipWithImplicitFunctionInstantiations}
 #  ExternalFaces.cxx
+  DotProduct.cxx
   GenerateIds.cxx
 #  VectorMagnitude.cxx
 #  particleadvection/Messenger.cxx

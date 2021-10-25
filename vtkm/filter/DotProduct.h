@@ -134,6 +134,4 @@ private:
 }
 } // namespace vtkm::filter
 
-#include <vtkm/filter/DotProduct.hxx>
-
 #endif // vtk_m_filter_DotProduct_h

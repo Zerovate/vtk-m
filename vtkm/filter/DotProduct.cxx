@@ -8,10 +8,8 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#ifndef vtk_m_filter_DotProduct_hxx
-#define vtk_m_filter_DotProduct_hxx
-
 #include <vtkm/cont/ArrayHandleCast.h>
+#include <vtkm/filter/DotProduct.h>
 
 namespace vtkm
 {
@@ -19,7 +17,7 @@ namespace filter
 {
 
 //-----------------------------------------------------------------------------
-inline VTKM_CONT DotProduct::DotProduct()
+VTKM_CONT_EXPORT DotProduct::DotProduct()
   : vtkm::filter::FilterField<DotProduct>()
   , SecondaryFieldName()
   , SecondaryFieldAssociation(vtkm::cont::Field::Association::ANY)
@@ -31,7 +29,7 @@ inline VTKM_CONT DotProduct::DotProduct()
 
 //-----------------------------------------------------------------------------
 //template <typename T, typename StorageType, typename DerivedPolicy>
-inline VTKM_CONT vtkm::cont::DataSet DotProduct::DoExecute(
+VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
 //  const vtkm::cont::ArrayHandle<T, StorageType>& primary,
 //  const vtkm::filter::FieldMetadata& fieldMetadata,
@@ -69,5 +67,3 @@ inline VTKM_CONT vtkm::cont::DataSet DotProduct::DoExecute(
 }
 }
 } // namespace vtkm::filter
-
-#endif
