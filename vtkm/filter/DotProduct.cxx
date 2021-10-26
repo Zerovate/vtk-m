@@ -92,7 +92,7 @@ VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
     firstField = inDataSet.GetField(this->GetActiveFieldName(), this->GetActiveFieldAssociation());
   }
   auto primary =
-    firstField.GetData().ResetTypes<vtkm::TypeListFloatVec, vtkm::cont::StorageListBasic>();
+    firstField.GetData().ResetTypes<vtkm::TypeListFloatVec, VTKM_DEFAULT_STORAGE_LIST>();
 
   vtkm::cont::DataSet output;
   vtkm::cont::CastAndCall(primary, ResolveTypeFunctor{}, *this, inDataSet, output);
