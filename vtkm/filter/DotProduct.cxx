@@ -58,17 +58,20 @@ struct ResolveTypeFunctor
                   const vtkm::cont::DataSet& input,
                   vtkm::cont::DataSet& outDataSet)
   {
-    vtkm::cont::Field secondaryField;
-    if (filter.GetUseCoordinateSystemAsSecondaryField())
-    {
-      secondaryField = input.GetCoordinateSystem(filter.GetSecondaryCoordinateSystemIndex());
-    }
-    else
-    {
-      secondaryField =
-        input.GetField(filter.GetSecondaryFieldName(), filter.GetSecondaryFieldAssociation());
-    }
-    auto secondary = secondaryField.GetData().AsArrayHandle<vtkm::cont::ArrayHandle<T, Storage>>();
+    const auto& secondaryField = [&]() -> const vtkm::cont::Field& {
+      if (filter.GetUseCoordinateSystemAsSecondaryField())
+      {
+        return input.GetCoordinateSystem(filter.GetSecondaryCoordinateSystemIndex());
+      }
+      else
+      {
+        return input.GetField(filter.GetSecondaryFieldName(),
+                              filter.GetSecondaryFieldAssociation());
+      }
+    }();
+
+    auto secondary =
+      secondaryField.GetData().template AsArrayHandle<vtkm::cont::ArrayHandle<T, Storage>>();
 
     vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> output;
     vtkm::cont::Invoker invoker;
@@ -81,16 +84,8 @@ struct ResolveTypeFunctor
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
 {
-  vtkm::cont::Field firstField;
+  const auto& firstField = this->GetActiveField(inDataSet, 0);
 
-  if (this->GetUseCoordinateSystemAsPrimaryField())
-  {
-    firstField = inDataSet.GetCoordinateSystem(this->GetPrimaryCoordinateSystemIndex());
-  }
-  else
-  {
-    firstField = inDataSet.GetField(this->GetActiveFieldName(), this->GetActiveFieldAssociation());
-  }
   auto primary =
     firstField.GetData().ResetTypes<vtkm::TypeListFloatVec, VTKM_DEFAULT_STORAGE_LIST>();
 

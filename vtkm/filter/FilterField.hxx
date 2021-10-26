@@ -50,6 +50,19 @@ VTKM_CONT vtkm::cont::DataSet FilterField<Derived>::PrepareForExecution(
   const vtkm::cont::DataSet& input,
   vtkm::filter::PolicyBase<DerivedPolicy> policy)
 {
+  vtkm::cont::DataSet result;
+
+  result = static_cast<Derived*>(this)->DoExecute(input);
+  return result;
+}
+
+#if 0
+template <typename Derived>
+template <typename DerivedPolicy>
+VTKM_CONT vtkm::cont::DataSet FilterField<Derived>::PrepareForExecution(
+  const vtkm::cont::DataSet& input,
+  vtkm::filter::PolicyBase<DerivedPolicy> policy)
+{
   if (this->UseCoordinateSystemAsField)
   {
     // we need to state that the field is actually a coordinate system, so that
@@ -72,7 +85,6 @@ VTKM_CONT vtkm::cont::DataSet FilterField<Derived>::PrepareForExecution(
   const vtkm::cont::Field& field,
   vtkm::filter::PolicyBase<DerivedPolicy> policy)
 {
-  vtkm::filter::FieldMetadata metaData(field);
   vtkm::cont::DataSet result;
 
   result = static_cast<Derived*>(this)->DoExecute(input);
@@ -108,5 +120,6 @@ VTKM_CONT vtkm::cont::DataSet FilterField<Derived>::PrepareForExecution(
 
   return result;
 }
+#endif
 }
 }

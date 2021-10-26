@@ -80,6 +80,19 @@ public:
   vtkm::Id GetActiveCoordinateSystemIndex() const { return this->CoordinateSystemIndex; }
   //@}
 
+  VTKM_CONT
+  const vtkm::cont::Field& GetActiveField(const vtkm::cont::DataSet& input, vtkm::Id index) const
+  {
+    if (this->UseCoordinateSystemAsField)
+    {
+      return input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex());
+    }
+    else
+    {
+      return input.GetField(this->GetActiveFieldName(), this->GetActiveFieldAssociation());
+    }
+  }
+
   //@{
   /// These are provided to satisfy the Filter API requirements.
   template <typename DerivedPolicy>
