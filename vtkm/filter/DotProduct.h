@@ -37,10 +37,10 @@ public:
     this->SetActiveField(name, association);
   }
 
-  VTKM_CONT const std::string& GetPrimaryFieldName() const { return this->SecondaryFieldName; }
+  VTKM_CONT const std::string& GetPrimaryFieldName() const { return this->GetActiveFieldName(); }
   VTKM_CONT vtkm::cont::Field::Association GetPrimaryFieldAssociation() const
   {
-    return this->SecondaryFieldAssociation;
+    return this->GetActiveFieldAssociation();
   }
   //@}
 
@@ -86,7 +86,7 @@ public:
   VTKM_CONT const std::string& GetSecondaryFieldName() const { return this->SecondaryFieldName; }
   VTKM_CONT vtkm::cont::Field::Association GetSecondaryFieldAssociation() const
   {
-    return this->GetActiveFieldAssociation();
+    return this->SecondaryFieldAssociation;
   }
   //@}
 
@@ -120,11 +120,7 @@ public:
   }
   //@}
 
-  //  template <typename T, typename StorageType, typename DerivedPolicy>
   VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) const;
-  //                                          const vtkm::cont::ArrayHandle<T, StorageType>& field,
-  //                                          const vtkm::filter::FieldMetadata& fieldMeta,
-  //                                          vtkm::filter::PolicyBase<DerivedPolicy> policy) const;
 
 private:
   std::string SecondaryFieldName;
