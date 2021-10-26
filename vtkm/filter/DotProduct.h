@@ -12,7 +12,6 @@
 #define vtk_m_filter_DotProduct_h
 
 #include <vtkm/filter/FilterField.h>
-#include <vtkm/worklet/DotProduct.h>
 
 namespace vtkm
 {
@@ -82,7 +81,7 @@ public:
     this->SecondaryFieldAssociation = association;
   }
 
-  VTKM_CONT const std::string& GetSecondaryFieldName() const { return this->GetActiveFieldName(); }
+  VTKM_CONT const std::string& GetSecondaryFieldName() const { return this->SecondaryFieldName; }
   VTKM_CONT vtkm::cont::Field::Association GetSecondaryFieldAssociation() const
   {
     return this->GetActiveFieldAssociation();

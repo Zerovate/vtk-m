@@ -10,6 +10,7 @@
 
 #include <vtkm/cont/ArrayHandleCast.h>
 #include <vtkm/filter/DotProduct.h>
+#include <vtkm/worklet/DotProduct.h>
 
 namespace vtkm
 {
@@ -27,6 +28,33 @@ VTKM_CONT_EXPORT DotProduct::DotProduct()
   this->SetOutputFieldName("dotproduct");
 }
 
+struct ResolveTypeFunctor
+{
+  template <typename T, typename Storage>
+  void operator()(const vtkm::cont::ArrayHandle<T, Storage>& primary,
+                  const DotProduct& filter,
+                  const vtkm::cont::DataSet& input,
+                  vtkm::cont::DataSet& outDataSet)
+  {
+    vtkm::cont::Field secondaryField;
+    if (filter.GetUseCoordinateSystemAsSecondaryField())
+    {
+      secondaryField = input.GetCoordinateSystem(filter.GetSecondaryCoordinateSystemIndex());
+    }
+    else
+    {
+      secondaryField =
+        input.GetField(filter.GetSecondaryFieldName(), filter.GetSecondaryFieldAssociation());
+    }
+    auto secondary = secondaryField.GetData().AsArrayHandle<vtkm::cont::ArrayHandle<T, Storage>>();
+
+    vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> output;
+    vtkm::cont::Invoker invoker;
+    invoker(vtkm::worklet::DotProduct{}, primary, secondary, output);
+
+    outDataSet = CreateResultFieldPoint(input, output, filter.GetOutputFieldName());
+  }
+};
 //-----------------------------------------------------------------------------
 //template <typename T, typename StorageType, typename DerivedPolicy>
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
@@ -42,28 +70,12 @@ VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   {
     firstField = inDataSet.GetField(this->GetActiveFieldName(), this->GetActiveFieldAssociation());
   }
-  auto primary = firstField.GetData().AsArrayHandle<vtkm::cont::ArrayHandle<vtkm::Vec3f>>();
+  auto primary =
+    firstField.GetData().ResetTypes<vtkm::TypeListFloatVec, vtkm::cont::StorageListBasic>();
 
-  vtkm::cont::Field secondaryField;
-  if (this->UseCoordinateSystemAsSecondaryField)
-  {
-    secondaryField = inDataSet.GetCoordinateSystem(this->GetSecondaryCoordinateSystemIndex());
-  }
-  else
-  {
-    secondaryField = inDataSet.GetField(this->SecondaryFieldName, this->SecondaryFieldAssociation);
-  }
-  //  auto secondary = vtkm::filter::ApplyPolicyFieldOfType<T>(secondaryField, policy, *this);
-  auto secondary = secondaryField.GetData().AsArrayHandle<vtkm::cont::ArrayHandle<vtkm::Vec3f>>();
-
-  //  vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> output;
-  vtkm::cont::ArrayHandle<vtkm::FloatDefault> output;
-  this->Invoke(vtkm::worklet::DotProduct{}, primary, secondary, output);
-
-  // Assume the field associated should be the same as the first field. The second field is
-  // also assumed to have the same association as the first.
-  return CreateResult(
-    inDataSet, output, this->GetOutputFieldName(), vtkm::filter::FieldMetadata{ firstField });
+  vtkm::cont::DataSet output;
+  vtkm::cont::CastAndCall(primary, ResolveTypeFunctor{}, *this, inDataSet, output);
+  return output;
 }
 }
 } // namespace vtkm::filter
