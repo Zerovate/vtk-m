@@ -30,8 +30,7 @@ set(unit_tests
   UnitTestCosmoTools.cxx
   UnitTestCrossProduct.cxx
   UnitTestDescriptiveStatistics.cxx
-  UnitTestDotProduct.cxx
-  UnitTestExternalFaces.cxx
+        UnitTestExternalFaces.cxx
   UnitTestExtractGeometry.cxx
   UnitTestExtractPoints.cxx
   UnitTestExtractStructured.cxx

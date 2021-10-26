@@ -26,7 +26,6 @@ set(headers
   DispatcherCellNeighborhood.h
   DispatcherPointNeighborhood.h
   DispatcherReduceByKey.h
-  DotProduct.h
   ExternalFaces.h
   ExtractGeometry.h
   ExtractPoints.h

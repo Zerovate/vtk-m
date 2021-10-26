@@ -10,10 +10,36 @@
 
 #include <vtkm/cont/ArrayHandleCast.h>
 #include <vtkm/filter/DotProduct.h>
-#include <vtkm/worklet/DotProduct.h>
+
+#include <vtkm/VectorAnalysis.h>
+#include <vtkm/worklet/WorkletMapField.h>
 
 namespace vtkm
 {
+namespace worklet
+{
+
+class DotProduct : public vtkm::worklet::WorkletMapField
+{
+public:
+  using ControlSignature = void(FieldIn, FieldIn, FieldOut);
+
+  template <typename T, vtkm::IdComponent Size>
+  VTKM_EXEC void operator()(const vtkm::Vec<T, Size>& v1,
+                            const vtkm::Vec<T, Size>& v2,
+                            T& outValue) const
+  {
+    outValue = static_cast<T>(vtkm::Dot(v1, v2));
+  }
+
+  template <typename T>
+  VTKM_EXEC void operator()(T s1, T s2, T& outValue) const
+  {
+    outValue = static_cast<T>(s1 * s2);
+  }
+};
+} // namespace vtkm::worklet
+
 namespace filter
 {
 
@@ -55,8 +81,8 @@ struct ResolveTypeFunctor
     outDataSet = CreateResultFieldPoint(input, output, filter.GetOutputFieldName());
   }
 };
+
 //-----------------------------------------------------------------------------
-//template <typename T, typename StorageType, typename DerivedPolicy>
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
 {
