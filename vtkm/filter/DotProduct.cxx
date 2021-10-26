@@ -8,17 +8,13 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/cont/ArrayHandleCast.h>
 #include <vtkm/filter/DotProduct.h>
-
-#include <vtkm/VectorAnalysis.h>
 #include <vtkm/worklet/WorkletMapField.h>
 
 namespace vtkm
 {
 namespace worklet
 {
-
 class DotProduct : public vtkm::worklet::WorkletMapField
 {
 public:
@@ -38,7 +34,7 @@ public:
     outValue = static_cast<T>(s1 * s2);
   }
 };
-} // namespace vtkm::worklet
+} // namespace worklet
 
 namespace filter
 {
@@ -81,7 +77,6 @@ struct ResolveTypeFunctor
     outDataSet = CreateResultFieldPoint(input, output, filter.GetOutputFieldName());
   }
 };
-
 //-----------------------------------------------------------------------------
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
