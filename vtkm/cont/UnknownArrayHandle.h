@@ -1098,7 +1098,7 @@ VTKM_CONT void UnknownArrayHandle::CastAndCallForTypesWithFloatFallback(Functor&
     this->template CastAndCallForTypes<TypeList, StorageTagList>(std::forward<Functor>(functor),
                                                                  std::forward<Args>(args)...);
   }
-  catch (vtkm::cont::ErrorBadType& errorBadType)
+  catch (vtkm::cont::ErrorBadType&)
   {
     vtkm::cont::UnknownArrayHandle floatArray = this->NewInstanceFloatBasic();
     floatArray.DeepCopyFrom(*this);

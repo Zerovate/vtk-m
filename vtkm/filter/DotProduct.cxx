@@ -11,7 +11,7 @@
 #include <vtkm/filter/DotProduct.h>
 #include <vtkm/worklet/WorkletMapField.h>
 
-namespace vtkm
+namespace // anonymous namespace making worklet::DotProduct internal to this .cxx
 {
 namespace worklet
 {
@@ -35,7 +35,10 @@ public:
   }
 };
 } // namespace worklet
+} // anonymous namespace
 
+namespace vtkm
+{
 namespace filter
 {
 
@@ -75,13 +78,14 @@ struct ResolveTypeFunctor
 
     vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> result;
     vtkm::cont::Invoker invoker;
-    invoker(vtkm::worklet::DotProduct{},
+    invoker(::worklet::DotProduct{},
             primary,
             secondary.template AsArrayHandle<vtkm::cont::ArrayHandle<T>>(),
             result);
     output = result;
   }
 };
+
 //-----------------------------------------------------------------------------
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
