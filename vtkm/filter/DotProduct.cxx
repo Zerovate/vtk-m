@@ -70,19 +70,15 @@ struct ResolveTypeFunctor
       }
     }();
 
-    vtkm::cont::ArrayHandle<T> secondary;
-    if (secondaryField.GetData().template CanConvert<vtkm::cont::ArrayHandle<T, Storage>>())
-    {
-      secondaryField.GetData().AsArrayHandle(secondary);
-    }
-    else
-    {
-      vtkm::cont::ArrayCopy(secondaryField.GetData(), secondary);
-    }
+    vtkm::cont::UnknownArrayHandle secondary = vtkm::cont::ArrayHandle<T>{};
+    secondary.CopyShallowIfPossible(secondaryField.GetData());
 
     vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> result;
     vtkm::cont::Invoker invoker;
-    invoker(vtkm::worklet::DotProduct{}, primary, secondary, result);
+    invoker(vtkm::worklet::DotProduct{},
+            primary,
+            secondary.template AsArrayHandle<vtkm::cont::ArrayHandle<T>>(),
+            result);
 
     output = result;
   }
@@ -93,7 +89,8 @@ VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
 {
   const auto& firstField = this->GetFieldFromDataSet(inDataSet);
 
-  auto primary = firstField.GetData().ResetTypes<vtkm::TypeListField, VTKM_DEFAULT_STORAGE_LIST>();
+  auto primary =
+    firstField.GetData().ResetTypes<VTKM_DEFAULT_TYPE_LIST, VTKM_DEFAULT_STORAGE_LIST>();
 
   vtkm::cont::UnknownArrayHandle outArray;
   primary.CastAndCallWithFloatFallback(ResolveTypeFunctor{}, *this, inDataSet, outArray);

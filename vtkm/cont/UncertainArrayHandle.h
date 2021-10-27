@@ -10,7 +10,6 @@
 #ifndef vtk_m_cont_UncertainArrayHandle_h
 #define vtk_m_cont_UncertainArrayHandle_h
 
-#include "ArrayCopy.h"
 #include <vtkm/cont/CastAndCall.h>
 #include <vtkm/cont/UnknownArrayHandle.h>
 
@@ -121,7 +120,7 @@ public:
     catch (vtkm::cont::ErrorBadType& errorBadType)
     {
       vtkm::cont::UnknownArrayHandle floatArray = this->NewInstanceFloatBasic();
-      vtkm::cont::ArrayCopy(*this, floatArray);
+      floatArray.DeepCopyFrom(*this);
       floatArray.template CastAndCallForTypes<ValueTypeList, StorageTypeList>(
         std::forward<Functor>(functor), std::forward<Args>(args)...);
     }
