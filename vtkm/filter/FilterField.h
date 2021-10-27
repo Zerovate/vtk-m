@@ -81,7 +81,7 @@ public:
   //@}
 
   VTKM_CONT
-  const vtkm::cont::Field& GetActiveField(const vtkm::cont::DataSet& input, vtkm::Id index) const
+  const vtkm::cont::Field& GetFieldFromDataSet(const vtkm::cont::DataSet& input) const
   {
     if (this->UseCoordinateSystemAsField)
     {

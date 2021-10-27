@@ -10,6 +10,7 @@
 #ifndef vtk_m_cont_UncertainArrayHandle_h
 #define vtk_m_cont_UncertainArrayHandle_h
 
+#include "ArrayCopy.h"
 #include <vtkm/cont/CastAndCall.h>
 #include <vtkm/cont/UnknownArrayHandle.h>
 
@@ -107,6 +108,23 @@ public:
   {
     this->CastAndCallForTypes<ValueTypeList, StorageTypeList>(std::forward<Functor>(functor),
                                                               std::forward<Args>(args)...);
+  }
+
+  // TODO: move to UnknownArrayHandle?
+  template <typename Functor, typename... Args>
+  VTKM_CONT void CastAndCallWithFloatFallback(Functor&& functor, Args&&... args) const
+  {
+    try
+    {
+      this->CastAndCall(std::forward<Functor>(functor), std::forward<Args>(args)...);
+    }
+    catch (vtkm::cont::ErrorBadType& errorBadType)
+    {
+      vtkm::cont::UnknownArrayHandle floatArray = this->NewInstanceFloatBasic();
+      vtkm::cont::ArrayCopy(*this, floatArray);
+      floatArray.template CastAndCallForTypes<ValueTypeList, StorageTypeList>(
+        std::forward<Functor>(functor), std::forward<Args>(args)...);
+    }
   }
 };
 

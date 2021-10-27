@@ -72,8 +72,9 @@ void createVectors(std::size_t numPts,
   }
 }
 
-void CheckResult(const vtkm::cont::ArrayHandle<vtkm::Vec3f>& field1,
-                 const vtkm::cont::ArrayHandle<vtkm::Vec3f>& field2,
+template <typename T>
+void CheckResult(const vtkm::cont::ArrayHandle<vtkm::Vec<T, 3>>& field1,
+                 const vtkm::cont::ArrayHandle<vtkm::Vec<T, 3>>& field2,
                  const vtkm::cont::DataSet& result)
 {
   VTKM_TEST_ASSERT(result.HasPointField("dotproduct"), "Output field is missing.");
@@ -149,6 +150,55 @@ void TestDotProduct()
       std::cout << "  Second field as coordinates" << std::endl;
       vtkm::filter::DotProduct filter;
       filter.SetPrimaryField("vec1");
+      filter.SetUseCoordinateSystemAsSecondaryField(true);
+      filter.SetSecondaryCoordinateSystem(2);
+      vtkm::cont::DataSet result = filter.Execute(dataSet);
+      CheckResult(field1, field2, result);
+    }
+  }
+
+  for (int i = 0; i < numCases; i++)
+  {
+    std::cout << "vtkm::Id case " << i << std::endl;
+
+    vtkm::cont::DataSet dataSet = testDataSet.Make3DUniformDataSet0();
+    vtkm::Id nVerts = dataSet.GetCoordinateSystem(0).GetNumberOfPoints();
+
+    std::vector<vtkm::Id3> vecs1, vecs2;
+    createVectors(static_cast<std::size_t>(nVerts), i, vecs1, vecs2);
+
+    vtkm::cont::ArrayHandle<vtkm::Id3> field1, field2;
+    field1 = vtkm::cont::make_ArrayHandle(vecs1, vtkm::CopyFlag::On);
+    field2 = vtkm::cont::make_ArrayHandle(vecs2, vtkm::CopyFlag::On);
+
+    dataSet.AddPointField("ivec1", field1);
+    dataSet.AddPointField("ivec2", field2);
+    dataSet.AddCoordinateSystem(vtkm::cont::CoordinateSystem("ivecA", field1));
+    dataSet.AddCoordinateSystem(vtkm::cont::CoordinateSystem("ivecB", field2));
+
+    {
+      std::cout << "  Both vectors as normal fields" << std::endl;
+      vtkm::filter::DotProduct filter;
+      filter.SetPrimaryField("ivec1");
+      filter.SetSecondaryField("ivec2");
+      vtkm::cont::DataSet result = filter.Execute(dataSet);
+      CheckResult(field1, field2, result);
+    }
+
+    {
+      std::cout << "  First field as coordinates" << std::endl;
+      vtkm::filter::DotProduct filter;
+      filter.SetUseCoordinateSystemAsPrimaryField(true);
+      filter.SetPrimaryCoordinateSystem(1);
+      filter.SetSecondaryField("ivec2");
+      vtkm::cont::DataSet result = filter.Execute(dataSet);
+      CheckResult(field1, field2, result);
+    }
+
+    {
+      std::cout << "  Second field as coordinates" << std::endl;
+      vtkm::filter::DotProduct filter;
+      filter.SetPrimaryField("ivec1");
       filter.SetUseCoordinateSystemAsSecondaryField(true);
       filter.SetSecondaryCoordinateSystem(2);
       vtkm::cont::DataSet result = filter.Execute(dataSet);

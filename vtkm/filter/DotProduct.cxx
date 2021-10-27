@@ -56,7 +56,7 @@ struct ResolveTypeFunctor
   void operator()(const vtkm::cont::ArrayHandle<T, Storage>& primary,
                   const DotProduct& filter,
                   const vtkm::cont::DataSet& input,
-                  vtkm::cont::DataSet& outDataSet)
+                  vtkm::cont::UnknownArrayHandle& output) const
   {
     const auto& secondaryField = [&]() -> const vtkm::cont::Field& {
       if (filter.GetUseCoordinateSystemAsSecondaryField())
@@ -70,28 +70,37 @@ struct ResolveTypeFunctor
       }
     }();
 
-    auto secondary =
-      secondaryField.GetData().template AsArrayHandle<vtkm::cont::ArrayHandle<T, Storage>>();
+    vtkm::cont::ArrayHandle<T> secondary;
+    if (secondaryField.GetData().template CanConvert<vtkm::cont::ArrayHandle<T, Storage>>())
+    {
+      secondaryField.GetData().AsArrayHandle(secondary);
+    }
+    else
+    {
+      vtkm::cont::ArrayCopy(secondaryField.GetData(), secondary);
+    }
 
-    vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> output;
+    vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> result;
     vtkm::cont::Invoker invoker;
-    invoker(vtkm::worklet::DotProduct{}, primary, secondary, output);
+    invoker(vtkm::worklet::DotProduct{}, primary, secondary, result);
 
-    outDataSet = CreateResultFieldPoint(input, output, filter.GetOutputFieldName());
+    output = result;
   }
 };
 //-----------------------------------------------------------------------------
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
 {
-  const auto& firstField = this->GetActiveField(inDataSet, 0);
+  const auto& firstField = this->GetFieldFromDataSet(inDataSet);
 
-  auto primary =
-    firstField.GetData().ResetTypes<vtkm::TypeListFloatVec, VTKM_DEFAULT_STORAGE_LIST>();
+  auto primary = firstField.GetData().ResetTypes<vtkm::TypeListField, VTKM_DEFAULT_STORAGE_LIST>();
 
-  vtkm::cont::DataSet output;
-  vtkm::cont::CastAndCall(primary, ResolveTypeFunctor{}, *this, inDataSet, output);
-  return output;
+  vtkm::cont::UnknownArrayHandle outArray;
+  primary.CastAndCallWithFloatFallback(ResolveTypeFunctor{}, *this, inDataSet, outArray);
+
+  vtkm::cont::DataSet outDataSet = inDataSet; // copy
+  outDataSet.AddField({ this->GetOutputFieldName(), firstField.GetAssociation(), outArray });
+  return outDataSet;
 }
 }
 } // namespace vtkm::filter

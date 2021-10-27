@@ -380,7 +380,7 @@ discourage mutable `Filter` implementations.
 ```c++
 vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) const
 {
-  vtkm::cont::Field inputField = this->GetActiveField(input, 0);
+  vtkm::cont::Field inputField = this->GetFieldFromDataSet(input, 0);
   vtkm::cont::UnknownArrayHandle outputArray;
   this->FieldCastAndCallHelperThingy(inputField, [&](auto inputArray) {
     MyArrayComputationFunction(inputArray, outputArray);
