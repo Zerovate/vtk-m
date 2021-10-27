@@ -108,23 +108,6 @@ public:
     this->CastAndCallForTypes<ValueTypeList, StorageTypeList>(std::forward<Functor>(functor),
                                                               std::forward<Args>(args)...);
   }
-
-  // TODO: move to UnknownArrayHandle?
-  template <typename Functor, typename... Args>
-  VTKM_CONT void CastAndCallWithFloatFallback(Functor&& functor, Args&&... args) const
-  {
-    try
-    {
-      this->CastAndCall(std::forward<Functor>(functor), std::forward<Args>(args)...);
-    }
-    catch (vtkm::cont::ErrorBadType& errorBadType)
-    {
-      vtkm::cont::UnknownArrayHandle floatArray = this->NewInstanceFloatBasic();
-      floatArray.DeepCopyFrom(*this);
-      floatArray.template CastAndCallForTypes<ValueTypeList, StorageTypeList>(
-        std::forward<Functor>(functor), std::forward<Args>(args)...);
-    }
-  }
 };
 
 // Defined here to avoid circular dependencies between UnknownArrayHandle and UncertainArrayHandle.

@@ -79,7 +79,6 @@ struct ResolveTypeFunctor
             primary,
             secondary.template AsArrayHandle<vtkm::cont::ArrayHandle<T>>(),
             result);
-
     output = result;
   }
 };
@@ -87,16 +86,16 @@ struct ResolveTypeFunctor
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
 {
-  const auto& firstField = this->GetFieldFromDataSet(inDataSet);
-
-  auto primary =
-    firstField.GetData().ResetTypes<VTKM_DEFAULT_TYPE_LIST, VTKM_DEFAULT_STORAGE_LIST>();
+  const auto& primary = this->GetFieldFromDataSet(inDataSet).GetData();
 
   vtkm::cont::UnknownArrayHandle outArray;
-  primary.CastAndCallWithFloatFallback(ResolveTypeFunctor{}, *this, inDataSet, outArray);
+  primary.CastAndCallForTypesWithFloatFallback<VTKM_DEFAULT_TYPE_LIST, VTKM_DEFAULT_STORAGE_LIST>(
+    ResolveTypeFunctor{}, *this, inDataSet, outArray);
 
   vtkm::cont::DataSet outDataSet = inDataSet; // copy
-  outDataSet.AddField({ this->GetOutputFieldName(), firstField.GetAssociation(), outArray });
+  outDataSet.AddField({ this->GetOutputFieldName(),
+                        this->GetFieldFromDataSet(inDataSet).GetAssociation(),
+                        outArray });
   return outDataSet;
 }
 }
