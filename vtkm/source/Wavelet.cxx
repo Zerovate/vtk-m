@@ -98,7 +98,7 @@ struct WaveletField : public vtkm::worklet::WorkletVisitPointsWithCells
 
 Wavelet::Wavelet(vtkm::Id3 minExtent, vtkm::Id3 maxExtent)
   : Center{ minExtent - ((minExtent - maxExtent) / 2) }
-  , Origin{ 0. }
+  , Origin{ minExtent }
   , Spacing{ 1. }
   , Frequency{ 60., 30., 40. }
   , Magnitude{ 10., 18., 5. }
