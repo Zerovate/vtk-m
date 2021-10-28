@@ -76,6 +76,14 @@ struct ResolveTypeFunctor
     vtkm::cont::UnknownArrayHandle secondary = vtkm::cont::ArrayHandle<T>{};
     secondary.CopyShallowIfPossible(secondaryField.GetData());
 
+    // The ApplyPolicyFieldOfType uses ArrayHandleMultiplexer which creates an enormous
+    // amount of instantiations which I believe are not actually used. We should settle
+    // with UnknownArrayHandle::CopyShallowIfPossible() to extract secondary field for
+    // the moment.
+    //  auto secondary = vtkm::filter::ApplyPolicyFieldOfType<T>(secondaryField,
+    //                                                           vtkm::filter::PolicyDefault{},
+    //                                                           filter);
+
     vtkm::cont::ArrayHandle<typename vtkm::VecTraits<T>::ComponentType> result;
     vtkm::cont::Invoker invoker;
     invoker(::worklet::DotProduct{},
@@ -90,11 +98,17 @@ struct ResolveTypeFunctor
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
 {
-  const auto& primary = this->GetFieldFromDataSet(inDataSet).GetData();
+  // ApplyPolicyFeildActive turns the UnknownArrayHandle to UncerntainArrayHandle  wich
+  // certain ValueType and Stroage based on PolicyDefault and Filter::Supported btype. We
+  // could just do it ourselves but here we are demonstrating what the "helper" function
+  // looks like.
+  const auto& primary =
+    vtkm::filter::ApplyPolicyFieldActive(this->GetFieldFromDataSet(inDataSet),
+                                         vtkm::filter::PolicyDefault{},
+                                         vtkm::filter::FilterTraits<DotProduct>());
 
   vtkm::cont::UnknownArrayHandle outArray;
-  primary.CastAndCallForTypesWithFloatFallback<VTKM_DEFAULT_TYPE_LIST, VTKM_DEFAULT_STORAGE_LIST>(
-    ResolveTypeFunctor{}, *this, inDataSet, outArray);
+  primary.CastAndCallWithFloatFallback(ResolveTypeFunctor{}, *this, inDataSet, outArray);
 
   vtkm::cont::DataSet outDataSet = inDataSet; // copy
   outDataSet.AddField({ this->GetOutputFieldName(),
