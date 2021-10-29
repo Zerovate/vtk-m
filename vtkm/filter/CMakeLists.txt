@@ -21,6 +21,7 @@ vtkm_add_instantiations(ClipWithImplicitFunctionInstantiations
   INSTANTIATIONS_FILE ClipWithImplicitFunctionExternInstantiations.h
   )
 
+
 set(common_headers
   CellAverage.h
   CellMeasures.h
@@ -252,6 +253,8 @@ vtkm_library(
   USE_VTKM_JOB_POOL
   )
 
+target_precompile_headers(vtkm_filter_extra PRIVATE ClipWithField.h ClipWithField.hxx ClipWithImplicitFunction.h ClipWithImplicitFunction.hxx)
+
 vtkm_library(
   NAME vtkm_filter_contour
   TEMPLATE_SOURCES ${contour_header_template_sources}
@@ -260,6 +263,8 @@ vtkm_library(
   USE_VTKM_JOB_POOL
   )
 
+#target_precompile_headers(vtkm_filter_contour PRIVATE ${contour_headers})
+
 vtkm_library(
   NAME vtkm_filter_gradient
   TEMPLATE_SOURCES ${gradient_header_template_sources}
@@ -267,6 +272,8 @@ vtkm_library(
   DEVICE_SOURCES ${gradient_sources_device}
   USE_VTKM_JOB_POOL
   )
+
+target_precompile_headers(vtkm_filter_gradient PRIVATE ${gradient_headers} ${gradient_header_template_sources})
 
 set_target_properties(
   vtkm_filter_common
