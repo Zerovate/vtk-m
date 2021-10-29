@@ -105,6 +105,20 @@ set(library_sources_device
   TestEqualArrayHandles.cxx # Really doesn't need device, but currently includes device headers
   )
 
+set(libraries
+  vtkm_filter
+  vtkm_io
+  vtkm_source
+)
+
+if (VTKm_ENABLE_RENDERING)
+  list(APPEND libraries vtkm_rendering)
+
+  list(APPEND unit_tests
+    RegressionTestAmrDataset.cxx
+  )
+endif()
+
 vtkm_library(
   NAME vtkm_cont_testing
   SOURCES ${library_sources}
@@ -114,7 +128,10 @@ vtkm_library(
 target_link_libraries(vtkm_cont_testing PUBLIC vtkm_cont)
 
 if(VTKm_ENABLE_TESTING)
-  vtkm_unit_tests(SOURCES ${unit_tests} DEFINES VTKM_NO_ERROR_ON_MIXED_CUDA_CXX_TAG)
+  vtkm_unit_tests(
+SOURCES ${unit_tests} DEFINES VTKM_NO_ERROR_ON_MIXED_CUDA_CXX_TAG LIBRARIES ${libraries}
+  ALL_BACKENDS
+  USE_VTKM_JOB_POOL)
 
 #add distributed tests i.e.test to run with MPI
 #if MPI is enabled.

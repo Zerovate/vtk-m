@@ -30,7 +30,7 @@ vtkm_library(NAME vtkm_source
   HEADERS ${headers}
   )
 
-target_link_libraries(vtkm_source PUBLIC vtkm_cont)
+target_link_libraries(vtkm_source PUBLIC vtkm_cont vtkm_filter)
 
 #-----------------------------------------------------------------------------
 if (VTKm_ENABLE_TESTING)
