@@ -10,7 +10,7 @@
 #ifndef vtk_m_filter_CleanGrid_h
 #define vtk_m_filter_CleanGrid_h
 
-#include <vtkm/filter/vtkm_filter_common_export.h>
+#include <vtkm/filter/vtkm_filter_cleangrid_export.h>
 
 #include <vtkm/filter/FilterDataSet.h>
 

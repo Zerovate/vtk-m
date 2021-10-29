@@ -17,7 +17,7 @@
 #include <vtkm/cont/ImplicitFunctionHandle.h>
 #endif //VTKM_NO_DEPRECATED_VIRTUAL
 
-#include <vtkm/filter/CleanGrid.h>
+#include <vtkm/filter/CleanGrid/CleanGrid.h>
 #include <vtkm/filter/FilterDataSet.h>
 #include <vtkm/worklet/ExtractPoints.h>
 

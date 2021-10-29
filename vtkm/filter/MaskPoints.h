@@ -11,7 +11,7 @@
 #ifndef vtk_m_filter_MaskPoints_h
 #define vtk_m_filter_MaskPoints_h
 
-#include <vtkm/filter/CleanGrid.h>
+#include <vtkm/filter/CleanGrid/CleanGrid.h>
 #include <vtkm/filter/FilterDataSet.h>
 #include <vtkm/worklet/MaskPoints.h>
 

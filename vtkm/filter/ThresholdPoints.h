@@ -11,7 +11,7 @@
 #ifndef vtk_m_filter_ThresholdPoints_h
 #define vtk_m_filter_ThresholdPoints_h
 
-#include <vtkm/filter/CleanGrid.h>
+#include <vtkm/filter/CleanGrid/CleanGrid.h>
 #include <vtkm/filter/FilterDataSetWithField.h>
 #include <vtkm/worklet/ThresholdPoints.h>
 

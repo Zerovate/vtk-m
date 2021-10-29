@@ -8,7 +8,7 @@
 //  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
-#include <vtkm/filter/CleanGrid.h>
+#include <vtkm/filter/CleanGrid/CleanGrid.h>
 
 #include <vtkm/filter/MapFieldMergeAverage.h>
 #include <vtkm/filter/MapFieldPermutation.h>

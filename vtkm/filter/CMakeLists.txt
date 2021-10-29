@@ -21,11 +21,6 @@ vtkm_add_instantiations(ClipWithImplicitFunctionInstantiations
   INSTANTIATIONS_FILE ClipWithImplicitFunctionExternInstantiations.h
   )
 
-set(cleangrid_headers
-  CleanGrid.h)
-set(cleangrid_sources_device
-  CleanGrid.cxx)
-
 set(common_headers
   CellAverage.h
   CellMeasures.h
@@ -241,13 +236,6 @@ set_source_files_properties(Contour.cxx ExtractStructured.cxx PROPERTIES SKIP_UN
 add_library(vtkm_filter INTERFACE)
 
 vtkm_library(
-  NAME vtkm_filter_cleangrid
-  HEADERS ${cleangrid_headers}
-  DEVICE_SOURCES ${cleangrid_sources_device}
-  USE_VTKM_JOB_POOL
-)
-
-vtkm_library(
   NAME vtkm_filter_common
   TEMPLATE_SOURCES ${common_header_template_sources}
   HEADERS ${common_headers}
@@ -280,14 +268,13 @@ vtkm_library(
   )
 
 set_property(TARGET
-  vtkm_filter_cleangrid
   vtkm_filter_common
   vtkm_filter_extra
   vtkm_filter_contour
   vtkm_filter_gradient
   PROPERTY UNITY_BUILD_MODE GROUP
   )
-target_link_libraries(vtkm_filter_cleangrid PUBLIC vtkm_worklet)
+
 target_link_libraries(vtkm_filter_common PUBLIC vtkm_worklet)
 target_link_libraries(vtkm_filter_extra PUBLIC vtkm_filter_common)
 target_link_libraries(vtkm_filter_contour PUBLIC vtkm_filter_common)
@@ -299,7 +286,6 @@ if (VTKm_ENABLE_MPI)
   target_link_libraries(vtkm_filter_gradient PUBLIC MPI::MPI_CXX)
 endif()
 target_link_libraries(vtkm_filter PUBLIC INTERFACE
-  vtkm_filter_cleangrid
   vtkm_filter_extra
   vtkm_filter_contour
   vtkm_filter_gradient
@@ -311,6 +297,7 @@ install(TARGETS vtkm_filter EXPORT ${VTKm_EXPORT_NAME})
 
 add_subdirectory(internal)
 add_subdirectory(particleadvection)
+add_subdirectory(CleanGrid)
 
 #-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
 if (VTKm_ENABLE_TESTING)
