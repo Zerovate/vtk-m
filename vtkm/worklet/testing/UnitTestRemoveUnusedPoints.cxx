@@ -8,7 +8,7 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/worklet/RemoveUnusedPoints.h>
+#include <vtkm/filter/CleanGrid/worklet/RemoveUnusedPoints.h>
 
 #include <vtkm/cont/testing/Testing.h>
 

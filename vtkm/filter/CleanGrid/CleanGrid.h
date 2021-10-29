@@ -14,9 +14,9 @@
 
 #include <vtkm/filter/FilterDataSet.h>
 
-#include <vtkm/worklet/PointMerge.h>
-#include <vtkm/worklet/RemoveDegenerateCells.h>
-#include <vtkm/worklet/RemoveUnusedPoints.h>
+#include <vtkm/filter/CleanGrid/worklet/PointMerge.h>
+#include <vtkm/filter/CleanGrid/worklet/RemoveDegenerateCells.h>
+#include <vtkm/filter/CleanGrid/worklet/RemoveUnusedPoints.h>
 
 namespace vtkm
 {
