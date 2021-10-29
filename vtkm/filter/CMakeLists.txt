@@ -50,7 +50,6 @@ set(common_headers
 set(common_header_template_sources
   CellAverage.hxx
   CellMeasures.hxx
-  CleanGrid.hxx
   ExtractGeometry.hxx
   ExtractPoints.hxx
   ExtractStructured.hxx
@@ -67,7 +66,7 @@ set(common_header_template_sources
 
 set(common_sources_device
 #  CellAverage.cxx
-#  CleanGrid.cxx
+  CleanGrid.cxx
 #  ExtractGeometry.cxx
 #  ExtractStructured.cxx
   MapFieldMergeAverage.cxx

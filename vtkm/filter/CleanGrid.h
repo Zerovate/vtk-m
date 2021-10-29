@@ -93,9 +93,7 @@ public:
   VTKM_CONT bool GetFastMerge() const { return this->FastMerge; }
   VTKM_CONT void SetFastMerge(bool flag) { this->FastMerge = flag; }
 
-  template <typename Policy>
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData,
-                                          vtkm::filter::PolicyBase<Policy> policy);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData);
 
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field);
 
@@ -136,11 +134,6 @@ private:
   vtkm::worklet::PointMerge PointMerger;
 };
 
-#ifndef vtkm_filter_CleanGrid_cxx
-extern template VTKM_FILTER_COMMON_TEMPLATE_EXPORT vtkm::cont::DataSet CleanGrid::DoExecute(
-  const vtkm::cont::DataSet&,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault>);
-#endif
 }
 } // namespace vtkm::filter
 

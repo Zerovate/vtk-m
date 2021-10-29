@@ -16,7 +16,7 @@ set(unit_tests
 #  UnitTestCellAverageFilter.cxx
 #  UnitTestCellMeasuresFilter.cxx
 #  UnitTestCellSetConnectivityFilter.cxx
-#  UnitTestCleanGrid.cxx
+  UnitTestCleanGrid.cxx
 #  UnitTestClipWithFieldFilter.cxx
 #  UnitTestClipWithImplicitFunctionFilter.cxx
 #  UnitTestContourFilter.cxx

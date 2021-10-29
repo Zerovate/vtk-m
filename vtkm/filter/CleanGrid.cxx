@@ -8,9 +8,7 @@
 //  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
-#define vtkm_filter_CleanGrid_cxx
 #include <vtkm/filter/CleanGrid.h>
-#include <vtkm/filter/CleanGrid.hxx>
 
 #include <vtkm/filter/MapFieldMergeAverage.h>
 #include <vtkm/filter/MapFieldPermutation.h>
@@ -159,9 +157,50 @@ bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont
   }
 }
 
-//-----------------------------------------------------------------------------
-template VTKM_FILTER_COMMON_TEMPLATE_EXPORT vtkm::cont::DataSet CleanGrid::DoExecute(
-  const vtkm::cont::DataSet& inData,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault> policy);
+vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
+{
+  using CellSetType = vtkm::cont::CellSetExplicit<>;
+
+  CellSetType outputCellSet;
+  // Do a deep copy of the cells to new CellSetExplicit structures
+  const vtkm::cont::DynamicCellSet& inCellSet = inData.GetCellSet();
+  if (inCellSet.IsType<CellSetType>())
+  {
+    // Is expected type, do a shallow copy
+    outputCellSet = inCellSet.Cast<CellSetType>();
+  }
+  else
+  { // Clean the grid
+    auto deducedCellSet =
+      vtkm::filter::ApplyPolicyCellSet(inCellSet, vtkm::filter::PolicyDefault{}, *this);
+    vtkm::cont::ArrayHandle<vtkm::IdComponent> numIndices;
+
+    this->Invoke(worklet::CellDeepCopy::CountCellPoints{}, deducedCellSet, numIndices);
+
+    vtkm::cont::ArrayHandle<vtkm::UInt8> shapes;
+    vtkm::cont::ArrayHandle<vtkm::Id> offsets;
+    vtkm::Id connectivitySize;
+    vtkm::cont::ConvertNumComponentsToOffsets(numIndices, offsets, connectivitySize);
+    numIndices.ReleaseResourcesExecution();
+
+    vtkm::cont::ArrayHandle<vtkm::Id> connectivity;
+    connectivity.Allocate(connectivitySize);
+
+    this->Invoke(worklet::CellDeepCopy::PassCellStructure{},
+                 deducedCellSet,
+                 shapes,
+                 vtkm::cont::make_ArrayHandleGroupVecVariable(connectivity, offsets));
+    shapes.ReleaseResourcesExecution();
+    offsets.ReleaseResourcesExecution();
+    connectivity.ReleaseResourcesExecution();
+
+    outputCellSet.Fill(deducedCellSet.GetNumberOfPoints(), shapes, connectivity, offsets);
+
+    //Release the input grid from the execution space
+    deducedCellSet.ReleaseResourcesExecution();
+  }
+
+  return this->GenerateOutput(inData, outputCellSet);
+}
 }
 }

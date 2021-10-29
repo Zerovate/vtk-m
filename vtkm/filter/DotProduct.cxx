@@ -98,7 +98,7 @@ struct ResolveTypeFunctor
 VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(
   const vtkm::cont::DataSet& inDataSet) const
 {
-  // ApplyPolicyFeildActive turns the UnknownArrayHandle to UncerntainArrayHandle  wich
+  // ApplyPolicyFeildActive turns the UnknownArrayHandle to UncerntainArrayHandle with
   // certain ValueType and Stroage based on PolicyDefault and Filter::Supported btype. We
   // could just do it ourselves but here we are demonstrating what the "helper" function
   // looks like.
