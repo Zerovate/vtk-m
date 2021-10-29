@@ -117,46 +117,6 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
   return outData;
 }
 
-bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
-{
-  if (field.IsFieldPoint() && (this->GetCompactPointFields() || this->GetMergePoints()))
-  {
-    vtkm::cont::Field compactedField;
-    if (this->GetCompactPointFields())
-    {
-      bool success = vtkm::filter::MapFieldPermutation(
-        field, this->PointCompactor.GetPointScatter().GetOutputToInputMap(), compactedField);
-      if (!success)
-      {
-        return false;
-      }
-    }
-    else
-    {
-      compactedField = field;
-    }
-    if (this->GetMergePoints())
-    {
-      return vtkm::filter::MapFieldMergeAverage(
-        compactedField, this->PointMerger.GetMergeKeys(), result);
-    }
-    else
-    {
-      result.AddField(compactedField);
-      return true;
-    }
-  }
-  else if (field.IsFieldCell() && this->GetRemoveDegenerateCells())
-  {
-    return vtkm::filter::MapFieldPermutation(field, this->CellCompactor.GetValidCellIds(), result);
-  }
-  else
-  {
-    result.AddField(field);
-    return true;
-  }
-}
-
 vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
 {
   using CellSetType = vtkm::cont::CellSetExplicit<>;
@@ -201,6 +161,46 @@ vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
   }
 
   return this->GenerateOutput(inData, outputCellSet);
+}
+
+bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
+{
+  if (field.IsFieldPoint() && (this->GetCompactPointFields() || this->GetMergePoints()))
+  {
+    vtkm::cont::Field compactedField;
+    if (this->GetCompactPointFields())
+    {
+      bool success = vtkm::filter::MapFieldPermutation(
+        field, this->PointCompactor.GetPointScatter().GetOutputToInputMap(), compactedField);
+      if (!success)
+      {
+        return false;
+      }
+    }
+    else
+    {
+      compactedField = field;
+    }
+    if (this->GetMergePoints())
+    {
+      return vtkm::filter::MapFieldMergeAverage(
+        compactedField, this->PointMerger.GetMergeKeys(), result);
+    }
+    else
+    {
+      result.AddField(compactedField);
+      return true;
+    }
+  }
+  else if (field.IsFieldCell() && this->GetRemoveDegenerateCells())
+  {
+    return vtkm::filter::MapFieldPermutation(field, this->CellCompactor.GetValidCellIds(), result);
+  }
+  else
+  {
+    result.AddField(field);
+    return true;
+  }
 }
 }
 }
