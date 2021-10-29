@@ -30,7 +30,7 @@ set(unit_tests
   UnitTestCosmoTools.cxx
   UnitTestCrossProduct.cxx
   UnitTestDescriptiveStatistics.cxx
-        UnitTestExternalFaces.cxx
+  UnitTestExternalFaces.cxx
   UnitTestExtractGeometry.cxx
   UnitTestExtractPoints.cxx
   UnitTestExtractStructured.cxx
@@ -56,7 +56,6 @@ set(unit_tests
   UnitTestPointGradient.cxx
   UnitTestPointTransform.cxx
   UnitTestProbe.cxx
-  UnitTestRemoveUnusedPoints.cxx
   UnitTestScalarsToColors.cxx
   UnitTestScatterAndMask.cxx
   UnitTestScatterCounting.cxx
