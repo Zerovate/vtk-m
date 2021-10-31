@@ -39,16 +39,6 @@ inline VTKM_CONT FilterDataSet<Derived>::~FilterDataSet()
 //-----------------------------------------------------------------------------
 template <typename Derived>
 template <typename DerivedPolicy>
-inline VTKM_CONT vtkm::cont::DataSet FilterDataSet<Derived>::PrepareForExecution(
-  const vtkm::cont::DataSet& input,
-  vtkm::filter::PolicyBase<DerivedPolicy>)
-{
-  return (static_cast<Derived*>(this))->DoExecute(input);
-}
-
-//-----------------------------------------------------------------------------
-template <typename Derived>
-template <typename DerivedPolicy>
 inline VTKM_CONT bool FilterDataSet<Derived>::MapFieldOntoOutput(
   vtkm::cont::DataSet& result,
   const vtkm::cont::Field& field,

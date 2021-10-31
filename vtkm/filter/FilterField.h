@@ -93,23 +93,6 @@ public:
     }
   }
 
-  //@{
-  /// These are provided to satisfy the Filter API requirements.
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
-                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
-
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
-                                                    const vtkm::cont::Field& field,
-                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
-
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
-                                                    const vtkm::cont::CoordinateSystem& field,
-                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
-  //@}
-
 protected:
   vtkm::filter::FilterField<Derived>& operator=(const vtkm::filter::FilterField<Derived>&) =
     default;

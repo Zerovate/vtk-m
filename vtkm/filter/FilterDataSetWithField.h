@@ -93,10 +93,6 @@ public:
                                     const vtkm::cont::Field& field,
                                     vtkm::filter::PolicyBase<DerivedPolicy> policy);
 
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
-                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
-
 protected:
   vtkm::filter::FilterDataSetWithField<Derived>& operator=(
     const vtkm::filter::FilterDataSetWithField<Derived>&) = default;
@@ -105,17 +101,6 @@ protected:
   void CopyStateFrom(const FilterDataSetWithField<Derived>* filter) { *this = *filter; }
 
 private:
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
-                                                    const vtkm::cont::Field& field,
-                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
-
-  //How do we specify float/double coordinate types?
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
-                                                    const vtkm::cont::CoordinateSystem& field,
-                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
-
   std::string OutputFieldName;
   vtkm::Id CoordinateSystemIndex;
   std::string ActiveFieldName;

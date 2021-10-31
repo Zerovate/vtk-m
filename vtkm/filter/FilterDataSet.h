@@ -53,10 +53,6 @@ public:
                                     const vtkm::cont::Field& field,
                                     vtkm::filter::PolicyBase<DerivedPolicy> policy);
 
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
-                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
-
 protected:
   vtkm::filter::FilterDataSet<Derived>& operator=(const vtkm::filter::FilterDataSet<Derived>&) =
     default;

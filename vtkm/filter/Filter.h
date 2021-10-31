@@ -284,6 +284,15 @@ public:
   vtkm::filter::FieldSelection& GetFieldsToPass() { return this->FieldsToPass; }
   //@}
 
+  // TODO: make it private/protected?
+  template <typename DerivedPolicy>
+  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
+                                                    vtkm::filter::PolicyBase<DerivedPolicy>)
+  {
+    return (static_cast<Derived*>(this))->DoExecute(input);
+  }
+
+
   //@{
   /// Executes the filter on the input and produces a result dataset.
   ///
