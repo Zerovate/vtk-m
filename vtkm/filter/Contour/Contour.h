@@ -48,17 +48,34 @@ public:
 
   Contour();
 
-  void SetNumberOfIsoValues(vtkm::Id num);
+  void SetNumberOfIsoValues(vtkm::Id num)
+  {
+    if (num >= 0)
+    {
+      this->IsoValues.resize(static_cast<std::size_t>(num));
+    }
+  }
 
-  vtkm::Id GetNumberOfIsoValues() const;
+  vtkm::Id GetNumberOfIsoValues() const { return static_cast<vtkm::Id>(this->IsoValues.size()); }
 
   void SetIsoValue(vtkm::Float64 v) { this->SetIsoValue(0, v); }
 
-  void SetIsoValue(vtkm::Id index, vtkm::Float64);
+  void SetIsoValue(vtkm::Id index, vtkm::Float64 v)
+  {
+    std::size_t i = static_cast<std::size_t>(index);
+    if (i >= this->IsoValues.size())
+    {
+      this->IsoValues.resize(i + 1);
+    }
+    this->IsoValues[i] = v;
+  }
 
-  void SetIsoValues(const std::vector<vtkm::Float64>& values);
+  void SetIsoValues(const std::vector<vtkm::Float64>& values) { this->IsoValues = values; }
 
-  vtkm::Float64 GetIsoValue(vtkm::Id index) const;
+  vtkm::Float64 GetIsoValue(vtkm::Id index) const
+  {
+    return this->IsoValues[static_cast<std::size_t>(index)];
+  }
 
   /// Set/Get whether the points generated should be unique for every triangle
   /// or will duplicate points be merged together. Duplicate points are identified
@@ -112,12 +129,12 @@ public:
   VTKM_CONT
   const std::string& GetNormalArrayName() const { return this->NormalArrayName; }
 
-  template <typename T, typename StorageType, typename DerivedPolicy>
-  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input,
-                                const vtkm::cont::ArrayHandle<T, StorageType>& field,
-                                const vtkm::filter::FieldMetadata& fieldMeta,
-                                vtkm::filter::PolicyBase<DerivedPolicy> policy);
-
+  //  template <typename T, typename StorageType, typename DerivedPolicy>
+  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& concrete);
+  //                                const vtkm::cont::ArrayHandle<T, StorageType>& field,
+  //                                const vtkm::filter::FieldMetadata& fieldMeta,
+  //                                vtkm::filter::PolicyBase<DerivedPolicy> policy);
+  //
   template <typename DerivedPolicy>
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
                                     const vtkm::cont::Field& field,
@@ -192,38 +209,6 @@ private:
   std::string InterpolationEdgeIdsArrayName;
   vtkm::worklet::Contour Worklet;
 };
-
-VTKM_INSTANTIATION_BEGIN
-extern template VTKM_FILTER_CONTOUR_TEMPLATE_EXPORT vtkm::cont::DataSet Contour::DoExecute(
-  const vtkm::cont::DataSet&,
-  const vtkm::cont::ArrayHandle<vtkm::UInt8>&,
-  const vtkm::filter::FieldMetadata&,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault>);
-VTKM_INSTANTIATION_END
-
-VTKM_INSTANTIATION_BEGIN
-extern template VTKM_FILTER_CONTOUR_TEMPLATE_EXPORT vtkm::cont::DataSet Contour::DoExecute(
-  const vtkm::cont::DataSet&,
-  const vtkm::cont::ArrayHandle<vtkm::Int8>&,
-  const vtkm::filter::FieldMetadata&,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault>);
-VTKM_INSTANTIATION_END
-
-VTKM_INSTANTIATION_BEGIN
-extern template VTKM_FILTER_CONTOUR_TEMPLATE_EXPORT vtkm::cont::DataSet Contour::DoExecute(
-  const vtkm::cont::DataSet&,
-  const vtkm::cont::ArrayHandle<vtkm::Float32>&,
-  const vtkm::filter::FieldMetadata&,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault>);
-VTKM_INSTANTIATION_END
-
-VTKM_INSTANTIATION_BEGIN
-extern template VTKM_FILTER_CONTOUR_TEMPLATE_EXPORT vtkm::cont::DataSet Contour::DoExecute(
-  const vtkm::cont::DataSet&,
-  const vtkm::cont::ArrayHandle<vtkm::Float64>&,
-  const vtkm::filter::FieldMetadata&,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault>);
-VTKM_INSTANTIATION_END
 
 }
 } // namespace vtkm::filter

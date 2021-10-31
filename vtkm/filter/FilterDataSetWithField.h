@@ -69,6 +69,20 @@ public:
   bool GetUseCoordinateSystemAsField() const { return this->UseCoordinateSystemAsField; }
   //@}
 
+  // TODO: there is another copy in FilterField, de-dup
+  VTKM_CONT
+  const vtkm::cont::Field& GetFieldFromDataSet(const vtkm::cont::DataSet& input) const
+  {
+    if (this->UseCoordinateSystemAsField)
+    {
+      return input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex());
+    }
+    else
+    {
+      return input.GetField(this->GetActiveFieldName(), this->GetActiveFieldAssociation());
+    }
+  }
+
   //From the field we can extract the association component
   // Association::ANY -> unable to map
   // Association::WHOLE_MESH -> (I think this is points)

@@ -15,7 +15,7 @@ set(contour_headers
 #        ContourTreeUniformAugmented.h
 #        ContourTreeUniformDistributed.h
 #        ContourTreeUniform.h
-  Slice.h
+#  Slice.h
 )
 
 set(contour_header_template_sources
@@ -23,13 +23,13 @@ set(contour_header_template_sources
 #        ContourTreeUniformAugmented.hxx
 #        ContourTreeUniformDistributed.hxx
 #        ContourTreeUniform.hxx
-  Slice.hxx
+#  Slice.hxx
 )
 
 set(contour_sources_device
   Contour.cxx
   ${ContourInstantiations}
-  Slice.cxx
+#  Slice.cxx
 )
 
 set_source_files_properties(Contour.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
