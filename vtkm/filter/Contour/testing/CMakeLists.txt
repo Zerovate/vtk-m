@@ -7,23 +7,29 @@
 ##  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ##  PURPOSE.  See the above copyright notice for more information.
 ##============================================================================
+set(unit_tests
+  UnitTestContourFilter.cxx
+  UnitTestContourFilterNormals.cxx
+)
 
-set(headers
-  CommonState.h
-  FieldPropagation.h
-  FlyingEdges.h
-  FlyingEdgesHelpers.h
-  FlyingEdgesPass1.h
-  FlyingEdgesPass2.h
-  FlyingEdgesPass4.h
-  FlyingEdgesPass4Common.h
-  FlyingEdgesPass4X.h
-  FlyingEdgesPass4XWithNormals.h
-  FlyingEdgesPass4Y.h
-  FlyingEdgesTables.h
-  MarchingCellTables.h
-  MarchingCells.h
+set(libraries
+  vtkm_filter
+  vtkm_io
+  vtkm_source
+)
+
+if (VTKm_ENABLE_RENDERING)
+  list(APPEND libraries vtkm_rendering)
+
+  list(APPEND unit_tests
+    RegressionTestContourFilter.cxx
+    RegressionTestSliceFilter.cxx
   )
+endif()
 
-#-----------------------------------------------------------------------------
-vtkm_declare_headers(${headers})
+vtkm_unit_tests(
+  SOURCES ${unit_tests}
+  LIBRARIES ${libraries}
+  ALL_BACKENDS
+  USE_VTKM_JOB_POOL
+)

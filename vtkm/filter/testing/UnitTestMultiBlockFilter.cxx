@@ -15,7 +15,7 @@
 
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
 #include <vtkm/filter/ClipWithField.h>
-#include <vtkm/filter/Contour.h>
+#include <vtkm/filter/Contour/Contour.h>
 #include <vtkm/filter/Gradient.h>
 
 #include <vtkm/io/VTKDataSetReader.h>

@@ -8,7 +8,7 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 #include <vtkm/filter/CellAverage.h>
-#include <vtkm/filter/Contour.h>
+#include <vtkm/filter/Contour/Contour.h>
 #include <vtkm/filter/SplitSharpEdges.h>
 #include <vtkm/filter/SurfaceNormals.h>
 

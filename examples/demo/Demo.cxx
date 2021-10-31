@@ -19,7 +19,7 @@
 #include <vtkm/rendering/Scene.h>
 #include <vtkm/rendering/View3D.h>
 
-#include <vtkm/filter/Contour.h>
+#include <vtkm/filter/Contour/Contour.h>
 
 // This example creates a simple data set and uses VTK-m's rendering engine to render an image and
 // write that image to a file. It then computes an isosurface on the input data set and renders

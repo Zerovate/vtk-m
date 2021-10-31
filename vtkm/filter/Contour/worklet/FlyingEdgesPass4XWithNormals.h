@@ -14,10 +14,10 @@
 #define vtk_m_worklet_contour_flyingedges_pass4x_with_norms_h
 
 
-#include <vtkm/worklet/contour/FlyingEdgesHelpers.h>
-#include <vtkm/worklet/contour/FlyingEdgesTables.h>
+#include <vtkm/filter/Contour/worklet/FlyingEdgesHelpers.h>
+#include <vtkm/filter/Contour/worklet/FlyingEdgesTables.h>
 
-#include <vtkm/worklet/contour/FlyingEdgesPass4.h>
+#include <vtkm/filter/Contour/worklet/FlyingEdgesPass4.h>
 
 namespace vtkm
 {

@@ -11,10 +11,10 @@
 #ifndef vtk_m_filter_Slice_cxx
 #define vtk_m_filter_Slice_cxx
 
-#include <vtkm/filter/Contour.h>
-#include <vtkm/filter/Contour.hxx>
-#include <vtkm/filter/Slice.h>
-#include <vtkm/filter/Slice.hxx>
+#include <vtkm/filter/Contour/Contour.h>
+#include <vtkm/filter/Contour/Contour.hxx>
+#include <vtkm/filter/Contour/Slice.h>
+#include <vtkm/filter/Contour/Slice.hxx>
 
 namespace vtkm
 {

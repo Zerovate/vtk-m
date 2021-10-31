@@ -28,7 +28,7 @@
 #include <vtkm/cont/internal/OptionParser.h>
 
 #include <vtkm/filter/CellAverage.h>
-#include <vtkm/filter/Contour.h>
+#include <vtkm/filter/Contour/Contour.h>
 #include <vtkm/filter/ExternalFaces.h>
 #include <vtkm/filter/FieldSelection.h>
 #include <vtkm/filter/Gradient.h>

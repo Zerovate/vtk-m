@@ -18,8 +18,7 @@ set(unit_tests
 #  UnitTestCellSetConnectivityFilter.cxx
 #  UnitTestClipWithFieldFilter.cxx
 #  UnitTestClipWithImplicitFunctionFilter.cxx
-#  UnitTestContourFilter.cxx
-#  UnitTestContourFilterNormals.cxx
+
 #  UnitTestContourTreeUniformFilter.cxx
 #  UnitTestContourTreeUniformAugmentedFilter.cxx
 #  UnitTestContourTreeUniformDistributedFilter.cxx

@@ -12,11 +12,10 @@
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/testing/Testing.h>
+
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
+#include <vtkm/filter/Contour/Contour.h>
 
-#include <vtkm/filter/Contour.h>
-
-#include <vtkm/io/VTKDataSetWriter.h>
 
 namespace vtkm_ut_mc_normals
 {

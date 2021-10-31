@@ -27,6 +27,8 @@ set_property(TARGET
 target_link_libraries(vtkm_filter_cleangrid PUBLIC vtkm_worklet)
 target_link_libraries(vtkm_filter PUBLIC INTERFACE vtkm_filter_cleangrid)
 
+add_subdirectory(worklet)
+
 #-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
 if (VTKm_ENABLE_TESTING)
   add_subdirectory(testing)

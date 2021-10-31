@@ -40,7 +40,6 @@ set(headers
   Keys.h
   LagrangianStructures.h
   Magnitude.h
-  Contour.h
   Mask.h
   MaskIndices.h
   MaskNone.h
@@ -124,7 +123,6 @@ add_subdirectory(cellmetrics)
 add_subdirectory(clip)
 add_subdirectory(colorconversion)
 add_subdirectory(connectivities)
-add_subdirectory(contour)
 add_subdirectory(contourtree)
 add_subdirectory(contourtree_augmented)
 add_subdirectory(contourtree_distributed)

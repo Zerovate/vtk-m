@@ -10,7 +10,7 @@
 
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
 
-#include <vtkm/filter/Contour.h>
+#include <vtkm/filter/Contour/Contour.h>
 
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>

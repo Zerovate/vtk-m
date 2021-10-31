@@ -16,8 +16,8 @@
 #include <vtkm/filter/FilterDataSetWithField.h>
 #include <vtkm/filter/MapFieldPermutation.h>
 
+#include <vtkm/filter/Contour/worklet/Contour.h>
 #include <vtkm/filter/Instantiations.h>
-#include <vtkm/worklet/Contour.h>
 
 namespace vtkm
 {

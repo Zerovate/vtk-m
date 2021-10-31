@@ -12,7 +12,7 @@
 
 #include <vtkm/filter/vtkm_filter_contour_export.h>
 
-#include <vtkm/filter/Contour.h>
+#include <vtkm/filter/Contour/Contour.h>
 #include <vtkm/filter/FilterDataSet.h>
 
 #include <vtkm/ImplicitFunction.h>

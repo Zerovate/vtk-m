@@ -12,7 +12,7 @@
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/filter/CellSetConnectivity.h>
-#include <vtkm/filter/Contour.h>
+#include <vtkm/filter/Contour/Contour.h>
 #include <vtkm/source/Tangle.h>
 
 namespace

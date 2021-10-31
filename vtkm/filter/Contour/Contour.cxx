@@ -8,7 +8,7 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 #define vtkm_filter_Contour_cxx
-#include <vtkm/filter/Contour.h>
+#include <vtkm/filter/Contour/Contour.h>
 
 namespace vtkm
 {

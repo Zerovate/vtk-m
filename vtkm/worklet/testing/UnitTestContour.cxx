@@ -16,9 +16,9 @@
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/ClipWithImplicitFunction.h>
+#include <vtkm/filter/Contour/worklet/Contour.h>
 #include <vtkm/filter/GenerateIds.h>
 #include <vtkm/source/Tangle.h>
-#include <vtkm/worklet/Contour.h>
 
 namespace vtkm_ut_mc_worklet
 {

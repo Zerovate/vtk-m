@@ -8,7 +8,7 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/filter/Slice.h>
+#include <vtkm/filter/Contour/Slice.h>
 
 #include <vtkm/ImplicitFunction.h>
 #include <vtkm/filter/Tetrahedralize.h>
