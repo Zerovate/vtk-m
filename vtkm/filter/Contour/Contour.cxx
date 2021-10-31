@@ -115,7 +115,7 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
   // is that now we loose the ability of explicit instantiation of a template.
   // On the other hand, we can instead instantiate the Worklet.Run() but I don't know how to update
   // the auto-explicit-instantiation facility.
-  auto ResolveValueType = [&, this](auto concrete) {
+  auto ResolveFieldType = [&, this](auto concrete) {
     std::vector<typename decltype(concrete)::ValueType> ivalues(IsoValues.begin(), IsoValues.end());
 
     if (this->GenerateNormals && generateHighQualityNormals)
@@ -137,7 +137,7 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
     }
   };
 
-  field.CastAndCall(ResolveValueType);
+  field.CastAndCall(ResolveFieldType);
 
   if (this->GenerateNormals)
   {

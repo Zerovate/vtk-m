@@ -285,6 +285,7 @@ public:
   //@}
 
   // TODO: make it private/protected?
+  // TODO: further remove Policy object from the call chain.
   template <typename DerivedPolicy>
   VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
                                                     vtkm::filter::PolicyBase<DerivedPolicy>)

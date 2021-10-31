@@ -129,12 +129,8 @@ public:
   VTKM_CONT
   const std::string& GetNormalArrayName() const { return this->NormalArrayName; }
 
-  //  template <typename T, typename StorageType, typename DerivedPolicy>
   vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& concrete);
-  //                                const vtkm::cont::ArrayHandle<T, StorageType>& field,
-  //                                const vtkm::filter::FieldMetadata& fieldMeta,
-  //                                vtkm::filter::PolicyBase<DerivedPolicy> policy);
-  //
+
   template <typename DerivedPolicy>
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
                                     const vtkm::cont::Field& field,
