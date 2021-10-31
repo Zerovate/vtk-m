@@ -12,8 +12,6 @@
 #define vtk_m_filter_Slice_cxx
 
 #include <vtkm/cont/ArrayHandleTransform.h>
-
-#include <vtkm/filter/Contour/Contour.h>
 #include <vtkm/filter/Contour/Slice.h>
 
 namespace vtkm
@@ -28,6 +26,7 @@ vtkm::cont::DataSet Slice::DoExecute(const vtkm::cont::DataSet& input)
   vtkm::cont::DataSet result;
   auto impFuncEval =
     vtkm::ImplicitFunctionValueFunctor<vtkm::ImplicitFunctionGeneral>(this->Function);
+  // FIXME: do we still need GetDataAsMultiplexer()? Can GetData() do it?
   auto sliceScalars =
     vtkm::cont::make_ArrayHandleTransform(coords.GetDataAsMultiplexer(), impFuncEval);
   auto field = vtkm::cont::make_FieldPoint("sliceScalars", sliceScalars);
