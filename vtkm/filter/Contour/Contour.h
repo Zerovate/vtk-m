@@ -11,12 +11,11 @@
 #ifndef vtk_m_filter_Contour_h
 #define vtk_m_filter_Contour_h
 
-#include <vtkm/filter/vtkm_filter_contour_export.h>
-
+#include <vtkm/filter/Contour/vtkm_filter_contour_export.h>
+#include <vtkm/filter/Contour/worklet/Contour.h>
 #include <vtkm/filter/FilterDataSetWithField.h>
 #include <vtkm/filter/MapFieldPermutation.h>
 
-#include <vtkm/filter/Contour/worklet/Contour.h>
 #include <vtkm/filter/Instantiations.h>
 
 namespace vtkm
