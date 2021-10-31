@@ -93,9 +93,7 @@ public:
   VTKM_CONT
   const std::string& GetNormalArrayName() const { return this->ContourFilter.GetNormalArrayName(); }
 
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input,
-                                          vtkm::filter::PolicyBase<DerivedPolicy> policy);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input);
 
   template <typename DerivedPolicy>
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
@@ -120,12 +118,6 @@ private:
   vtkm::ImplicitFunctionGeneral Function;
   vtkm::filter::Contour ContourFilter;
 };
-
-#ifndef vtk_m_filter_Slice_cxx
-extern template VTKM_FILTER_CONTOUR_TEMPLATE_EXPORT vtkm::cont::DataSet Slice::DoExecute(
-  const vtkm::cont::DataSet&,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault>);
-#endif
 
 }
 } // vtkm::filter

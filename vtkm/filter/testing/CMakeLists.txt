@@ -97,9 +97,7 @@ set(libraries
 #  list(APPEND libraries vtkm_rendering)
 #
 #  list(APPEND unit_tests
-#    RegressionTestContourFilter.cxx
 #    RegressionTestPointTransform.cxx
-#    RegressionTestSliceFilter.cxx
 #    RegressionTestSplitSharpEdges.cxx
 #    RegressionTestStreamline.cxx
 #    RegressionTestSurfaceNormals.cxx

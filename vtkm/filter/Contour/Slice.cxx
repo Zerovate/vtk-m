@@ -11,18 +11,32 @@
 #ifndef vtk_m_filter_Slice_cxx
 #define vtk_m_filter_Slice_cxx
 
+#include <vtkm/cont/ArrayHandleTransform.h>
+
 #include <vtkm/filter/Contour/Contour.h>
 #include <vtkm/filter/Contour/Slice.h>
-#include <vtkm/filter/Contour/Slice.hxx>
 
 namespace vtkm
 {
 namespace filter
 {
 
-template VTKM_FILTER_CONTOUR_EXPORT vtkm::cont::DataSet Slice::DoExecute(
-  const vtkm::cont::DataSet&,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault>);
+vtkm::cont::DataSet Slice::DoExecute(const vtkm::cont::DataSet& input)
+{
+  const auto& coords = input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex());
+
+  vtkm::cont::DataSet result;
+  auto impFuncEval =
+    vtkm::ImplicitFunctionValueFunctor<vtkm::ImplicitFunctionGeneral>(this->Function);
+  auto sliceScalars =
+    vtkm::cont::make_ArrayHandleTransform(coords.GetDataAsMultiplexer(), impFuncEval);
+  auto field = vtkm::cont::make_FieldPoint("sliceScalars", sliceScalars);
+
+  this->ContourFilter.SetIsoValue(0.0);
+  this->ContourFilter.SetActiveField("sliceScalars");
+  result = this->ContourFilter.DoExecute(input);
+  return result;
+}
 
 }
 } // vtkm::filter

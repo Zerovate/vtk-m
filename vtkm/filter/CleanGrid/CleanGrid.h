@@ -37,7 +37,7 @@ namespace filter
 /// \todo Add a feature to merge points that are coincident or within a
 /// tolerance.
 ///
-class VTKM_FILTER_COMMON_EXPORT CleanGrid : public vtkm::filter::FilterDataSet<CleanGrid>
+class VTKM_FILTER_CLEANGRID_EXPORT CleanGrid : public vtkm::filter::FilterDataSet<CleanGrid>
 {
 public:
   CleanGrid();
