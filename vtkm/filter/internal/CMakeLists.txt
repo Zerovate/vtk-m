@@ -9,7 +9,6 @@
 ##============================================================================
 
 set(headers
-  ResolveFieldTypeAndExecute.h
   ResolveFieldTypeAndMap.h
 )
 

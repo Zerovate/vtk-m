@@ -11,7 +11,6 @@
 #include <vtkm/filter/FieldMetadata.h>
 #include <vtkm/filter/PolicyDefault.h>
 
-#include <vtkm/filter/internal/ResolveFieldTypeAndExecute.h>
 #include <vtkm/filter/internal/ResolveFieldTypeAndMap.h>
 
 #include <vtkm/cont/Algorithm.h>

@@ -12,7 +12,6 @@
 #include <vtkm/filter/FilterTraits.h>
 #include <vtkm/filter/PolicyDefault.h>
 
-#include <vtkm/filter/internal/ResolveFieldTypeAndExecute.h>
 #include <vtkm/filter/internal/ResolveFieldTypeAndMap.h>
 
 #include <vtkm/cont/Error.h>

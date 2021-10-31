@@ -12,8 +12,6 @@
 #include <vtkm/filter/FilterTraits.h>
 #include <vtkm/filter/PolicyDefault.h>
 
-#include <vtkm/filter/internal/ResolveFieldTypeAndExecute.h>
-
 #include <vtkm/cont/Error.h>
 #include <vtkm/cont/ErrorBadAllocation.h>
 #include <vtkm/cont/ErrorExecution.h>
@@ -43,78 +41,5 @@ inline VTKM_CONT FilterField<Derived>::~FilterField()
 {
 }
 
-#if 0
-template <typename Derived>
-template <typename DerivedPolicy>
-VTKM_CONT vtkm::cont::DataSet FilterField<Derived>::PrepareForExecution(
-  const vtkm::cont::DataSet& input,
-  vtkm::filter::PolicyBase<DerivedPolicy> policy)
-{
-  if (this->UseCoordinateSystemAsField)
-  {
-    // we need to state that the field is actually a coordinate system, so that
-    // the filter uses the proper policy to convert the types.
-    return this->PrepareForExecution(
-      input, input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex()), policy);
-  }
-  else
-  {
-    return this->PrepareForExecution(
-      input, input.GetField(this->GetActiveFieldName(), this->GetActiveFieldAssociation()), policy);
-  }
-}
-
-//-----------------------------------------------------------------------------
-template <typename Derived>
-template <typename DerivedPolicy>
-VTKM_CONT vtkm::cont::DataSet FilterField<Derived>::PrepareForExecution(
-  const vtkm::cont::DataSet& input,
-  const vtkm::cont::Field& field,
-  vtkm::filter::PolicyBase<DerivedPolicy> policy)
-{
-  vtkm::filter::FieldMetadata metaData(field);
-  vtkm::cont::DataSet result;
-
-  vtkm::cont::CastAndCall(
-    vtkm::filter::ApplyPolicyFieldActive(field, policy, vtkm::filter::FilterTraits<Derived>()),
-    internal::ResolveFieldTypeAndExecute(),
-    static_cast<Derived*>(this),
-    input,
-    metaData,
-    policy,
-    result);
-  return result;
-}
-
-//-----------------------------------------------------------------------------
-template <typename Derived>
-template <typename DerivedPolicy>
-VTKM_CONT vtkm::cont::DataSet FilterField<Derived>::PrepareForExecution(
-  const vtkm::cont::DataSet& input,
-  const vtkm::cont::CoordinateSystem& field,
-  vtkm::filter::PolicyBase<DerivedPolicy> policy)
-{
-  //We have a special signature just for CoordinateSystem, so that we can ask
-  //the policy for the storage types and value types just for coordinate systems
-  vtkm::filter::FieldMetadata metaData(field);
-  vtkm::cont::DataSet result;
-
-  using Traits = vtkm::filter::FilterTraits<Derived>;
-  constexpr bool supportsVec3 =
-    vtkm::ListHas<typename Traits::InputFieldTypeList, vtkm::Vec3f>::value;
-
-  using supportsCoordinateSystem = std::integral_constant<bool, supportsVec3>;
-  vtkm::cont::ConditionalCastAndCall(supportsCoordinateSystem(),
-                                     field,
-                                     internal::ResolveFieldTypeAndExecute(),
-                                     static_cast<Derived*>(this),
-                                     input,
-                                     metaData,
-                                     policy,
-                                     result);
-
-  return result;
-}
-#endif
 }
 }

@@ -15,7 +15,6 @@
 #include <vtkm/cont/ErrorBadType.h>
 #include <vtkm/cont/Logging.h>
 
-#include <vtkm/filter/internal/ResolveFieldTypeAndExecute.h>
 #include <vtkm/filter/internal/ResolveFieldTypeAndMap.h>
 
 namespace vtkm
