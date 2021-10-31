@@ -39,14 +39,15 @@ using CellSetListExplicitDefault = CellSetListExplicit<>;
 
 using CellSetListCommon = vtkm::List<vtkm::cont::CellSetStructured<2>,
                                      vtkm::cont::CellSetStructured<3>,
+                                     vtkm::cont::CellSetExtrude,
                                      vtkm::cont::CellSetExplicit<>,
                                      vtkm::cont::CellSetSingleType<>>;
 
 using CellSetListStructured =
   vtkm::List<vtkm::cont::CellSetStructured<2>, vtkm::cont::CellSetStructured<3>>;
 
-using CellSetListUnstructured =
-  vtkm::List<vtkm::cont::CellSetExplicit<>, vtkm::cont::CellSetSingleType<>>;
+using CellSetListUnstructured = vtkm::
+  List<vtkm::cont::CellSetExplicit<>, vtkm::cont::CellSetSingleType<>>; //, vtkm::cont::CellSetExtrude>; //This fixes some things, breaks others.
 }
 } // namespace vtkm::cont
 
