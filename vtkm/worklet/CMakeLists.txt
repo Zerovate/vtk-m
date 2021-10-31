@@ -154,5 +154,6 @@ set_source_files_properties(${sources_device} PROPERTIES SKIP_UNITY_BUILD_INCLUS
 
 #-----------------------------------------------------------------------------
 if (VTKm_ENABLE_TESTING)
-  add_subdirectory(testing)
+  # TODO: disabled for now will either be gone or to indivitual vtkm/filter subdirs.
+#  add_subdirectory(testing)
 endif ()
