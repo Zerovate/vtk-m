@@ -33,20 +33,10 @@ class FilterDataSetWithField
 {
 public:
   VTKM_CONT
-  FilterDataSetWithField();
+  FilterDataSetWithField() = default;
 
   VTKM_CONT
-  ~FilterDataSetWithField();
-
-  //From the field we can extract the association component
-  // Association::ANY -> unable to map
-  // Association::WHOLE_MESH -> (I think this is points)
-  // Association::POINTS -> map using point mapping
-  // Association::CELL_SET -> how do we map this?
-  template <typename DerivedPolicy>
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                    const vtkm::cont::Field& field,
-                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
+  ~FilterDataSetWithField() = default;
 
 protected:
   vtkm::filter::FilterDataSetWithField<Derived>& operator=(
@@ -60,7 +50,5 @@ private:
 };
 }
 } // namespace vtkm::filter
-
-#include <vtkm/filter/FilterDataSetWithField.hxx>
 
 #endif // vtk_m_filter_DataSetWithFieldFilter_h

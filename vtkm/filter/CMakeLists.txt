@@ -52,7 +52,6 @@ set(common_header_template_sources
   ExtractPoints.hxx
   ExtractStructured.hxx
   FilterDataSet.hxx
-  FilterDataSetWithField.hxx
   FilterField.hxx
   Filter.hxx
   FilterParticleAdvection.hxx

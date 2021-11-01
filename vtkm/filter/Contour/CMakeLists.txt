@@ -8,7 +8,7 @@
 ##  PURPOSE.  See the above copyright notice for more information.
 ##============================================================================
 
-vtkm_add_instantiations(ContourInstantiations FILTER Contour)
+#vtkm_add_instantiations(ContourInstantiations FILTER Contour)
 
 set(contour_headers
   Contour.h
@@ -26,7 +26,7 @@ set(contour_header_template_sources
 
 set(contour_sources_device
   Contour.cxx
-  ${ContourInstantiations}
+#  ${ContourInstantiations}
   Slice.cxx
 )
 
