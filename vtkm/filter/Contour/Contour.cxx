@@ -137,7 +137,7 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
     }
   };
 
-  field.CastAndCall(ResolveFieldType);
+  field.CastAndCallWithFloatFallback(ResolveFieldType);
 
   if (this->GenerateNormals)
   {

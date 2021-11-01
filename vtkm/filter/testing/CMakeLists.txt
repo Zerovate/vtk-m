@@ -26,7 +26,7 @@ set(unit_tests
 #  UnitTestCrossProductFilter.cxx
   UnitTestDotProductFilter.cxx
 #  UnitTestEntropyFilter.cxx
-#  UnitTestExternalFacesFilter.cxx
+
 #  UnitTestExtractGeometryFilter.cxx
 #  UnitTestExtractPointsFilter.cxx
 #  UnitTestExtractStructuredFilter.cxx

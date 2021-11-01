@@ -8,8 +8,8 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
+#include <vtkm/filter/GeometryGeneration/worklet/Tetrahedralize.h>
 #include <vtkm/worklet/DispatcherMapField.h>
-#include <vtkm/worklet/Tetrahedralize.h>
 
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DataSetBuilderExplicit.h>

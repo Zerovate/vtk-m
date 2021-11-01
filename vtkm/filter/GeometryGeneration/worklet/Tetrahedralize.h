@@ -10,8 +10,8 @@
 #ifndef vtkm_m_worklet_Tetrahedralize_h
 #define vtkm_m_worklet_Tetrahedralize_h
 
-#include <vtkm/worklet/tetrahedralize/TetrahedralizeExplicit.h>
-#include <vtkm/worklet/tetrahedralize/TetrahedralizeStructured.h>
+#include <vtkm/filter/GeometryGeneration/worklet/tetrahedralize/TetrahedralizeExplicit.h>
+#include <vtkm/filter/GeometryGeneration/worklet/tetrahedralize/TetrahedralizeStructured.h>
 
 namespace vtkm
 {

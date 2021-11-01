@@ -13,6 +13,7 @@
 
 #include <vtkm/TypeList.h>
 #include <vtkm/filter/FilterField.h>
+#include <vtkm/filter/ImageProcessing/vtkm_filter_imageprocessing_export.h>
 
 namespace vtkm
 {
@@ -28,7 +29,8 @@ namespace filter
 /// The threshold-output is calculated for each pixel using the `vtkm::Magnitude` vector function
 /// on the individual pixel difference.
 ///
-class ImageDifference : public vtkm::filter::FilterField<ImageDifference>
+class VTKM_FILTER_IMAGEPROCESSING_EXPORT ImageDifference
+  : public vtkm::filter::FilterField<ImageDifference>
 {
 public:
   using SupportedTypes = vtkm::TypeListFieldVec4;
@@ -99,11 +101,7 @@ public:
     return this->SecondaryFieldAssociation;
   }
 
-  template <typename T, typename StorageType, typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input,
-                                          const vtkm::cont::ArrayHandle<T, StorageType>& primary,
-                                          const vtkm::filter::FieldMetadata& fieldMetadata,
-                                          vtkm::filter::PolicyBase<DerivedPolicy> policy);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input);
 
 private:
   vtkm::IdComponent AverageRadius;
@@ -118,7 +116,5 @@ private:
 
 } // namespace filter
 } // namespace vtkm
-
-#include <vtkm/filter/ImageDifference.hxx>
 
 #endif // vtk_m_filter_ImageDifference_h

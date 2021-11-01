@@ -10,8 +10,7 @@
 //============================================================================
 #define vtkm_filter_ExternalFaces_cxx
 
-#include <vtkm/filter/ExternalFaces.h>
-#include <vtkm/filter/ExternalFaces.hxx>
+#include <vtkm/filter/EntityExtraction/ExternalFaces.h>
 
 namespace vtkm
 {
@@ -66,6 +65,32 @@ vtkm::cont::DataSet ExternalFaces::GenerateOutput(const vtkm::cont::DataSet& inp
   }
 }
 
+//-----------------------------------------------------------------------------
+vtkm::cont::DataSet ExternalFaces::DoExecute(const vtkm::cont::DataSet& input)
+{
+  //1. extract the cell set
+  const vtkm::cont::DynamicCellSet& cells = input.GetCellSet();
+
+  //2. using the policy convert the dynamic cell set, and run the
+  // external faces worklet
+  vtkm::cont::CellSetExplicit<> outCellSet;
+
+  if (cells.IsSameType(vtkm::cont::CellSetStructured<3>()))
+  {
+    this->Worklet.Run(cells.Cast<vtkm::cont::CellSetStructured<3>>(),
+                      input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex()),
+                      outCellSet);
+  }
+  else
+  {
+    this->Worklet.Run(
+      vtkm::filter::ApplyPolicyCellSetUnstructured(cells, vtkm::filter::PolicyDefault{}, *this),
+      outCellSet);
+  }
+
+  return this->GenerateOutput(input, outCellSet);
+}
+
 bool ExternalFaces::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
 {
   if (field.IsFieldPoint())
@@ -95,9 +120,5 @@ bool ExternalFaces::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::
   }
 }
 
-//-----------------------------------------------------------------------------
-template VTKM_FILTER_EXTRA_TEMPLATE_EXPORT vtkm::cont::DataSet ExternalFaces::DoExecute(
-  const vtkm::cont::DataSet& inData,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault> policy);
 }
 }

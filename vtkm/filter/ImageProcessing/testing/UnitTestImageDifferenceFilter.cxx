@@ -11,7 +11,7 @@
 #include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/Logging.h>
 #include <vtkm/cont/testing/Testing.h>
-#include <vtkm/filter/ImageDifference.h>
+#include <vtkm/filter/ImageProcessing/ImageDifference.h>
 
 #include <random>
 #include <vector>

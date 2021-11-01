@@ -15,7 +15,7 @@
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
-#include <vtkm/worklet/ExternalFaces.h>
+#include <vtkm/filter/EntityExtraction/worklet/ExternalFaces.h>
 
 #include <algorithm>
 #include <iostream>

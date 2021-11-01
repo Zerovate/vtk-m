@@ -30,10 +30,13 @@ vtkm::cont::DataSet Slice::DoExecute(const vtkm::cont::DataSet& input)
   auto sliceScalars =
     vtkm::cont::make_ArrayHandleTransform(coords.GetDataAsMultiplexer(), impFuncEval);
   auto field = vtkm::cont::make_FieldPoint("sliceScalars", sliceScalars);
+  // input is a const, we can not AddField to it.
+  vtkm::cont::DataSet clone = input;
+  clone.AddField(field);
 
   this->ContourFilter.SetIsoValue(0.0);
   this->ContourFilter.SetActiveField("sliceScalars");
-  result = this->ContourFilter.DoExecute(input);
+  result = this->ContourFilter.DoExecute(clone);
   return result;
 }
 

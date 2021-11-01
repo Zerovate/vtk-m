@@ -8,10 +8,10 @@
 ##  PURPOSE.  See the above copyright notice for more information.
 ##============================================================================
 
+# TODO: Do we even need this CMakeList.txt at all?
 set(headers
-  TetrahedralizeExplicit.h
-  TetrahedralizeStructured.h
-  )
+  ExternalFaces.h)
 
-#-----------------------------------------------------------------------------
+# TODO: do we even need this? Does this mean the "internal" worklet header files will
+# be installed as well?
 vtkm_declare_headers(${headers})

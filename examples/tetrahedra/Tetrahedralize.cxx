@@ -12,7 +12,7 @@
 #include <vtkm/io/VTKDataSetReader.h>
 #include <vtkm/io/VTKDataSetWriter.h>
 
-#include <vtkm/filter/Tetrahedralize.h>
+#include <vtkm/filter/GeometryGeneration/Tetrahedralize.h>
 
 #include <cstdlib>
 #include <iostream>

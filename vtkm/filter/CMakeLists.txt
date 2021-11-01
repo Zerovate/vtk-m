@@ -1,3 +1,12 @@
+##============================================================================
+##  Copyright (c) Kitware, Inc.
+##  All rights reserved.
+##  See LICENSE.txt for details.
+##
+##  This software is distributed WITHOUT ANY WARRANTY; without even
+##  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+##  PURPOSE.  See the above copyright notice for more information.
+##============================================================================
 
 vtkm_add_instantiations(GradientInstantiations FILTER Gradient)
 
@@ -73,7 +82,6 @@ set(extra_headers
   CrossProduct.h
   DotProduct.h
   Entropy.h
-  ExternalFaces.h
   FieldSelection.h
   FieldToColors.h
   GenerateIds.h
@@ -81,7 +89,6 @@ set(extra_headers
   GhostCellRemove.h
   Histogram.h
   ImageConnectivity.h
-  ImageDifference.h
   ImageMedian.h
   Lagrangian.h
   LagrangianStructures.h
@@ -105,7 +112,6 @@ set(extra_headers
   Streamline.h
   StreamSurface.h
   SurfaceNormals.h
-  Tetrahedralize.h
   Triangulate.h
   Tube.h
   VectorMagnitude.h
@@ -130,13 +136,11 @@ set(extra_header_template_sources
   CoordinateSystemTransform.hxx
   CrossProduct.hxx
   Entropy.hxx
-  ExternalFaces.hxx
   FieldToColors.hxx
   GhostCellClassify.hxx
   GhostCellRemove.hxx
   Histogram.hxx
   ImageConnectivity.hxx
-  ImageDifference.hxx
   ImageMedian.hxx
   Lagrangian.hxx
   LagrangianStructures.hxx
@@ -158,7 +162,6 @@ set(extra_header_template_sources
   Streamline.hxx
   StreamSurface.hxx
   SurfaceNormals.hxx
-  Tetrahedralize.hxx
   Triangulate.hxx
   Tube.hxx
   VectorMagnitude.hxx
@@ -176,7 +179,6 @@ set(extra_header_template_sources
 set(extra_sources_device
 #  ${ClipWithFieldInstantiations}
 #  ${ClipWithImplicitFunctionInstantiations}
-#  ExternalFaces.cxx
   DotProduct.cxx
   GenerateIds.cxx
 #  VectorMagnitude.cxx
@@ -257,6 +259,9 @@ add_subdirectory(internal)
 add_subdirectory(particleadvection)
 add_subdirectory(CleanGrid)
 add_subdirectory(Contour)
+add_subdirectory(EntityExtraction)
+add_subdirectory(GeometryGeneration)
+add_subdirectory(ImageProcessing)
 
 #-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
 if (VTKm_ENABLE_TESTING)

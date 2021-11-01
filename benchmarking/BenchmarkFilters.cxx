@@ -29,12 +29,12 @@
 
 #include <vtkm/filter/CellAverage.h>
 #include <vtkm/filter/Contour/Contour.h>
-#include <vtkm/filter/ExternalFaces.h>
+#include <vtkm/filter/EntityExtraction/ExternalFaces.h>
 #include <vtkm/filter/FieldSelection.h>
+#include <vtkm/filter/GeometryGeneration/Tetrahedralize.h>
 #include <vtkm/filter/Gradient.h>
 #include <vtkm/filter/PointAverage.h>
 #include <vtkm/filter/PolicyBase.h>
-#include <vtkm/filter/Tetrahedralize.h>
 #include <vtkm/filter/Threshold.h>
 #include <vtkm/filter/ThresholdPoints.h>
 #include <vtkm/filter/Triangulate.h>

@@ -12,7 +12,7 @@
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
-#include <vtkm/filter/ExternalFaces.h>
+#include <vtkm/filter/EntityExtraction/ExternalFaces.h>
 
 using vtkm::cont::testing::MakeTestDataSet;
 

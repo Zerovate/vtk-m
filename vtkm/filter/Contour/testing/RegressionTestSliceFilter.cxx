@@ -11,7 +11,7 @@
 #include <vtkm/filter/Contour/Slice.h>
 
 #include <vtkm/ImplicitFunction.h>
-#include <vtkm/filter/Tetrahedralize.h>
+#include <vtkm/filter/GeometryGeneration/Tetrahedralize.h>
 #include <vtkm/source/Wavelet.h>
 
 #include <vtkm/rendering/CanvasRayTracer.h>

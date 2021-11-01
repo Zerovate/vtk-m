@@ -14,9 +14,9 @@
 #include <vtkm/filter/vtkm_filter_extra_export.h>
 
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
+#include <vtkm/filter/EntityExtraction/worklet/ExternalFaces.h>
 #include <vtkm/filter/FilterDataSet.h>
 #include <vtkm/filter/MapFieldPermutation.h>
-#include <vtkm/worklet/ExternalFaces.h>
 
 namespace vtkm
 {
@@ -55,9 +55,7 @@ public:
     this->Worklet.SetPassPolyData(value);
   }
 
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input,
-                                          vtkm::filter::PolicyBase<DerivedPolicy> policy);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input);
 
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field);
 
@@ -79,11 +77,6 @@ private:
   vtkm::filter::CleanGrid Compactor;
   vtkm::worklet::ExternalFaces Worklet;
 };
-#ifndef vtkm_filter_ExternalFaces_cxx
-extern template VTKM_FILTER_EXTRA_TEMPLATE_EXPORT vtkm::cont::DataSet ExternalFaces::DoExecute(
-  const vtkm::cont::DataSet&,
-  vtkm::filter::PolicyBase<vtkm::filter::PolicyDefault>);
-#endif
 }
 } // namespace vtkm::filter
 

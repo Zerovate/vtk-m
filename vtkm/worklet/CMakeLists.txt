@@ -26,7 +26,6 @@ set(headers
   DispatcherCellNeighborhood.h
   DispatcherPointNeighborhood.h
   DispatcherReduceByKey.h
-  ExternalFaces.h
   ExtractGeometry.h
   ExtractPoints.h
   ExtractStructured.h
@@ -34,7 +33,6 @@ set(headers
   FieldHistogram.h
   FieldStatistics.h
   Gradient.h
-  ImageDifference.h
   KdTree3D.h            # Deprecated
   KernelSplatter.h
   Keys.h
@@ -71,7 +69,6 @@ set(headers
   StreamLineUniformGrid.h
   StreamSurface.h
   SurfaceNormals.h
-  Tetrahedralize.h
   Threshold.h
   ThresholdPoints.h
   TriangleWinding.h
@@ -134,7 +131,6 @@ add_subdirectory(mir)
 add_subdirectory(moments)
 add_subdirectory(splatkernels)
 add_subdirectory(spatialstructure)
-add_subdirectory(tetrahedralize)
 add_subdirectory(triangulate)
 add_subdirectory(wavelets)
 add_subdirectory(particleadvection)
