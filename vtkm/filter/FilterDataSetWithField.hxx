@@ -29,11 +29,6 @@ namespace filter
 //----------------------------------------------------------------------------
 template <typename Derived>
 inline VTKM_CONT FilterDataSetWithField<Derived>::FilterDataSetWithField()
-  : OutputFieldName()
-  , CoordinateSystemIndex(0)
-  , ActiveFieldName()
-  , ActiveFieldAssociation(vtkm::cont::Field::Association::ANY)
-  , UseCoordinateSystemAsField(false)
 {
 }
 

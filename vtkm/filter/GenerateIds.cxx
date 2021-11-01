@@ -42,7 +42,7 @@ namespace vtkm
 namespace filter
 {
 
-vtkm::cont::DataSet GenerateIds::DoExecute(const vtkm::cont::DataSet& input) const
+vtkm::cont::DataSet GenerateIds::DoExecute(const vtkm::cont::DataSet& input)
 {
   vtkm::cont::DataSet output = input;
 

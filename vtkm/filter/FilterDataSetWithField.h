@@ -17,7 +17,8 @@
 #include <vtkm/cont/Field.h>
 #include <vtkm/cont/PartitionedDataSet.h>
 
-#include <vtkm/filter/Filter.h>
+#include <vtkm/filter/FilterDataSet.h>
+#include <vtkm/filter/FilterField.h>
 #include <vtkm/filter/PolicyBase.h>
 
 namespace vtkm
@@ -26,7 +27,9 @@ namespace filter
 {
 
 template <class Derived>
-class FilterDataSetWithField : public vtkm::filter::Filter<Derived>
+class FilterDataSetWithField
+  : public vtkm::filter::FilterField<Derived>
+  , public vtkm::filter::FilterDataSet<Derived>
 {
 public:
   VTKM_CONT
@@ -34,54 +37,6 @@ public:
 
   VTKM_CONT
   ~FilterDataSetWithField();
-
-  VTKM_CONT
-  void SetActiveCoordinateSystem(vtkm::Id index) { this->CoordinateSystemIndex = index; }
-
-  VTKM_CONT
-  vtkm::Id GetActiveCoordinateSystemIndex() const { return this->CoordinateSystemIndex; }
-
-  //@{
-  /// Choose the field to operate on. Note, if
-  /// `this->UseCoordinateSystemAsField` is true, then the active field is not used.
-  VTKM_CONT
-  void SetActiveField(
-    const std::string& name,
-    vtkm::cont::Field::Association association = vtkm::cont::Field::Association::ANY)
-  {
-    this->ActiveFieldName = name;
-    this->ActiveFieldAssociation = association;
-  }
-
-  VTKM_CONT const std::string& GetActiveFieldName() const { return this->ActiveFieldName; }
-  VTKM_CONT vtkm::cont::Field::Association GetActiveFieldAssociation() const
-  {
-    return this->ActiveFieldAssociation;
-  }
-  //@}
-
-  //@{
-  /// To simply use the active coordinate system as the field to operate on, set
-  /// UseCoordinateSystemAsField to true.
-  VTKM_CONT
-  void SetUseCoordinateSystemAsField(bool val) { this->UseCoordinateSystemAsField = val; }
-  VTKM_CONT
-  bool GetUseCoordinateSystemAsField() const { return this->UseCoordinateSystemAsField; }
-  //@}
-
-  // TODO: there is another copy in FilterField, de-dup
-  VTKM_CONT
-  const vtkm::cont::Field& GetFieldFromDataSet(const vtkm::cont::DataSet& input) const
-  {
-    if (this->UseCoordinateSystemAsField)
-    {
-      return input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex());
-    }
-    else
-    {
-      return input.GetField(this->GetActiveFieldName(), this->GetActiveFieldAssociation());
-    }
-  }
 
   //From the field we can extract the association component
   // Association::ANY -> unable to map
@@ -101,12 +56,6 @@ protected:
   void CopyStateFrom(const FilterDataSetWithField<Derived>* filter) { *this = *filter; }
 
 private:
-  std::string OutputFieldName;
-  vtkm::Id CoordinateSystemIndex;
-  std::string ActiveFieldName;
-  vtkm::cont::Field::Association ActiveFieldAssociation;
-  bool UseCoordinateSystemAsField;
-
   friend class vtkm::filter::Filter<Derived>;
 };
 }

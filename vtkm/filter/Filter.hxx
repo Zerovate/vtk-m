@@ -183,7 +183,8 @@ void RunFilter(Derived* self,
                vtkm::filter::DataSetQueue& input,
                vtkm::filter::DataSetQueue& output)
 {
-  auto filterClone = static_cast<Derived*>(self->Clone());
+  auto filterClone = dynamic_cast<Derived*>(self->Clone());
+  VTKM_ASSERT(filterClone != nullptr);
 
   std::pair<vtkm::Id, vtkm::cont::DataSet> task;
   while (input.GetTask(task))
@@ -293,6 +294,7 @@ void CallPostExecute(Derived* self,
 template <typename Derived>
 inline VTKM_CONT Filter<Derived>::Filter()
   : Invoke()
+  , CoordinateSystemIndex(0)
   , FieldsToPass(vtkm::filter::FieldSelection::MODE_ALL)
 {
 }
@@ -307,7 +309,9 @@ inline VTKM_CONT Filter<Derived>::~Filter()
 template <typename Derived>
 inline VTKM_CONT vtkm::cont::DataSet Filter<Derived>::Execute(const vtkm::cont::DataSet& input)
 {
-  Derived* self = static_cast<Derived*>(this);
+  Derived* self = dynamic_cast<Derived*>(this);
+  VTKM_ASSERT(self != nullptr);
+
   vtkm::cont::PartitionedDataSet output = self->Execute(vtkm::cont::PartitionedDataSet(input));
   if (output.GetNumberOfPartitions() > 1)
   {
@@ -325,7 +329,8 @@ inline VTKM_CONT vtkm::cont::PartitionedDataSet Filter<Derived>::Execute(
                  (int)input.GetNumberOfPartitions(),
                  vtkm::cont::TypeToString<Derived>().c_str());
 
-  Derived* self = static_cast<Derived*>(this);
+  Derived* self = dynamic_cast<Derived*>(this);
+  VTKM_ASSERT(self != nullptr);
 
   vtkm::filter::PolicyDefault policy;
 

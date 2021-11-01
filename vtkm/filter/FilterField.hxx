@@ -28,7 +28,6 @@ namespace filter
 template <typename Derived>
 inline VTKM_CONT FilterField<Derived>::FilterField()
   : OutputFieldName()
-  , CoordinateSystemIndex(0)
   , ActiveFieldName()
   , ActiveFieldAssociation(vtkm::cont::Field::Association::ANY)
   , UseCoordinateSystemAsField(false)

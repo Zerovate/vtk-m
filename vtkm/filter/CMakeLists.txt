@@ -8,7 +8,7 @@
 ##  PURPOSE.  See the above copyright notice for more information.
 ##============================================================================
 
-vtkm_add_instantiations(GradientInstantiations FILTER Gradient)
+#vtkm_add_instantiations(GradientInstantiations FILTER Gradient)
 
 vtkm_add_instantiations(ClipWithFieldInstantiations
   FILTER ClipWithField
@@ -187,17 +187,17 @@ set(extra_sources_device
 )
 
 
-set(gradient_headers
-  Gradient.h
-  )
+#set(gradient_headers
+#  Gradient.h
+#  )
 
-set(gradient_header_template_sources
-  Gradient.hxx
-  )
+#set(gradient_header_template_sources
+#  Gradient.hxx
+#  )
 
-set(gradient_sources_device
-  ${GradientInstantiations}
-  )
+#set(gradient_sources_device
+#  ${GradientInstantiations}
+#  )
 
 vtkm_pyexpander_generated_file(ClipWithFieldExternInstantiations.h)
 vtkm_pyexpander_generated_file(ClipWithImplicitFunctionExternInstantiations.h)
@@ -223,32 +223,32 @@ vtkm_library(
   )
 
 
-vtkm_library(
-  NAME vtkm_filter_gradient
-  TEMPLATE_SOURCES ${gradient_header_template_sources}
-  HEADERS ${gradient_headers}
-  DEVICE_SOURCES ${gradient_sources_device}
-  USE_VTKM_JOB_POOL
-  )
+#vtkm_library(
+#  NAME vtkm_filter_gradient
+#  TEMPLATE_SOURCES ${gradient_header_template_sources}
+#  HEADERS ${gradient_headers}
+#  DEVICE_SOURCES ${gradient_sources_device}
+#  USE_VTKM_JOB_POOL
+#  )
 
 set_property(TARGET
   vtkm_filter_common
   vtkm_filter_extra
-  vtkm_filter_gradient
+#  vtkm_filter_gradient
   PROPERTY UNITY_BUILD_MODE GROUP
   )
 
 target_link_libraries(vtkm_filter_common PUBLIC vtkm_worklet)
 target_link_libraries(vtkm_filter_extra PUBLIC vtkm_filter_common)
-target_link_libraries(vtkm_filter_gradient PUBLIC vtkm_filter_common)
+#target_link_libraries(vtkm_filter_gradient PUBLIC vtkm_filter_common)
 if (VTKm_ENABLE_MPI)
   target_link_libraries(vtkm_filter_common PUBLIC MPI::MPI_CXX)
   target_link_libraries(vtkm_filter_extra PUBLIC MPI::MPI_CXX)
-  target_link_libraries(vtkm_filter_gradient PUBLIC MPI::MPI_CXX)
+#  target_link_libraries(vtkm_filter_gradient PUBLIC MPI::MPI_CXX)
 endif()
 target_link_libraries(vtkm_filter PUBLIC INTERFACE
   vtkm_filter_extra
-  vtkm_filter_gradient
+#  vtkm_filter_gradient
   vtkm_filter_common
   )
 

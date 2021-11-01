@@ -25,7 +25,7 @@ namespace filter
 {
 
 template <class Derived>
-class FilterField : public vtkm::filter::Filter<Derived>
+class FilterField : public virtual vtkm::filter::Filter<Derived>
 {
 public:
   VTKM_CONT
@@ -68,18 +68,6 @@ public:
   bool GetUseCoordinateSystemAsField() const { return this->UseCoordinateSystemAsField; }
   //@}
 
-
-  //@{
-  /// Select the coordinate system index to make active to use when processing the input
-  /// DataSet. This is used primarily by the Filter to select the coordinate system
-  /// to use as a field when \c UseCoordinateSystemAsField is true.
-  VTKM_CONT
-  void SetActiveCoordinateSystem(vtkm::Id index) { this->CoordinateSystemIndex = index; }
-
-  VTKM_CONT
-  vtkm::Id GetActiveCoordinateSystemIndex() const { return this->CoordinateSystemIndex; }
-  //@}
-
   VTKM_CONT
   const vtkm::cont::Field& GetFieldFromDataSet(const vtkm::cont::DataSet& input) const
   {
@@ -101,7 +89,6 @@ protected:
 
 private:
   std::string OutputFieldName;
-  vtkm::Id CoordinateSystemIndex;
   std::string ActiveFieldName;
   vtkm::cont::Field::Association ActiveFieldAssociation;
   bool UseCoordinateSystemAsField;

@@ -26,7 +26,7 @@ namespace filter
 {
 
 template <class Derived>
-class FilterDataSet : public vtkm::filter::Filter<Derived>
+class FilterDataSet : public virtual vtkm::filter::Filter<Derived>
 {
 public:
   VTKM_CONT
@@ -34,12 +34,6 @@ public:
 
   VTKM_CONT
   ~FilterDataSet();
-
-  VTKM_CONT
-  void SetActiveCoordinateSystem(vtkm::Id index) { this->CoordinateSystemIndex = index; }
-
-  VTKM_CONT
-  vtkm::Id GetActiveCoordinateSystemIndex() const { return this->CoordinateSystemIndex; }
 
   /// These are provided to satisfy the Filter API requirements.
 
@@ -60,8 +54,6 @@ protected:
   void CopyStateFrom(const FilterDataSet<Derived>* filter) { *this = *filter; }
 
 private:
-  vtkm::Id CoordinateSystemIndex;
-
   friend class vtkm::filter::Filter<Derived>;
 };
 }

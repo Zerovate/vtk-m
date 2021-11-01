@@ -25,7 +25,6 @@ namespace filter
 //----------------------------------------------------------------------------
 template <typename Derived>
 inline VTKM_CONT FilterDataSet<Derived>::FilterDataSet()
-  : CoordinateSystemIndex(0)
 {
 }
 

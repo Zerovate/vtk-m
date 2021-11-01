@@ -128,7 +128,8 @@ public:
   VTKM_CONT
   const std::string& GetNormalArrayName() const { return this->NormalArrayName; }
 
-  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& concrete);
+  VTKM_CONT
+  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& concrete) override;
 
   template <typename DerivedPolicy>
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,

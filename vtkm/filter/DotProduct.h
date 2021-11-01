@@ -120,7 +120,7 @@ public:
   }
   //@}
 
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) const;
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
 private:
   std::string SecondaryFieldName;

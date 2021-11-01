@@ -88,14 +88,7 @@ public:
   bool GetUseFloat() const { return this->UseFloat; }
   void SetUseFloat(bool flag) { this->UseFloat = flag; }
 
-  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) const;
-
-  template <typename DerivedPolicy>
-  vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
-                                          vtkm::filter::PolicyBase<DerivedPolicy>) const
-  {
-    return this->DoExecute(input);
-  }
+  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 };
 
 } // namespace vtkm::filter

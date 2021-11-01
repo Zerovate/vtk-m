@@ -92,9 +92,9 @@ public:
   VTKM_CONT bool GetFastMerge() const { return this->FastMerge; }
   VTKM_CONT void SetFastMerge(bool flag) { this->FastMerge = flag; }
 
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData);
-
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field);
+
+  virtual vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) override;
 
   template <typename DerivedPolicy>
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,

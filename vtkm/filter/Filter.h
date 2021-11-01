@@ -284,13 +284,26 @@ public:
   vtkm::filter::FieldSelection& GetFieldsToPass() { return this->FieldsToPass; }
   //@}
 
+  //@{
+  /// Select the coordinate system index to make active to use when processing the input
+  /// DataSet. This is used primarily by the Filter to select the coordinate system
+  /// to use as a field when \c UseCoordinateSystemAsField is true.
+  VTKM_CONT
+  void SetActiveCoordinateSystem(vtkm::Id index) { this->CoordinateSystemIndex = index; }
+
+  VTKM_CONT
+  vtkm::Id GetActiveCoordinateSystemIndex() const { return this->CoordinateSystemIndex; }
+  //@}
+
+  VTKM_CONT virtual vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) = 0;
+
   // TODO: make it private/protected?
   // TODO: further remove Policy object from the call chain.
   template <typename DerivedPolicy>
   VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
                                                     vtkm::filter::PolicyBase<DerivedPolicy>)
   {
-    return (static_cast<Derived*>(this))->DoExecute(input);
+    return this->DoExecute(input);
   }
 
 
@@ -344,6 +357,7 @@ public:
 
 protected:
   vtkm::cont::Invoker Invoke;
+  vtkm::Id CoordinateSystemIndex;
 
   vtkm::filter::Filter<Derived>& operator=(const vtkm::filter::Filter<Derived>&) = default;
 
