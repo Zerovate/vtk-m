@@ -12,7 +12,7 @@
 
 #include <vtkm/filter/Filter.h>
 
-#include <vtkm/filter/vtkm_filter_extra_export.h>
+#include <vtkm/filter/FieldTransform/vtkm_filter_fieldtransform_export.h>
 
 namespace vtkm
 {
@@ -28,7 +28,7 @@ namespace filter
 /// convenient for adding indices to operations designed for fields and generally
 /// creating test data.
 ///
-class VTKM_FILTER_EXTRA_EXPORT GenerateIds : public vtkm::filter::Filter<GenerateIds>
+class VTKM_FILTER_FIELDTRANSFORM_EXPORT GenerateIds : public vtkm::filter::Filter<GenerateIds>
 {
   std::string PointFieldName = "pointids";
   std::string CellFieldName = "cellids";

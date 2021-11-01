@@ -82,7 +82,6 @@ set(extra_headers
   Entropy.h
   FieldSelection.h
   FieldToColors.h
-  GenerateIds.h
   GhostCellClassify.h
   GhostCellRemove.h
   Histogram.h
@@ -174,14 +173,13 @@ set(extra_header_template_sources
   ZFPDecompressor3D.hxx
   )
 
-set(extra_sources_device
+#set(extra_sources_device
 #  ${ClipWithFieldInstantiations}
 #  ${ClipWithImplicitFunctionInstantiations}
-  GenerateIds.cxx
 #  VectorMagnitude.cxx
 #  particleadvection/Messenger.cxx
 #  particleadvection/ParticleMessenger.cxx
-)
+#)
 
 
 #set(gradient_headers
@@ -211,13 +209,13 @@ vtkm_library(
   USE_VTKM_JOB_POOL
   )
 
-vtkm_library(
-  NAME vtkm_filter_extra
-  TEMPLATE_SOURCES ${extra_header_template_sources}
-  HEADERS ${extra_headers}
-  DEVICE_SOURCES ${extra_sources_device}
-  USE_VTKM_JOB_POOL
-  )
+#vtkm_library(
+#  NAME vtkm_filter_extra
+#  TEMPLATE_SOURCES ${extra_header_template_sources}
+#  HEADERS ${extra_headers}
+#  DEVICE_SOURCES ${extra_sources_device}
+#  USE_VTKM_JOB_POOL
+#  )
 
 
 #vtkm_library(
@@ -230,13 +228,13 @@ vtkm_library(
 
 set_property(TARGET
   vtkm_filter_common
-  vtkm_filter_extra
+#  vtkm_filter_extra
 #  vtkm_filter_gradient
   PROPERTY UNITY_BUILD_MODE GROUP
   )
 
 target_link_libraries(vtkm_filter_common PUBLIC vtkm_worklet)
-target_link_libraries(vtkm_filter_extra PUBLIC vtkm_filter_common)
+#target_link_libraries(vtkm_filter_extra PUBLIC vtkm_filter_common)
 #target_link_libraries(vtkm_filter_gradient PUBLIC vtkm_filter_common)
 if (VTKm_ENABLE_MPI)
   target_link_libraries(vtkm_filter_common PUBLIC MPI::MPI_CXX)
@@ -257,6 +255,7 @@ add_subdirectory(particleadvection)
 add_subdirectory(CleanGrid)
 add_subdirectory(Contour)
 add_subdirectory(EntityExtraction)
+add_subdirectory(FieldTransform)
 add_subdirectory(GeometryGeneration)
 add_subdirectory(ImageProcessing)
 add_subdirectory(VectorCalculus)

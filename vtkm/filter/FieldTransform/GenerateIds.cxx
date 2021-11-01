@@ -8,10 +8,9 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/filter/GenerateIds.h>
+#include <vtkm/filter/FieldTransform/GenerateIds.h>
 
 #include <vtkm/cont/ArrayCopy.h>
-#include <vtkm/cont/ArrayHandleCast.h>
 #include <vtkm/cont/ArrayHandleIndex.h>
 
 namespace
