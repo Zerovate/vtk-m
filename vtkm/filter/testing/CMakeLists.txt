@@ -24,7 +24,7 @@ set(unit_tests
 #  UnitTestContourTreeUniformDistributedFilter.cxx
 #  UnitTestCoordinateSystemTransform.cxx
 #  UnitTestCrossProductFilter.cxx
-  UnitTestDotProductFilter.cxx
+        ../VectorCalculus/testing/UnitTestDotProductFilter.cxx
 #  UnitTestEntropyFilter.cxx
 
 #  UnitTestExtractGeometryFilter.cxx

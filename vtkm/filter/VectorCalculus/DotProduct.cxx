@@ -8,7 +8,7 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/filter/DotProduct.h>
+#include <vtkm/filter/VectorCalculus/DotProduct.h>
 #include <vtkm/worklet/WorkletMapField.h>
 
 namespace // anonymous namespace making worklet::DotProduct internal to this .cxx

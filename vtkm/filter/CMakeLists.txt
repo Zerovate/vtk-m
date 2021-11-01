@@ -79,7 +79,6 @@ set(extra_headers
   CoordinateSystemTransform.h
   CreateResult.h
   CrossProduct.h
-  DotProduct.h
   Entropy.h
   FieldSelection.h
   FieldToColors.h
@@ -178,7 +177,6 @@ set(extra_header_template_sources
 set(extra_sources_device
 #  ${ClipWithFieldInstantiations}
 #  ${ClipWithImplicitFunctionInstantiations}
-  DotProduct.cxx
   GenerateIds.cxx
 #  VectorMagnitude.cxx
 #  particleadvection/Messenger.cxx
@@ -261,6 +259,7 @@ add_subdirectory(Contour)
 add_subdirectory(EntityExtraction)
 add_subdirectory(GeometryGeneration)
 add_subdirectory(ImageProcessing)
+add_subdirectory(VectorCalculus)
 
 #-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
 if (VTKm_ENABLE_TESTING)
