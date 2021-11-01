@@ -8,13 +8,10 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/filter/Slice.h>
-
-
+#include <vtkm/cont/MergePartitionedDataSet.h>
 #include <vtkm/filter/ExternalFaces.h>
-#include <vtkm/source/Amr.h>
-
 #include <vtkm/filter/Threshold.h>
+#include <vtkm/source/Amr.h>
 
 #include <vtkm/rendering/CanvasRayTracer.h>
 #include <vtkm/rendering/MapperRayTracer.h>
@@ -50,7 +47,8 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
   vtkm::filter::ExternalFaces surface;
   derivedDataSet = surface.Execute(derivedDataSet);
 
-  vtkm::cont::DataSet result = derivedDataSet.GetPartition(0);
+  // Merge dataset
+  vtkm::cont::DataSet result = vtkm::cont::MergePartitionedDataSet(derivedDataSet);
   result.PrintSummary(std::cout);
 
   vtkm::rendering::testing::RenderAndRegressionTest<M, C, V3>(result,
