@@ -13,13 +13,15 @@ set(unit_tests
 )
 
 set(libraries
-  vtkm_filter
+  vtkm_filter_contour
   vtkm_io
   vtkm_source
 )
 
 if (VTKm_ENABLE_RENDERING)
-  list(APPEND libraries vtkm_rendering)
+  list(APPEND libraries
+    vtkm_filter_imageprocessing
+    vtkm_rendering)
 
   list(APPEND unit_tests
     RegressionTestContourFilter.cxx
@@ -30,6 +32,5 @@ endif()
 vtkm_unit_tests(
   SOURCES ${unit_tests}
   LIBRARIES ${libraries}
-  ALL_BACKENDS
   USE_VTKM_JOB_POOL
 )

@@ -13,7 +13,6 @@
 #include <vtkm/cont/testing/Testing.h>
 #include <vtkm/filter/ImageProcessing/ImageDifference.h>
 
-#include <random>
 #include <vector>
 
 namespace

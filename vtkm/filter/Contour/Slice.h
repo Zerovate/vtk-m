@@ -93,7 +93,7 @@ public:
   VTKM_CONT
   const std::string& GetNormalArrayName() const { return this->ContourFilter.GetNormalArrayName(); }
 
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
   template <typename DerivedPolicy>
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,

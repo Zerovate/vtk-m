@@ -25,7 +25,7 @@ set_property(TARGET
 )
 
 target_link_libraries(vtkm_filter_vectorcalculus PUBLIC vtkm_worklet)
-target_link_libraries(vtkm_filter PUBLIC INTERFACE vtkm_filter_vectorculus)
+target_link_libraries(vtkm_filter PUBLIC INTERFACE vtkm_filter_vectorcalculus)
 
 #add_subdirectory(worklet)
 

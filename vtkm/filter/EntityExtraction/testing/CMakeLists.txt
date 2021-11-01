@@ -13,12 +13,13 @@ set(unit_tests
 )
 
 set(libraries
-  vtkm_filter
+  vtkm_filter_common
+  vtkm_filter_cleangrid
+  vtkm_filter_entityextraction
 )
 
 vtkm_unit_tests(
   SOURCES ${unit_tests}
   LIBRARIES ${libraries}
-  ALL_BACKENDS # TODO: we don't need this when we are done right
   USE_VTKM_JOB_POOL
 )

@@ -13,14 +13,14 @@
 
 #include <vtkm/filter/FilterField.h>
 
-#include <vtkm/filter/vtkm_filter_extra_export.h>
+#include <vtkm/filter/VectorCalculus/vtkm_filter_vectorcalculus_export.h>
 
 namespace vtkm
 {
 namespace filter
 {
 
-class VTKM_FILTER_EXTRA_EXPORT DotProduct : public vtkm::filter::FilterField<DotProduct>
+class VTKM_FILTER_VECTORCALCULUS_EXPORT DotProduct : public vtkm::filter::FilterField<DotProduct>
 {
 public:
   VTKM_CONT

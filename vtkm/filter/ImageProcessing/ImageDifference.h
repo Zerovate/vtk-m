@@ -101,7 +101,7 @@ public:
     return this->SecondaryFieldAssociation;
   }
 
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
 private:
   vtkm::IdComponent AverageRadius;

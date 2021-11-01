@@ -12,11 +12,11 @@ set(unit_tests
   UnitTestImageDifferenceFilter.cxx)
 
 set(libraries
+  vtkm_filter_imageprocessing
   vtkm_filter)
 
 vtkm_unit_tests(
   SOURCES ${unit_tests}
   LIBRARIES ${libraries}
-  ALL_BACKENDS # TODO: we don't need this when we are done right
   USE_VTKM_JOB_POOL
 )

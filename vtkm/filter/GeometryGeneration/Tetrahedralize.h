@@ -28,7 +28,7 @@ public:
   VTKM_CONT
   Tetrahedralize();
 
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
   // Map new field onto the resulting dataset after running the filter
   template <typename DerivedPolicy>

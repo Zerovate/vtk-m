@@ -11,9 +11,8 @@
 #ifndef vtk_m_filter_ExternalFaces_h
 #define vtk_m_filter_ExternalFaces_h
 
-#include <vtkm/filter/vtkm_filter_extra_export.h>
-
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
+#include <vtkm/filter/EntityExtraction/vtkm_filter_entityextraction_export.h>
 #include <vtkm/filter/EntityExtraction/worklet/ExternalFaces.h>
 #include <vtkm/filter/FilterDataSet.h>
 #include <vtkm/filter/MapFieldPermutation.h>
@@ -31,7 +30,8 @@ namespace filter
 /// @warning
 /// This filter is currently only supports propagation of point properties
 ///
-class VTKM_FILTER_EXTRA_EXPORT ExternalFaces : public vtkm::filter::FilterDataSet<ExternalFaces>
+class VTKM_FILTER_ENTITYEXTRACTION_EXPORT ExternalFaces
+  : public vtkm::filter::FilterDataSet<ExternalFaces>
 {
 public:
   ExternalFaces();
@@ -55,7 +55,7 @@ public:
     this->Worklet.SetPassPolyData(value);
   }
 
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field);
 
