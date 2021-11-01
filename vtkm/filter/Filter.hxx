@@ -149,16 +149,6 @@ void CallMapFieldOntoOutputInternal(std::false_type,
   }
 }
 
-//--------------------------------------------------------------------------------
-template <typename Derived, typename DerivedPolicy>
-void CallMapFieldOntoOutput(Derived* self,
-                            const vtkm::cont::DataSet& input,
-                            vtkm::cont::DataSet& output,
-                            vtkm::filter::PolicyBase<DerivedPolicy> policy)
-{
-  using call_supported_t = typename SupportsMapFieldOntoOutput<Derived, DerivedPolicy>::type;
-  CallMapFieldOntoOutputInternal(call_supported_t(), self, input, output, policy);
-}
 
 //--------------------------------------------------------------------------------
 // forward declare.
@@ -190,7 +180,7 @@ void RunFilter(Derived* self,
   while (input.GetTask(task))
   {
     auto outDS = CallPrepareForExecution(filterClone, task.second, policy);
-    CallMapFieldOntoOutput(filterClone, task.second, outDS, policy);
+    //    filterClone->CallMapFieldOntoOutput(task.second, outDS, policy);
     output.Push(std::make_pair(task.first, std::move(outDS)));
   }
 
@@ -242,7 +232,7 @@ vtkm::cont::PartitionedDataSet CallPrepareForExecutionInternal(
     for (const auto& inBlock : input)
     {
       vtkm::cont::DataSet outBlock = CallPrepareForExecution(self, inBlock, policy);
-      CallMapFieldOntoOutput(self, inBlock, outBlock, policy);
+      //      self->CallMapFieldOntoOutput(inBlock, outBlock, policy);
       output.AppendPartition(outBlock);
     }
   }
@@ -303,6 +293,20 @@ inline VTKM_CONT Filter<Derived>::Filter()
 template <typename Derived>
 inline VTKM_CONT Filter<Derived>::~Filter()
 {
+}
+
+//--------------------------------------------------------------------------------
+template <typename Derived>
+template <typename DerivedPolicy>
+inline VTKM_CONT void Filter<Derived>::CallMapFieldOntoOutput(
+  const vtkm::cont::DataSet& input,
+  vtkm::cont::DataSet& output,
+  vtkm::filter::PolicyBase<DerivedPolicy> policy)
+{
+  using call_supported_t =
+    typename internal::SupportsMapFieldOntoOutput<Derived, DerivedPolicy>::type;
+  vtkm::filter::internal::CallMapFieldOntoOutputInternal(
+    call_supported_t(), dynamic_cast<Derived*>(this), input, output, policy);
 }
 
 //----------------------------------------------------------------------------
@@ -404,9 +408,6 @@ inline VTKM_CONT vtkm::cont::PartitionedDataSet Filter<Derived>::ExecuteThreaded
   return output;
 }
 
-
-
-
 //----------------------------------------------------------------------------
 template <typename Derived>
 template <typename DerivedPolicy>
@@ -451,23 +452,5 @@ VTKM_CONT vtkm::cont::PartitionedDataSet Filter<Derived>::Execute(
   return output;
 }
 
-//----------------------------------------------------------------------------
-template <typename Derived>
-template <typename DerivedPolicy>
-inline VTKM_CONT void Filter<Derived>::MapFieldsToPass(
-  const vtkm::cont::DataSet& input,
-  vtkm::cont::DataSet& output,
-  vtkm::filter::PolicyBase<DerivedPolicy> policy)
-{
-  Derived* self = static_cast<Derived*>(this);
-  for (vtkm::IdComponent cc = 0; cc < input.GetNumberOfFields(); ++cc)
-  {
-    auto field = input.GetField(cc);
-    if (this->GetFieldsToPass().IsFieldSelected(field))
-    {
-      internal::CallMapFieldOntoOutput(self, output, field, policy);
-    }
-  }
-}
 }
 }

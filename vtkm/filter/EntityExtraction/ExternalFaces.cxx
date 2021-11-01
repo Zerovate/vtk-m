@@ -88,7 +88,11 @@ vtkm::cont::DataSet ExternalFaces::DoExecute(const vtkm::cont::DataSet& input)
       outCellSet);
   }
 
-  return this->GenerateOutput(input, outCellSet);
+  auto output = this->GenerateOutput(input, outCellSet);
+
+  CallMapFieldOntoOutput(input, output, vtkm::filter::PolicyDefault{});
+
+  return output;
 }
 
 bool ExternalFaces::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)

@@ -37,6 +37,9 @@ vtkm::cont::DataSet Slice::DoExecute(const vtkm::cont::DataSet& input)
   this->ContourFilter.SetIsoValue(0.0);
   this->ContourFilter.SetActiveField("sliceScalars");
   result = this->ContourFilter.DoExecute(clone);
+
+  CallMapFieldOntoOutput(input, result, vtkm::filter::PolicyDefault{});
+
   return result;
 }
 

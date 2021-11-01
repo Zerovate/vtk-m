@@ -52,6 +52,9 @@ VTKM_CONT vtkm::cont::DataSet Tetrahedralize::DoExecute(const vtkm::cont::DataSe
   vtkm::cont::DataSet output;
   output.SetCellSet(outCellSet);
   output.AddCoordinateSystem(input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex()));
+
+  CallMapFieldOntoOutput(input, output, vtkm::filter::PolicyDefault{});
+
   return output;
 }
 

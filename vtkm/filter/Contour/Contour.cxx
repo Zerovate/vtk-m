@@ -174,6 +174,8 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
     this->Worklet.ReleaseCellMapArrays();
   }
 
+  CallMapFieldOntoOutput(inDataSet, output, vtkm::filter::PolicyDefault{});
+
   return output;
 }
 }

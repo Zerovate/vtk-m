@@ -160,7 +160,11 @@ vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
     deducedCellSet.ReleaseResourcesExecution();
   }
 
-  return this->GenerateOutput(inData, outputCellSet);
+  auto outData = this->GenerateOutput(inData, outputCellSet);
+
+  CallMapFieldOntoOutput(inData, outData, vtkm::filter::PolicyDefault{});
+
+  return outData;
 }
 
 bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
