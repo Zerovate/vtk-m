@@ -9,6 +9,7 @@
 //============================================================================
 
 #include <vtkm/filter/GeometryGeneration/Tetrahedralize.h>
+#include <vtkm/filter/GeometryGeneration/worklet/Tetrahedralize.h>
 
 namespace
 {
@@ -32,9 +33,11 @@ namespace filter
 //-----------------------------------------------------------------------------
 VTKM_CONT Tetrahedralize::Tetrahedralize()
   : vtkm::filter::FilterDataSet<Tetrahedralize>()
-  , Worklet()
+  , Worklet(std::make_unique<vtkm::worklet::Tetrahedralize>())
 {
 }
+
+VTKM_CONT Tetrahedralize::~Tetrahedralize() = default;
 
 //-----------------------------------------------------------------------------
 VTKM_CONT vtkm::cont::DataSet Tetrahedralize::DoExecute(const vtkm::cont::DataSet& input)
@@ -45,7 +48,7 @@ VTKM_CONT vtkm::cont::DataSet Tetrahedralize::DoExecute(const vtkm::cont::DataSe
   vtkm::cont::CastAndCall(
     vtkm::filter::ApplyPolicyCellSet(cells, vtkm::filter::PolicyDefault{}, *this),
     DeduceCellSet{},
-    this->Worklet,
+    *(this->Worklet),
     outCellSet);
 
   // create the output dataset
@@ -58,5 +61,31 @@ VTKM_CONT vtkm::cont::DataSet Tetrahedralize::DoExecute(const vtkm::cont::DataSe
   return output;
 }
 
+VTKM_CONT bool Tetrahedralize::MapFieldOntoOutput(vtkm::cont::DataSet& result,
+                                                  const vtkm::cont::Field& field)
+{
+  if (field.IsFieldPoint())
+  {
+    // point data is copied as is because it was not collapsed
+    result.AddField(field);
+    return true;
+  }
+  else if (field.IsFieldCell())
+  {
+    // cell data must be scattered to the cells created per input cell
+    vtkm::cont::ArrayHandle<vtkm::Id> permutation =
+      this->Worklet->GetOutCellScatter().GetOutputToInputMap();
+    return vtkm::filter::MapFieldPermutation(field, permutation, result);
+  }
+  else if (field.IsFieldGlobal())
+  {
+    result.AddField(field);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
 }
 }

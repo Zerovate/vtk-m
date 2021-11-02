@@ -18,7 +18,7 @@
 namespace
 {
 
-void TestUniformGrid(vtkm::filter::CleanGrid clean)
+void TestUniformGrid(vtkm::filter::CleanGrid& clean)
 {
   std::cout << "Testing 'clean' uniform grid." << std::endl;
 

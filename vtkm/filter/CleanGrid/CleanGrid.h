@@ -11,16 +11,18 @@
 #define vtk_m_filter_CleanGrid_h
 
 #include <vtkm/filter/CleanGrid/vtkm_filter_cleangrid_export.h>
-#include <vtkm/filter/CleanGrid/worklet/PointMerge.h>
-#include <vtkm/filter/CleanGrid/worklet/RemoveDegenerateCells.h>
-#include <vtkm/filter/CleanGrid/worklet/RemoveUnusedPoints.h>
-
 #include <vtkm/filter/FilterDataSet.h>
 
 namespace vtkm
 {
 namespace filter
 {
+
+// Forward declaration for PImpl of stateful Worklets
+namespace cleangrid
+{
+struct SharedStates;
+}
 
 /// \brief Clean a mesh to an unstructured grid
 ///
@@ -40,6 +42,7 @@ class VTKM_FILTER_CLEANGRID_EXPORT CleanGrid : public vtkm::filter::FilterDataSe
 {
 public:
   CleanGrid();
+  ~CleanGrid();
 
   VTKM_CONT
   Filter* Clone() const override
@@ -128,9 +131,7 @@ private:
   vtkm::cont::DataSet GenerateOutput(const vtkm::cont::DataSet& inData,
                                      vtkm::cont::CellSetExplicit<>& outputCellSet);
 
-  vtkm::worklet::RemoveUnusedPoints PointCompactor;
-  vtkm::worklet::RemoveDegenerateCells CellCompactor;
-  vtkm::worklet::PointMerge PointMerger;
+  std::unique_ptr<cleangrid::SharedStates> Worklets;
 };
 
 }

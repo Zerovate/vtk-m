@@ -9,7 +9,9 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
-
+#include <vtkm/filter/CleanGrid/worklet/PointMerge.h>
+#include <vtkm/filter/CleanGrid/worklet/RemoveDegenerateCells.h>
+#include <vtkm/filter/CleanGrid/worklet/RemoveUnusedPoints.h>
 #include <vtkm/filter/MapFieldMergeAverage.h>
 #include <vtkm/filter/MapFieldPermutation.h>
 
@@ -17,6 +19,15 @@ namespace vtkm
 {
 namespace filter
 {
+namespace cleangrid
+{
+struct SharedStates
+{
+  vtkm::worklet::RemoveUnusedPoints PointCompactor;
+  vtkm::worklet::RemoveDegenerateCells CellCompactor;
+  vtkm::worklet::PointMerge PointMerger;
+};
+}
 
 //-----------------------------------------------------------------------------
 CleanGrid::CleanGrid()
@@ -26,8 +37,13 @@ CleanGrid::CleanGrid()
   , ToleranceIsAbsolute(false)
   , RemoveDegenerateCells(true)
   , FastMerge(true)
+  , Worklets(std::make_unique<cleangrid::SharedStates>())
 {
 }
+
+// Note: this `default` destructor is needed in order for the compiler to
+// generate destructor for unique_ptr<SharedState>.
+CleanGrid::~CleanGrid() = default;
 
 //-----------------------------------------------------------------------------
 vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
@@ -49,17 +65,17 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
   // Optionally adjust the cell set indices to remove all unused points
   if (this->GetCompactPointFields())
   {
-    this->PointCompactor.FindPointsStart();
-    this->PointCompactor.FindPoints(outputCellSet);
-    this->PointCompactor.FindPointsEnd();
+    this->Worklets->PointCompactor.FindPointsStart();
+    this->Worklets->PointCompactor.FindPoints(outputCellSet);
+    this->Worklets->PointCompactor.FindPointsEnd();
 
-    outputCellSet = this->PointCompactor.MapCellSet(outputCellSet);
+    outputCellSet = this->Worklets->PointCompactor.MapCellSet(outputCellSet);
 
     for (VecId coordSystemIndex = 0; coordSystemIndex < numCoordSystems; ++coordSystemIndex)
     {
       outputCoordinateSystems[coordSystemIndex] =
         vtkm::cont::CoordinateSystem(outputCoordinateSystems[coordSystemIndex].GetName(),
-                                     this->PointCompactor.MapPointFieldDeep(
+                                     this->Worklets->PointCompactor.MapPointFieldDeep(
                                        outputCoordinateSystems[coordSystemIndex].GetData()));
     }
   }
@@ -78,7 +94,7 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
     }
 
     auto coordArray = activeCoordSystem.GetData();
-    this->PointMerger.Run(delta, this->GetFastMerge(), bounds, coordArray);
+    this->Worklets->PointMerger.Run(delta, this->GetFastMerge(), bounds, coordArray);
     activeCoordSystem = vtkm::cont::CoordinateSystem(activeCoordSystem.GetName(), coordArray);
 
     for (VecId coordSystemIndex = 0; coordSystemIndex < numCoordSystems; ++coordSystemIndex)
@@ -89,19 +105,20 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
       }
       else
       {
-        outputCoordinateSystems[coordSystemIndex] = vtkm::cont::CoordinateSystem(
-          outputCoordinateSystems[coordSystemIndex].GetName(),
-          this->PointMerger.MapPointField(outputCoordinateSystems[coordSystemIndex].GetData()));
+        outputCoordinateSystems[coordSystemIndex] =
+          vtkm::cont::CoordinateSystem(outputCoordinateSystems[coordSystemIndex].GetName(),
+                                       this->Worklets->PointMerger.MapPointField(
+                                         outputCoordinateSystems[coordSystemIndex].GetData()));
       }
     }
 
-    outputCellSet = this->PointMerger.MapCellSet(outputCellSet);
+    outputCellSet = this->Worklets->PointMerger.MapCellSet(outputCellSet);
   }
 
   // Optionally remove degenerate cells
   if (this->GetRemoveDegenerateCells())
   {
-    outputCellSet = this->CellCompactor.Run(outputCellSet);
+    outputCellSet = this->Worklets->CellCompactor.Run(outputCellSet);
   }
 
   // Construct resulting data set with new cell sets
@@ -175,7 +192,9 @@ bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont
     if (this->GetCompactPointFields())
     {
       bool success = vtkm::filter::MapFieldPermutation(
-        field, this->PointCompactor.GetPointScatter().GetOutputToInputMap(), compactedField);
+        field,
+        this->Worklets->PointCompactor.GetPointScatter().GetOutputToInputMap(),
+        compactedField);
       if (!success)
       {
         return false;
@@ -188,7 +207,7 @@ bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont
     if (this->GetMergePoints())
     {
       return vtkm::filter::MapFieldMergeAverage(
-        compactedField, this->PointMerger.GetMergeKeys(), result);
+        compactedField, this->Worklets->PointMerger.GetMergeKeys(), result);
     }
     else
     {
@@ -198,7 +217,8 @@ bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont
   }
   else if (field.IsFieldCell() && this->GetRemoveDegenerateCells())
   {
-    return vtkm::filter::MapFieldPermutation(field, this->CellCompactor.GetValidCellIds(), result);
+    return vtkm::filter::MapFieldPermutation(
+      field, this->Worklets->CellCompactor.GetValidCellIds(), result);
   }
   else
   {

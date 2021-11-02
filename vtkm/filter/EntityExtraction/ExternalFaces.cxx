@@ -11,6 +11,7 @@
 #define vtkm_filter_ExternalFaces_cxx
 
 #include <vtkm/filter/EntityExtraction/ExternalFaces.h>
+#include <vtkm/filter/EntityExtraction/worklet/ExternalFaces.h>
 
 namespace vtkm
 {
@@ -21,9 +22,18 @@ namespace filter
 ExternalFaces::ExternalFaces()
   : vtkm::filter::FilterDataSet<ExternalFaces>()
   , CompactPoints(false)
-  , Worklet()
+  , Worklet(std::make_unique<vtkm::worklet::ExternalFaces>())
 {
   this->SetPassPolyData(true);
+}
+
+ExternalFaces::~ExternalFaces() = default;
+
+//-----------------------------------------------------------------------------
+void ExternalFaces::SetPassPolyData(bool value)
+{
+  this->PassPolyData = value;
+  this->Worklet->SetPassPolyData(value);
 }
 
 //-----------------------------------------------------------------------------
@@ -45,7 +55,7 @@ vtkm::cont::DataSet ExternalFaces::GenerateOutput(const vtkm::cont::DataSet& inp
 
   if (!hasCellFields)
   {
-    this->Worklet.ReleaseCellMapArrays();
+    this->Worklet->ReleaseCellMapArrays();
   }
 
   //4. create the output dataset
@@ -77,13 +87,13 @@ vtkm::cont::DataSet ExternalFaces::DoExecute(const vtkm::cont::DataSet& input)
 
   if (cells.IsSameType(vtkm::cont::CellSetStructured<3>()))
   {
-    this->Worklet.Run(cells.Cast<vtkm::cont::CellSetStructured<3>>(),
-                      input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex()),
-                      outCellSet);
+    this->Worklet->Run(cells.Cast<vtkm::cont::CellSetStructured<3>>(),
+                       input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex()),
+                       outCellSet);
   }
   else
   {
-    this->Worklet.Run(
+    this->Worklet->Run(
       vtkm::filter::ApplyPolicyCellSetUnstructured(cells, vtkm::filter::PolicyDefault{}, *this),
       outCellSet);
   }
@@ -111,7 +121,7 @@ bool ExternalFaces::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::
   }
   else if (field.IsFieldCell())
   {
-    return vtkm::filter::MapFieldPermutation(field, this->Worklet.GetCellIdMap(), result);
+    return vtkm::filter::MapFieldPermutation(field, this->Worklet->GetCellIdMap(), result);
   }
   else if (field.IsFieldGlobal())
   {

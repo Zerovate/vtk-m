@@ -13,12 +13,15 @@
 
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
 #include <vtkm/filter/EntityExtraction/vtkm_filter_entityextraction_export.h>
-#include <vtkm/filter/EntityExtraction/worklet/ExternalFaces.h>
 #include <vtkm/filter/FilterDataSet.h>
 #include <vtkm/filter/MapFieldPermutation.h>
 
 namespace vtkm
 {
+namespace worklet
+{
+struct ExternalFaces;
+}
 namespace filter
 {
 
@@ -35,6 +38,7 @@ class VTKM_FILTER_ENTITYEXTRACTION_EXPORT ExternalFaces
 {
 public:
   ExternalFaces();
+  ~ExternalFaces();
 
   // When CompactPoints is set, instead of copying the points and point fields
   // from the input, the filter will create new compact fields without the
@@ -49,11 +53,7 @@ public:
   VTKM_CONT
   bool GetPassPolyData() const { return this->PassPolyData; }
   VTKM_CONT
-  void SetPassPolyData(bool value)
-  {
-    this->PassPolyData = value;
-    this->Worklet.SetPassPolyData(value);
-  }
+  void SetPassPolyData(bool value);
 
   VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
@@ -75,7 +75,7 @@ private:
                                      vtkm::cont::CellSetExplicit<>& outCellSet);
 
   vtkm::filter::CleanGrid Compactor;
-  vtkm::worklet::ExternalFaces Worklet;
+  std::unique_ptr<vtkm::worklet::ExternalFaces> Worklet;
 };
 }
 } // namespace vtkm::filter
