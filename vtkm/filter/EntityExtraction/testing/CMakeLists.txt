@@ -13,7 +13,6 @@ set(unit_tests
 )
 
 set(libraries
-  vtkm_filter_common
   vtkm_filter_cleangrid
   vtkm_filter_entityextraction
 )

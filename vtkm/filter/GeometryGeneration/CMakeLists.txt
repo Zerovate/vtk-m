@@ -26,7 +26,7 @@ set_property(TARGET
         PROPERTY UNITY_BUILD_MODE GROUP
         )
 
-target_link_libraries(vtkm_filter_geometrygeneration PUBLIC vtkm_filter_common vtkm_worklet)
+target_link_libraries(vtkm_filter_geometrygeneration PUBLIC vtkm_worklet vtkm_filter_common)
 target_link_libraries(vtkm_filter PUBLIC INTERFACE vtkm_filter_geometrygeneration)
 
 add_subdirectory(worklet)
