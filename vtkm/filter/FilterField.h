@@ -14,7 +14,6 @@
 #include <vtkm/cont/CoordinateSystem.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/Field.h>
-#include <vtkm/cont/PartitionedDataSet.h>
 
 #include <vtkm/filter/Filter.h>
 #include <vtkm/filter/PolicyBase.h>
@@ -29,10 +28,10 @@ class FilterField : public virtual vtkm::filter::Filter<Derived>
 {
 public:
   VTKM_CONT
-  FilterField();
+  FilterField() = default;
 
   VTKM_CONT
-  ~FilterField();
+  ~FilterField() = default;
 
   VTKM_CONT
   void SetOutputFieldName(const std::string& name) { this->OutputFieldName = name; }
@@ -90,14 +89,12 @@ protected:
 private:
   std::string OutputFieldName;
   std::string ActiveFieldName;
-  vtkm::cont::Field::Association ActiveFieldAssociation;
-  bool UseCoordinateSystemAsField;
+  vtkm::cont::Field::Association ActiveFieldAssociation = vtkm::cont::Field::Association::ANY;
+  bool UseCoordinateSystemAsField = false;
 
   friend class vtkm::filter::Filter<Derived>;
 };
 }
 } // namespace vtkm::filter
-
-#include <vtkm/filter/FilterField.hxx>
 
 #endif // vtk_m_filter_FieldFilter_h

@@ -11,12 +11,6 @@
 #ifndef vtk_m_filter_DataSetWithFieldFilter_h
 #define vtk_m_filter_DataSetWithFieldFilter_h
 
-#include <vtkm/cont/CoordinateSystem.h>
-#include <vtkm/cont/DataSet.h>
-#include <vtkm/cont/DynamicCellSet.h>
-#include <vtkm/cont/Field.h>
-#include <vtkm/cont/PartitionedDataSet.h>
-
 #include <vtkm/filter/FilterDataSet.h>
 #include <vtkm/filter/FilterField.h>
 #include <vtkm/filter/PolicyBase.h>
