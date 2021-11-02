@@ -17,9 +17,6 @@
 #include <vtkm/cont/Invoker.h>
 #include <vtkm/cont/testing/Testing.h>
 
-#include <vtkm/filter/PointAverage.h>
-#include <vtkm/filter/PointAverage.hxx>
-
 namespace
 {
 std::vector<float> points_rz = { 1.72485139f, 0.020562f,   1.73493571f,
