@@ -61,13 +61,11 @@ struct SupportsPostExecute
 };
 
 
-template <typename T, typename InputType, typename DerivedPolicy>
+template <typename T, typename InputType>
 struct SupportsPrepareForExecution
 {
   template <typename U,
-            typename S = decltype(std::declval<U>().PrepareForExecution(
-              std::declval<InputType>(),
-              std::declval<vtkm::filter::PolicyBase<DerivedPolicy>>()))>
+            typename S = decltype(std::declval<U>().PrepareForExecution(std::declval<InputType>()))>
   static std::true_type has(int);
   template <typename U>
   static std::false_type has(...);
@@ -152,26 +150,18 @@ void CallMapFieldOntoOutputInternal(std::false_type,
 
 //--------------------------------------------------------------------------------
 // forward declare.
-template <typename Derived, typename InputType, typename DerivedPolicy>
-InputType CallPrepareForExecution(Derived* self,
-                                  const InputType& input,
-                                  const vtkm::filter::PolicyBase<DerivedPolicy>& policy);
+template <typename Derived, typename InputType>
+InputType CallPrepareForExecution(Derived* self, const InputType& input);
 
 //--------------------------------------------------------------------------------
-template <typename Derived, typename InputType, typename DerivedPolicy>
-InputType CallPrepareForExecutionInternal(std::true_type,
-                                          Derived* self,
-                                          const InputType& input,
-                                          const vtkm::filter::PolicyBase<DerivedPolicy>& policy)
+template <typename Derived, typename InputType>
+InputType CallPrepareForExecutionInternal(std::true_type, Derived* self, const InputType& input)
 {
-  return self->PrepareForExecution(input, policy);
+  return self->PrepareForExecution(input);
 }
 
-template <typename Derived, typename DerivedPolicy>
-void RunFilter(Derived* self,
-               const vtkm::filter::PolicyBase<DerivedPolicy>& policy,
-               vtkm::filter::DataSetQueue& input,
-               vtkm::filter::DataSetQueue& output)
+template <typename Derived>
+void RunFilter(Derived* self, vtkm::filter::DataSetQueue& input, vtkm::filter::DataSetQueue& output)
 {
   auto filterClone = dynamic_cast<Derived*>(self->Clone());
   VTKM_ASSERT(filterClone != nullptr);
@@ -179,7 +169,7 @@ void RunFilter(Derived* self,
   std::pair<vtkm::Id, vtkm::cont::DataSet> task;
   while (input.GetTask(task))
   {
-    auto outDS = CallPrepareForExecution(filterClone, task.second, policy);
+    auto outDS = CallPrepareForExecution(filterClone, task.second);
     //    filterClone->CallMapFieldOntoOutput(task.second, outDS, policy);
     output.Push(std::make_pair(task.first, std::move(outDS)));
   }
@@ -192,12 +182,11 @@ void RunFilter(Derived* self,
 // specialization for PartitionedDataSet input when `PrepareForExecution` is not provided
 // by the subclass. we iterate over blocks and execute for each block
 // individually.
-template <typename Derived, typename DerivedPolicy>
+template <typename Derived>
 vtkm::cont::PartitionedDataSet CallPrepareForExecutionInternal(
   std::false_type,
   Derived* self,
-  const vtkm::cont::PartitionedDataSet& input,
-  const vtkm::filter::PolicyBase<DerivedPolicy>& policy)
+  const vtkm::cont::PartitionedDataSet& input)
 {
   vtkm::cont::PartitionedDataSet output;
 
@@ -212,12 +201,8 @@ vtkm::cont::PartitionedDataSet CallPrepareForExecutionInternal(
     std::vector<std::future<void>> futures(static_cast<std::size_t>(numThreads));
     for (std::size_t i = 0; i < static_cast<std::size_t>(numThreads); i++)
     {
-      auto f = std::async(std::launch::async,
-                          RunFilter<Derived, DerivedPolicy>,
-                          self,
-                          policy,
-                          std::ref(inputQueue),
-                          std::ref(outputQueue));
+      auto f = std::async(
+        std::launch::async, RunFilter<Derived>, self, std::ref(inputQueue), std::ref(outputQueue));
       futures[i] = std::move(f);
     }
 
@@ -231,7 +216,7 @@ vtkm::cont::PartitionedDataSet CallPrepareForExecutionInternal(
   {
     for (const auto& inBlock : input)
     {
-      vtkm::cont::DataSet outBlock = CallPrepareForExecution(self, inBlock, policy);
+      vtkm::cont::DataSet outBlock = CallPrepareForExecution(self, inBlock);
       //      self->CallMapFieldOntoOutput(inBlock, outBlock, policy);
       output.AppendPartition(outBlock);
     }
@@ -241,14 +226,11 @@ vtkm::cont::PartitionedDataSet CallPrepareForExecutionInternal(
 }
 
 //--------------------------------------------------------------------------------
-template <typename Derived, typename InputType, typename DerivedPolicy>
-InputType CallPrepareForExecution(Derived* self,
-                                  const InputType& input,
-                                  const vtkm::filter::PolicyBase<DerivedPolicy>& policy)
+template <typename Derived, typename InputType>
+InputType CallPrepareForExecution(Derived* self, const InputType& input)
 {
-  using call_supported_t =
-    typename SupportsPrepareForExecution<Derived, InputType, DerivedPolicy>::type;
-  return CallPrepareForExecutionInternal(call_supported_t(), self, input, policy);
+  using call_supported_t = typename SupportsPrepareForExecution<Derived, InputType>::type;
+  return CallPrepareForExecutionInternal(call_supported_t(), self, input);
 }
 
 //--------------------------------------------------------------------------------
@@ -342,7 +324,7 @@ inline VTKM_CONT vtkm::cont::PartitionedDataSet Filter<Derived>::Execute(
   internal::CallPreExecute(self, input, policy);
 
   // Call `PrepareForExecution` (which should probably be renamed at some point)
-  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(self, input, policy);
+  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(self, input);
 
   // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
   internal::CallPostExecute(self, input, output, policy);
