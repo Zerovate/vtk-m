@@ -24,10 +24,6 @@ namespace vtkm
 {
 namespace worklet
 {
-<<<<<<< HEAD
-
-=======
->>>>>>> fix type mismatches
 template <vtkm::IdComponent Dim>
 struct GenerateGhostTypeWorklet : vtkm::worklet::WorkletVisitCellsWithPoints
 {
