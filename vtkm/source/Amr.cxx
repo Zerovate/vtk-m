@@ -8,10 +8,12 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
+
 #include <vtkm/cont/AmrDataSet.h>
 #include <vtkm/filter/CellAverage.h>
 #include <vtkm/source/Amr.h>
 #include <vtkm/source/Wavelet.h>
+
 
 namespace vtkm
 {
