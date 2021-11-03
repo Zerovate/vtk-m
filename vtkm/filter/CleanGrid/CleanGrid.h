@@ -38,7 +38,7 @@ struct SharedStates;
 /// \todo Add a feature to merge points that are coincident or within a
 /// tolerance.
 ///
-class VTKM_FILTER_CLEANGRID_EXPORT CleanGrid : public vtkm::filter::FilterDataSet<CleanGrid>
+class VTKM_FILTER_CLEANGRID_EXPORT CleanGrid : public vtkm::filter::FilterDataSet
 {
 public:
   CleanGrid();
@@ -110,7 +110,7 @@ public:
   VTKM_CONT
   void CopyStateFrom(const CleanGrid* cleanGrid)
   {
-    this->FilterDataSet<CleanGrid>::CopyStateFrom(cleanGrid);
+    this->FilterDataSet::CopyStateFrom(cleanGrid);
 
     this->CompactPointFields = cleanGrid->CompactPointFields;
     this->MergePoints = cleanGrid->MergePoints;

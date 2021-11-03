@@ -33,8 +33,7 @@ namespace filter
 /// @warning
 /// This filter is currently only supports propagation of point properties
 ///
-class VTKM_FILTER_ENTITYEXTRACTION_EXPORT ExternalFaces
-  : public vtkm::filter::FilterDataSet<ExternalFaces>
+class VTKM_FILTER_ENTITYEXTRACTION_EXPORT ExternalFaces : public vtkm::filter::FilterDataSet
 {
 public:
   ExternalFaces();

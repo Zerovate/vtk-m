@@ -33,7 +33,8 @@ public:
     VTKM_TEST_ASSERT(test_equal(output.GetNumberOfCells(), 20), "Wrong result for Tetrahedralize");
     VTKM_TEST_ASSERT(test_equal(output.GetField("pointvar").GetNumberOfValues(), 18),
                      "Wrong number of points for Tetrahedralize");
-
+    std::cout << "number of cell vars " << output.GetField("cellvar").GetNumberOfValues()
+              << std::endl;
     vtkm::cont::ArrayHandle<vtkm::Float32> outData =
       output.GetField("cellvar").GetData().AsArrayHandle<vtkm::cont::ArrayHandle<vtkm::Float32>>();
 

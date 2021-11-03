@@ -20,10 +20,9 @@ namespace vtkm
 namespace filter
 {
 
-template <class Derived>
 class FilterDataSetWithField
-  : public vtkm::filter::FilterField<Derived>
-  , public vtkm::filter::FilterDataSet<Derived>
+  : public vtkm::filter::FilterField
+  , public vtkm::filter::FilterDataSet
 {
 public:
   VTKM_CONT
@@ -33,14 +32,14 @@ public:
   ~FilterDataSetWithField() = default;
 
 protected:
-  vtkm::filter::FilterDataSetWithField<Derived>& operator=(
-    const vtkm::filter::FilterDataSetWithField<Derived>&) = default;
+  vtkm::filter::FilterDataSetWithField& operator=(const vtkm::filter::FilterDataSetWithField&) =
+    default;
 
   VTKM_CONT
-  void CopyStateFrom(const FilterDataSetWithField<Derived>* filter) { *this = *filter; }
+  void CopyStateFrom(const FilterDataSetWithField* filter) { *this = *filter; }
 
 private:
-  friend class vtkm::filter::Filter<Derived>;
+  friend class vtkm::filter::Filter;
 };
 }
 } // namespace vtkm::filter

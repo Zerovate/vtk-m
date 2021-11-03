@@ -23,8 +23,7 @@ namespace vtkm
 namespace filter
 {
 
-template <class Derived>
-class FilterField : public virtual vtkm::filter::Filter<Derived>
+class FilterField : public virtual vtkm::filter::Filter
 {
 public:
   VTKM_CONT
@@ -81,10 +80,9 @@ public:
   }
 
 protected:
-  vtkm::filter::FilterField<Derived>& operator=(const vtkm::filter::FilterField<Derived>&) =
-    default;
+  vtkm::filter::FilterField& operator=(const vtkm::filter::FilterField&) = default;
   VTKM_CONT
-  void CopyStateFrom(const FilterField<Derived>* filter) { *this = *filter; }
+  void CopyStateFrom(const FilterField* filter) { *this = *filter; }
 
 private:
   std::string OutputFieldName;
@@ -92,7 +90,7 @@ private:
   vtkm::cont::Field::Association ActiveFieldAssociation = vtkm::cont::Field::Association::ANY;
   bool UseCoordinateSystemAsField = false;
 
-  friend class vtkm::filter::Filter<Derived>;
+  friend class vtkm::filter::Filter;
 };
 }
 } // namespace vtkm::filter

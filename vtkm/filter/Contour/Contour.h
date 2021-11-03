@@ -29,7 +29,7 @@ namespace filter
 /// Multiple contour values must be specified to generate the isosurfaces.
 /// @warning
 /// This filter is currently only supports 3D volumes.
-class VTKM_FILTER_CONTOUR_EXPORT Contour : public vtkm::filter::FilterDataSetWithField<Contour>
+class VTKM_FILTER_CONTOUR_EXPORT Contour : public vtkm::filter::FilterDataSetWithField
 {
 public:
   using SupportedTypes = vtkm::List<vtkm::UInt8, vtkm::Int8, vtkm::Float32, vtkm::Float64>;
@@ -141,7 +141,7 @@ public:
       // If the field is a point field, then we need to do a custom interpolation of the points.
       // In this case, we need to call the superclass's MapFieldOntoOutput, which will in turn
       // call our DoMapField.
-      return this->FilterDataSetWithField<Contour>::MapFieldOntoOutput(result, field, policy);
+      return this->FilterDataSetWithField::MapFieldOntoOutput(result, field, policy);
     }
     else if (field.IsFieldCell())
     {
@@ -184,7 +184,7 @@ protected:
   VTKM_CONT
   void CopyStateFrom(const Contour* contour)
   {
-    this->FilterDataSetWithField<Contour>::CopyStateFrom(contour);
+    this->FilterDataSetWithField::CopyStateFrom(contour);
 
     this->IsoValues = contour->IsoValues;
     this->GenerateNormals = contour->GenerateNormals;

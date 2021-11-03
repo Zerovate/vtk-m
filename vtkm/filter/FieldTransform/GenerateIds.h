@@ -28,7 +28,7 @@ namespace filter
 /// convenient for adding indices to operations designed for fields and generally
 /// creating test data.
 ///
-class VTKM_FILTER_FIELDTRANSFORM_EXPORT GenerateIds : public vtkm::filter::Filter<GenerateIds>
+class VTKM_FILTER_FIELDTRANSFORM_EXPORT GenerateIds : public vtkm::filter::Filter
 {
   std::string PointFieldName = "pointids";
   std::string CellFieldName = "cellids";

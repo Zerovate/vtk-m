@@ -23,21 +23,14 @@ namespace filter
 {
 
 //----------------------------------------------------------------------------
-template <typename Derived>
-inline VTKM_CONT FilterDataSet<Derived>::FilterDataSet()
-{
-}
+inline VTKM_CONT FilterDataSet::FilterDataSet() {}
 
 //----------------------------------------------------------------------------
-template <typename Derived>
-inline VTKM_CONT FilterDataSet<Derived>::~FilterDataSet()
-{
-}
+inline VTKM_CONT FilterDataSet::~FilterDataSet() {}
 
 //-----------------------------------------------------------------------------
-template <typename Derived>
 template <typename DerivedPolicy>
-inline VTKM_CONT bool FilterDataSet<Derived>::MapFieldOntoOutput(
+inline VTKM_CONT bool FilterDataSet::MapFieldOntoOutput(
   vtkm::cont::DataSet& result,
   const vtkm::cont::Field& field,
   vtkm::filter::PolicyBase<DerivedPolicy> policy)
@@ -45,8 +38,8 @@ inline VTKM_CONT bool FilterDataSet<Derived>::MapFieldOntoOutput(
   bool valid = false;
 
   vtkm::filter::FieldMetadata metaData(field);
-  using FunctorType = internal::ResolveFieldTypeAndMap<Derived, DerivedPolicy>;
-  FunctorType functor(static_cast<Derived*>(this), result, metaData, policy, valid);
+  using FunctorType = internal::ResolveFieldTypeAndMap<FilterDataSet, DerivedPolicy>;
+  FunctorType functor(this, result, metaData, policy, valid);
 
   try
   {

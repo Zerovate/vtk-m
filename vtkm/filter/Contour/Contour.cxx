@@ -39,7 +39,7 @@ inline bool IsCellSetStructured(const vtkm::cont::DynamicCellSetBase<CellSetList
 
 //-----------------------------------------------------------------------------
 Contour::Contour()
-  : vtkm::filter::FilterDataSetWithField<Contour>()
+  : vtkm::filter::FilterDataSetWithField() // FIXME: is this even necessary?
   , IsoValues()
   , GenerateNormals(false)
   , AddInterpolationEdgeIds(false)

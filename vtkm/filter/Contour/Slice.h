@@ -22,7 +22,7 @@ namespace vtkm
 namespace filter
 {
 
-class VTKM_FILTER_CONTOUR_EXPORT Slice : public vtkm::filter::FilterDataSet<Slice>
+class VTKM_FILTER_CONTOUR_EXPORT Slice : public vtkm::filter::FilterDataSet
 {
 public:
   /// Set/Get the implicit function that is used to perform the slicing.

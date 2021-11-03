@@ -13,7 +13,6 @@
 
 #include <vtkm/filter/FilterDataSet.h>
 #include <vtkm/filter/GeometryGeneration/vtkm_filter_geometrygeneration_export.h>
-#include <vtkm/filter/MapFieldPermutation.h>
 
 namespace vtkm
 {
@@ -24,8 +23,7 @@ class Tetrahedralize;
 namespace filter
 {
 
-class VTKM_FILTER_GEOMETRYGENERATION_EXPORT Tetrahedralize
-  : public vtkm::filter::FilterDataSet<Tetrahedralize>
+class VTKM_FILTER_GEOMETRYGENERATION_EXPORT Tetrahedralize : public vtkm::filter::FilterDataSet
 {
 public:
   VTKM_CONT

@@ -10,6 +10,7 @@
 
 #include <vtkm/filter/GeometryGeneration/Tetrahedralize.h>
 #include <vtkm/filter/GeometryGeneration/worklet/Tetrahedralize.h>
+#include <vtkm/filter/MapFieldPermutation.h>
 
 namespace
 {
@@ -32,7 +33,7 @@ namespace filter
 
 //-----------------------------------------------------------------------------
 VTKM_CONT Tetrahedralize::Tetrahedralize()
-  : vtkm::filter::FilterDataSet<Tetrahedralize>()
+  : vtkm::filter::FilterDataSet()
   , Worklet(std::make_unique<vtkm::worklet::Tetrahedralize>())
 {
 }

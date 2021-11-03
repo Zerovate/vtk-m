@@ -64,6 +64,7 @@ set(common_sources_device
 #  CellAverage.cxx
 #  ExtractGeometry.cxx
 #  ExtractStructured.cxx
+  Filter.cxx
   MapFieldMergeAverage.cxx
   MapFieldPermutation.cxx
 #  PointAverage.cxx
@@ -198,7 +199,7 @@ vtkm_pyexpander_generated_file(ClipWithImplicitFunctionExternInstantiations.h)
 
 set_source_files_properties(ExtractStructured.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
-add_library(vtkm_filter INTERFACE)
+add_library(vtkm_filter INTERFACE Filter.cxx)
 
 vtkm_library(
   NAME vtkm_filter_common

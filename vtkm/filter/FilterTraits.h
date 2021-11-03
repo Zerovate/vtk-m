@@ -18,7 +18,6 @@ namespace vtkm
 namespace filter
 {
 
-template <typename Derived>
 class Filter;
 
 

@@ -44,7 +44,7 @@ namespace filter
 
 //-----------------------------------------------------------------------------
 VTKM_CONT_EXPORT DotProduct::DotProduct()
-  : vtkm::filter::FilterField<DotProduct>()
+  : vtkm::filter::FilterField()
   , SecondaryFieldName()
   , SecondaryFieldAssociation(vtkm::cont::Field::Association::ANY)
   , UseCoordinateSystemAsSecondaryField(false)

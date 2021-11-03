@@ -172,7 +172,6 @@ namespace filter
 /// map an input field from the corresponding input partition to the output
 /// partition.
 ///
-template <typename Derived>
 class Filter
 {
 public:
@@ -199,7 +198,7 @@ public:
     else
     {
       std::string msg =
-        "Multi threaded filter not supported for " + std::string(typeid(Derived).name());
+        "Multi threaded filter not supported for " + std::string(typeid(*this).name());
       VTKM_LOG_S(vtkm::cont::LogLevel::Info, msg);
     }
   }
@@ -308,7 +307,7 @@ public:
   /// Executes the filter on the input and produces a result dataset.
   ///
   /// On success, this the dataset produced. On error, vtkm::cont::ErrorExecution will be thrown.
-  VTKM_CONT vtkm::cont::DataSet Execute(const vtkm::cont::DataSet& input);
+  VTKM_CONT virtual vtkm::cont::DataSet Execute(const vtkm::cont::DataSet& input);
 
   template <typename DerivedPolicy>
   VTKM_DEPRECATED(1.6,
@@ -322,7 +321,8 @@ public:
   /// Executes the filter on the input PartitionedDataSet and produces a result PartitionedDataSet.
   ///
   /// On success, this the dataset produced. On error, vtkm::cont::ErrorExecution will be thrown.
-  VTKM_CONT vtkm::cont::PartitionedDataSet Execute(const vtkm::cont::PartitionedDataSet& input);
+  VTKM_CONT virtual vtkm::cont::PartitionedDataSet Execute(
+    const vtkm::cont::PartitionedDataSet& input);
 
   VTKM_CONT vtkm::cont::PartitionedDataSet ExecuteThreaded(
     const vtkm::cont::PartitionedDataSet& input,
@@ -348,7 +348,7 @@ protected:
   vtkm::cont::Invoker Invoke;
   vtkm::Id CoordinateSystemIndex;
 
-  vtkm::filter::Filter<Derived>& operator=(const vtkm::filter::Filter<Derived>&) = default;
+  vtkm::filter::Filter& operator=(const vtkm::filter::Filter&) = default;
 
   // TODO: remove Policy
   template <typename DerivedPolicy>
@@ -357,7 +357,7 @@ protected:
                                         vtkm::filter::PolicyBase<DerivedPolicy> policy);
 
   VTKM_CONT
-  void CopyStateFrom(const Filter<Derived>* filter) { *this = *filter; }
+  void CopyStateFrom(const Filter* filter) { *this = *filter; }
 
 private:
   vtkm::filter::FieldSelection FieldsToPass;

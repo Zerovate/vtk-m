@@ -20,7 +20,7 @@ namespace vtkm
 namespace filter
 {
 
-class VTKM_FILTER_VECTORCALCULUS_EXPORT DotProduct : public vtkm::filter::FilterField<DotProduct>
+class VTKM_FILTER_VECTORCALCULUS_EXPORT DotProduct : public vtkm::filter::FilterField
 {
 public:
   VTKM_CONT

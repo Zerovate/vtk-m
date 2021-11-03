@@ -13,7 +13,6 @@
 
 #include <vtkm/filter/internal/ResolveFieldTypeAndMap.h>
 
-#include <vtkm/cont/Algorithm.h>
 #include <vtkm/cont/ErrorFilterExecution.h>
 #include <vtkm/cont/Field.h>
 #include <vtkm/cont/Logging.h>
@@ -32,6 +31,9 @@ namespace filter
 
 namespace internal
 {
+extern void RunFilter(Filter* self,
+                      vtkm::filter::DataSetQueue& input,
+                      vtkm::filter::DataSetQueue& output);
 
 template <typename T, typename InputType, typename DerivedPolicy>
 struct SupportsPreExecute
@@ -160,23 +162,6 @@ InputType CallPrepareForExecutionInternal(std::true_type, Derived* self, const I
   return self->PrepareForExecution(input);
 }
 
-template <typename Derived>
-void RunFilter(Derived* self, vtkm::filter::DataSetQueue& input, vtkm::filter::DataSetQueue& output)
-{
-  auto filterClone = dynamic_cast<Derived*>(self->Clone());
-  VTKM_ASSERT(filterClone != nullptr);
-
-  std::pair<vtkm::Id, vtkm::cont::DataSet> task;
-  while (input.GetTask(task))
-  {
-    auto outDS = CallPrepareForExecution(filterClone, task.second);
-    //    filterClone->CallMapFieldOntoOutput(task.second, outDS, policy);
-    output.Push(std::make_pair(task.first, std::move(outDS)));
-  }
-
-  vtkm::cont::Algorithm::Synchronize();
-  delete filterClone;
-}
 
 //--------------------------------------------------------------------------------
 // specialization for PartitionedDataSet input when `PrepareForExecution` is not provided
@@ -202,7 +187,7 @@ vtkm::cont::PartitionedDataSet CallPrepareForExecutionInternal(
     for (std::size_t i = 0; i < static_cast<std::size_t>(numThreads); i++)
     {
       auto f = std::async(
-        std::launch::async, RunFilter<Derived>, self, std::ref(inputQueue), std::ref(outputQueue));
+        std::launch::async, RunFilter, self, std::ref(inputQueue), std::ref(outputQueue));
       futures[i] = std::move(f);
     }
 
@@ -263,8 +248,7 @@ void CallPostExecute(Derived* self,
 }
 
 //----------------------------------------------------------------------------
-template <typename Derived>
-inline VTKM_CONT Filter<Derived>::Filter()
+inline VTKM_CONT Filter::Filter()
   : Invoke()
   , CoordinateSystemIndex(0)
   , FieldsToPass(vtkm::filter::FieldSelection::MODE_ALL)
@@ -272,33 +256,28 @@ inline VTKM_CONT Filter<Derived>::Filter()
 }
 
 //----------------------------------------------------------------------------
-template <typename Derived>
-inline VTKM_CONT Filter<Derived>::~Filter()
-{
-}
+inline VTKM_CONT Filter::~Filter() = default;
 
 //--------------------------------------------------------------------------------
-template <typename Derived>
 template <typename DerivedPolicy>
-inline VTKM_CONT void Filter<Derived>::CallMapFieldOntoOutput(
-  const vtkm::cont::DataSet& input,
-  vtkm::cont::DataSet& output,
-  vtkm::filter::PolicyBase<DerivedPolicy> policy)
+inline VTKM_CONT void Filter::CallMapFieldOntoOutput(const vtkm::cont::DataSet& input,
+                                                     vtkm::cont::DataSet& output,
+                                                     vtkm::filter::PolicyBase<DerivedPolicy> policy)
 {
+  using Derived = decltype(*this);
   using call_supported_t =
     typename internal::SupportsMapFieldOntoOutput<Derived, DerivedPolicy>::type;
   vtkm::filter::internal::CallMapFieldOntoOutputInternal(
-    call_supported_t(), dynamic_cast<Derived*>(this), input, output, policy);
+    call_supported_t(), this, input, output, policy);
 }
 
 //----------------------------------------------------------------------------
-template <typename Derived>
-inline VTKM_CONT vtkm::cont::DataSet Filter<Derived>::Execute(const vtkm::cont::DataSet& input)
+inline VTKM_CONT vtkm::cont::DataSet Filter::Execute(const vtkm::cont::DataSet& input)
 {
-  Derived* self = dynamic_cast<Derived*>(this);
-  VTKM_ASSERT(self != nullptr);
+  //  Derived* self = dynamic_cast<Derived*>(this);
+  //  VTKM_ASSERT(self != nullptr);
 
-  vtkm::cont::PartitionedDataSet output = self->Execute(vtkm::cont::PartitionedDataSet(input));
+  vtkm::cont::PartitionedDataSet output = this->Execute(vtkm::cont::PartitionedDataSet(input));
   if (output.GetNumberOfPartitions() > 1)
   {
     throw vtkm::cont::ErrorFilterExecution("Expecting at most 1 block.");
@@ -306,33 +285,31 @@ inline VTKM_CONT vtkm::cont::DataSet Filter<Derived>::Execute(const vtkm::cont::
   return output.GetNumberOfPartitions() == 1 ? output.GetPartition(0) : vtkm::cont::DataSet();
 }
 
-template <typename Derived>
-inline VTKM_CONT vtkm::cont::PartitionedDataSet Filter<Derived>::Execute(
+inline VTKM_CONT vtkm::cont::PartitionedDataSet Filter::Execute(
   const vtkm::cont::PartitionedDataSet& input)
 {
   VTKM_LOG_SCOPE(vtkm::cont::LogLevel::Perf,
                  "Filter (%d partitions): '%s'",
                  (int)input.GetNumberOfPartitions(),
-                 vtkm::cont::TypeToString<Derived>().c_str());
+                 vtkm::cont::TypeToString<decltype(*this)>().c_str());
 
-  Derived* self = dynamic_cast<Derived*>(this);
-  VTKM_ASSERT(self != nullptr);
+  //  Derived* self = dynamic_cast<Derived*>(this);
+  //  VTKM_ASSERT(self != nullptr);
 
   vtkm::filter::PolicyDefault policy;
 
   // Call `void Derived::PreExecute<DerivedPolicy>(input, policy)`, if defined.
-  internal::CallPreExecute(self, input, policy);
+  internal::CallPreExecute(this, input, policy);
 
   // Call `PrepareForExecution` (which should probably be renamed at some point)
-  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(self, input);
+  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(this, input);
 
   // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
-  internal::CallPostExecute(self, input, output, policy);
+  internal::CallPostExecute(this, input, output, policy);
   return output;
 }
 
-template <typename Derived>
-inline VTKM_CONT vtkm::Id Filter<Derived>::DetermineNumberOfThreads(
+inline VTKM_CONT vtkm::Id Filter::DetermineNumberOfThreads(
   const vtkm::cont::PartitionedDataSet& input)
 {
   vtkm::Id numDS = input.GetNumberOfPartitions();
@@ -365,42 +342,39 @@ inline VTKM_CONT vtkm::Id Filter<Derived>::DetermineNumberOfThreads(
   return numThreads;
 }
 
-template <typename Derived>
-inline VTKM_CONT vtkm::cont::PartitionedDataSet Filter<Derived>::ExecuteThreaded(
+inline VTKM_CONT vtkm::cont::PartitionedDataSet Filter::ExecuteThreaded(
   const vtkm::cont::PartitionedDataSet& input,
   vtkm::Id vtkmNotUsed(numThreads))
 {
   VTKM_LOG_SCOPE(vtkm::cont::LogLevel::Perf,
                  "Filter (%d partitions): '%s'",
                  (int)input.GetNumberOfPartitions(),
-                 vtkm::cont::TypeToString<Derived>().c_str());
+                 vtkm::cont::TypeToString<decltype(*this)>().c_str());
 
-  Derived* self = static_cast<Derived*>(this);
+  //  Derived* self = static_cast<Derived*>(this);
 
   vtkm::filter::PolicyDefault policy;
 
   // Call `void Derived::PreExecute<DerivedPolicy>(input, policy)`, if defined.
-  internal::CallPreExecute(self, input, policy);
+  internal::CallPreExecute(this, input, policy);
 
   // Call `PrepareForExecution` (which should probably be renamed at some point)
-  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(self, input, policy);
+  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(this, input);
 
   // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
-  internal::CallPostExecute(self, input, output, policy);
+  internal::CallPostExecute(this, input, output, policy);
   return output;
 }
 
 //----------------------------------------------------------------------------
-template <typename Derived>
 template <typename DerivedPolicy>
-VTKM_CONT vtkm::cont::DataSet Filter<Derived>::Execute(
-  const vtkm::cont::DataSet& input,
-  vtkm::filter::PolicyBase<DerivedPolicy> policy)
+VTKM_CONT vtkm::cont::DataSet Filter::Execute(const vtkm::cont::DataSet& input,
+                                              vtkm::filter::PolicyBase<DerivedPolicy> policy)
 {
-  Derived* self = static_cast<Derived*>(this);
+  //  Derived* self = static_cast<Derived*>(this);
   VTKM_DEPRECATED_SUPPRESS_BEGIN
   vtkm::cont::PartitionedDataSet output =
-    self->Execute(vtkm::cont::PartitionedDataSet(input), policy);
+    this->Execute(vtkm::cont::PartitionedDataSet(input), policy);
   VTKM_DEPRECATED_SUPPRESS_END
   if (output.GetNumberOfPartitions() > 1)
   {
@@ -410,27 +384,26 @@ VTKM_CONT vtkm::cont::DataSet Filter<Derived>::Execute(
 }
 
 //----------------------------------------------------------------------------
-template <typename Derived>
 template <typename DerivedPolicy>
-VTKM_CONT vtkm::cont::PartitionedDataSet Filter<Derived>::Execute(
+VTKM_CONT vtkm::cont::PartitionedDataSet Filter::Execute(
   const vtkm::cont::PartitionedDataSet& input,
   vtkm::filter::PolicyBase<DerivedPolicy> policy)
 {
   VTKM_LOG_SCOPE(vtkm::cont::LogLevel::Perf,
                  "Filter (%d partitions): '%s'",
                  (int)input.GetNumberOfPartitions(),
-                 vtkm::cont::TypeToString<Derived>().c_str());
+                 vtkm::cont::TypeToString<decltype((*this))>().c_str());
 
-  Derived* self = static_cast<Derived*>(this);
+  //  Derived* self = static_cast<Derived*>(this);
 
   // Call `void Derived::PreExecute<DerivedPolicy>(input, policy)`, if defined.
-  internal::CallPreExecute(self, input, policy);
+  internal::CallPreExecute(this, input, policy);
 
   // Call `PrepareForExecution` (which should probably be renamed at some point)
-  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(self, input, policy);
+  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(this, input, policy);
 
   // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
-  internal::CallPostExecute(self, input, output, policy);
+  internal::CallPostExecute(this, input, output, policy);
   return output;
 }
 

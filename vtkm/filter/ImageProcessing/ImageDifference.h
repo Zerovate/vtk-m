@@ -29,8 +29,7 @@ namespace filter
 /// The threshold-output is calculated for each pixel using the `vtkm::Magnitude` vector function
 /// on the individual pixel difference.
 ///
-class VTKM_FILTER_IMAGEPROCESSING_EXPORT ImageDifference
-  : public vtkm::filter::FilterField<ImageDifference>
+class VTKM_FILTER_IMAGEPROCESSING_EXPORT ImageDifference : public vtkm::filter::FilterField
 {
 public:
   using SupportedTypes = vtkm::TypeListFieldVec4;

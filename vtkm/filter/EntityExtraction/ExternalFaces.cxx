@@ -20,7 +20,7 @@ namespace filter
 
 //-----------------------------------------------------------------------------
 ExternalFaces::ExternalFaces()
-  : vtkm::filter::FilterDataSet<ExternalFaces>()
+  : vtkm::filter::FilterDataSet() // FIXME: is this even necessary?
   , CompactPoints(false)
   , Worklet(std::make_unique<vtkm::worklet::ExternalFaces>())
 {

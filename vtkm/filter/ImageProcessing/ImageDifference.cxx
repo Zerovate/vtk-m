@@ -38,7 +38,7 @@ struct GreaterThanThreshold
 } // namespace detail
 
 VTKM_CONT ImageDifference::ImageDifference()
-  : vtkm::filter::FilterField<ImageDifference>()
+  : vtkm::filter::FilterField() // FIXME: is this even necessary?
   , AverageRadius(0)
   , PixelShiftRadius(0)
   , AllowedPixelErrorRatio(0.00025f)

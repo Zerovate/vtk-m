@@ -25,8 +25,7 @@ namespace vtkm
 namespace filter
 {
 
-template <class Derived>
-class FilterDataSet : public virtual vtkm::filter::Filter<Derived>
+class FilterDataSet : public virtual vtkm::filter::Filter
 {
 public:
   VTKM_CONT
@@ -48,13 +47,12 @@ public:
                                     vtkm::filter::PolicyBase<DerivedPolicy> policy);
 
 protected:
-  vtkm::filter::FilterDataSet<Derived>& operator=(const vtkm::filter::FilterDataSet<Derived>&) =
-    default;
+  vtkm::filter::FilterDataSet& operator=(const vtkm::filter::FilterDataSet&) = default;
   VTKM_CONT
-  void CopyStateFrom(const FilterDataSet<Derived>* filter) { *this = *filter; }
+  void CopyStateFrom(const FilterDataSet* filter) { *this = *filter; }
 
 private:
-  friend class vtkm::filter::Filter<Derived>;
+  friend class vtkm::filter::Filter;
 };
 }
 } // namespace vtkm::filter
