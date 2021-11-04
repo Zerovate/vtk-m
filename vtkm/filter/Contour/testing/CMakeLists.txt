@@ -13,7 +13,9 @@ set(unit_tests
 )
 
 set(libraries
+  vtkm_filter_cleangrid
   vtkm_filter_contour
+  vtkm_filter_fieldtransform
   vtkm_io
   vtkm_source
 )
