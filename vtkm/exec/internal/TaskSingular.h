@@ -16,8 +16,7 @@
 
 #include <vtkm/exec/arg/Fetch.h>
 
-//Todo: rename this header to TaskSingularDetail.h
-#include <vtkm/exec/internal/WorkletInvokeFunctorDetail.h>
+#include <vtkm/exec/internal/WorkletInvokeFunctor.h>
 
 namespace vtkm
 {

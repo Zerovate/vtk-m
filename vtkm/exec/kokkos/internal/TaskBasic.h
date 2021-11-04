@@ -12,8 +12,7 @@
 
 #include <vtkm/exec/TaskBase.h>
 
-//Todo: rename this header to TaskInvokeWorkletDetail.h
-#include <vtkm/exec/internal/WorkletInvokeFunctorDetail.h>
+#include <vtkm/exec/internal/WorkletInvokeFunctor.h>
 
 namespace vtkm
 {
