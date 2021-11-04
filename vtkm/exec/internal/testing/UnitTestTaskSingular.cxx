@@ -187,11 +187,26 @@ struct TestWorkletProxy : vtkm::exec::FunctorBase
   }
 };
 
+struct TestWorkletProxy1 : TestWorkletProxy
+{
+  using ControlSignature = TestControlSignature;
+  using ExecutionSignature = TestExecutionSignature1;
+};
+
+struct TestWorkletProxy2 : TestWorkletProxy
+{
+  using ControlSignature = TestControlSignature;
+  using ExecutionSignature = TestExecutionSignature2;
+};
+
 #define ERROR_MESSAGE "Expected worklet error."
 
 // Not a full worklet, but provides operators that we expect in a worklet.
 struct TestWorkletErrorProxy : vtkm::exec::FunctorBase
 {
+  using ControlSignature = TestControlSignature;
+  using ExecutionSignature = TestExecutionSignature1;
+
   VTKM_EXEC
   void operator()(vtkm::Id, vtkm::Id) const { this->RaiseError(ERROR_MESSAGE); }
 
@@ -213,29 +228,6 @@ struct TestWorkletErrorProxy : vtkm::exec::FunctorBase
   }
 };
 
-// Check behavior of InvocationToFetch helper class.
-
-VTKM_STATIC_ASSERT(
-  (std::is_same<
-    vtkm::exec::internal::detail::
-      InvocationToFetch<vtkm::exec::arg::ThreadIndicesBasic, InvocationType1, 1>::type,
-    vtkm::exec::arg::Fetch<TestFetchTagInput, vtkm::exec::arg::AspectTagDefault, TestExecObject>>::
-     type::value));
-
-VTKM_STATIC_ASSERT(
-  (std::is_same<
-    vtkm::exec::internal::detail::
-      InvocationToFetch<vtkm::exec::arg::ThreadIndicesBasic, InvocationType1, 2>::type,
-    vtkm::exec::arg::Fetch<TestFetchTagOutput, vtkm::exec::arg::AspectTagDefault, TestExecObject>>::
-     type::value));
-
-VTKM_STATIC_ASSERT(
-  (std::is_same<
-    vtkm::exec::internal::detail::
-      InvocationToFetch<vtkm::exec::arg::ThreadIndicesBasic, InvocationType2, 0>::type,
-    vtkm::exec::arg::Fetch<TestFetchTagOutput, vtkm::exec::arg::AspectTagDefault, TestExecObject>>::
-     type::value));
-
 void TestNormalFunctorInvoke()
 {
   std::cout << "Testing normal worklet invoke." << std::endl;
@@ -249,10 +241,10 @@ void TestNormalFunctorInvoke()
   std::cout << "  Try void return." << std::endl;
   inputTestValue = 5;
   outputTestValue = static_cast<vtkm::Id>(0xDEADDEAD);
-  using TaskSingular1 = vtkm::exec::internal::TaskSingular<TestWorkletProxy, InvocationType1>;
-  TestWorkletProxy worklet;
+  using TaskSingular1 = vtkm::exec::internal::TaskSingular<TestWorkletProxy1, InvocationType1>;
+  TestWorkletProxy1 worklet1;
   InvocationType1 invocation1(execObjects);
-  TaskSingular1 taskInvokeWorklet1(worklet, invocation1);
+  TaskSingular1 taskInvokeWorklet1(worklet1, invocation1);
 
   taskInvokeWorklet1(1);
   VTKM_TEST_ASSERT(inputTestValue == 5, "Input value changed.");
@@ -261,9 +253,10 @@ void TestNormalFunctorInvoke()
   std::cout << "  Try return value." << std::endl;
   inputTestValue = 6;
   outputTestValue = static_cast<vtkm::Id>(0xDEADDEAD);
-  using TaskSingular2 = vtkm::exec::internal::TaskSingular<TestWorkletProxy, InvocationType2>;
+  using TaskSingular2 = vtkm::exec::internal::TaskSingular<TestWorkletProxy2, InvocationType2>;
+  TestWorkletProxy2 worklet2;
   InvocationType2 invocation2(execObjects);
-  TaskSingular2 taskInvokeWorklet2(worklet, invocation2);
+  TaskSingular2 taskInvokeWorklet2(worklet2, invocation2);
 
   taskInvokeWorklet2(2);
   VTKM_TEST_ASSERT(inputTestValue == 6, "Input value changed.");
