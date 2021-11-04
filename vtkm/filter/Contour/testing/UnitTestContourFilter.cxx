@@ -157,14 +157,12 @@ public:
     vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
     dataSet.GetPointField("gyroid").GetData().AsArrayHandle(fieldArray);
 
-    vtkm::worklet::Contour isosurfaceFilter;
+    vtkm::filter::Contour isosurfaceFilter;
+    isosurfaceFilter.SetActiveField("gyroid");
     isosurfaceFilter.SetMergeDuplicatePoints(false);
+    isosurfaceFilter.SetIsoValue(0.0);
 
-    vtkm::cont::ArrayHandle<vtkm::Vec3f_32> verticesArray;
-    vtkm::cont::ArrayHandle<vtkm::Vec3f_32> normalsArray;
-
-    auto result = isosurfaceFilter.Run(
-      { 0.0f }, cellSet, dataSet.GetCoordinateSystem(), fieldArray, verticesArray, normalsArray);
+    auto result = isosurfaceFilter.Execute(dataSet);
     VTKM_TEST_ASSERT(result.GetNumberOfCells() == 52);
   }
 

@@ -12,7 +12,6 @@
 #define vtk_m_filter_Contour_h
 
 #include <vtkm/filter/Contour/vtkm_filter_contour_export.h>
-#include <vtkm/filter/Contour/worklet/Contour.h>
 #include <vtkm/filter/FilterDataSetWithField.h>
 #include <vtkm/filter/MapFieldPermutation.h>
 
@@ -20,6 +19,11 @@
 
 namespace vtkm
 {
+namespace worklet
+{
+class Contour;
+}
+
 namespace filter
 {
 /// \brief generate isosurface(s) from a Volume
@@ -46,6 +50,7 @@ public:
   bool CanThread() const override { return true; }
 
   Contour();
+  ~Contour();
 
   void SetNumberOfIsoValues(vtkm::Id num)
   {
@@ -81,10 +86,10 @@ public:
   /// by the unique edge it was generated from.
   ///
   VTKM_CONT
-  void SetMergeDuplicatePoints(bool on) { this->Worklet.SetMergeDuplicatePoints(on); }
+  void SetMergeDuplicatePoints(bool on);
 
   VTKM_CONT
-  bool GetMergeDuplicatePoints() const { return this->Worklet.GetMergeDuplicatePoints(); }
+  bool GetMergeDuplicatePoints() const;
 
   /// Set/Get whether normals should be generated. Off by default. If enabled,
   /// the default behaviour is to generate high quality normals for structured
@@ -130,40 +135,8 @@ public:
 
   VTKM_CONT
   vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& concrete) override;
-
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
-  {
-    if (field.IsFieldPoint())
-    {
-      // If the field is a point field, then we need to do a custom interpolation of the points.
-      // In this case, we need to call the superclass's MapFieldOntoOutput, which will in turn
-      // call our DoMapField.
-      //      return this->FilterDataSetWithField::MapFieldOntoOutput(result, field);
-      auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
-
-      auto functor = [&, this](auto concrete) {
-        auto fieldArray = this->Worklet.template ProcessPointField(concrete);
-        result.template AddPointField(field.GetName(), fieldArray);
-      };
-      array.CastAndCallWithFloatFallback(functor);
-      return true;
-    }
-    else if (field.IsFieldCell())
-    {
-      // Use the precompiled field permutation function.
-      vtkm::cont::ArrayHandle<vtkm::Id> permutation = this->Worklet.GetCellIdMap();
-      return vtkm::filter::MapFieldPermutation(field, permutation, result);
-    }
-    else if (field.IsFieldGlobal())
-    {
-      result.AddField(field);
-      return true;
-    }
-    else
-    {
-      return false;
-    }
-  }
+  VTKM_CONT
+  bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field) override;
 
 protected:
   VTKM_CONT
@@ -188,7 +161,7 @@ private:
   bool ComputeFastNormalsForUnstructured;
   std::string NormalArrayName;
   std::string InterpolationEdgeIdsArrayName;
-  vtkm::worklet::Contour Worklet;
+  std::unique_ptr<vtkm::worklet::Contour> Worklet;
 };
 
 }
