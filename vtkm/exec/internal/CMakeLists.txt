@@ -15,12 +15,10 @@ set(headers
   TaskSingular.h
   TwoLevelUniformGridExecutionObject.h
   Variant.h
-  WorkletInvokeFunctorDetail.h
+  WorkletInvokeFunctor.h
   )
 
 vtkm_declare_headers(${headers})
-
-vtkm_pyexpander_generated_file(WorkletInvokeFunctorDetail.h)
 
 if (VTKm_ENABLE_TESTING)
   add_subdirectory(testing)

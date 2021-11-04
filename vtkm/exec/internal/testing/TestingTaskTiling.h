@@ -227,11 +227,26 @@ struct TestWorkletProxy : vtkm::exec::FunctorBase
   }
 };
 
+struct TestWorkletProxy1 : TestWorkletProxy
+{
+  using ControlSignature = TestControlSignature;
+  using ExecutionSignature = TestExecutionSignature1;
+};
+
+struct TestWorkletProxy2 : TestWorkletProxy
+{
+  using ControlSignature = TestControlSignature;
+  using ExecutionSignature = TestExecutionSignature2;
+};
+
 #define ERROR_MESSAGE "Expected worklet error."
 
 // Not a full worklet, but provides operators that we expect in a worklet.
 struct TestWorkletErrorProxy : vtkm::exec::FunctorBase
 {
+  using ControlSignature = TestControlSignature;
+  using ExecutionSignature = TestExecutionSignature1;
+
   VTKM_EXEC
   void operator()(vtkm::Id, vtkm::Id) const { this->RaiseError(ERROR_MESSAGE); }
 
@@ -283,11 +298,11 @@ void Test1DNormalTaskTilingInvoke()
                                                  TestExecObject(outputTestValues));
 
   std::cout << "  Try void return." << std::endl;
-  TestWorkletProxy worklet;
+  TestWorkletProxy1 worklet1;
   InvocationType1 invocation1(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task1 = TaskTypes::MakeTask(worklet, invocation1, vtkm::Id());
+  auto task1 = TaskTypes::MakeTask(worklet1, invocation1, vtkm::Id());
 
   vtkm::exec::internal::ErrorMessageBuffer errorMessage(nullptr, 0);
   task1.SetErrorMessageBuffer(errorMessage);
@@ -309,9 +324,10 @@ void Test1DNormalTaskTilingInvoke()
   std::fill(outputTestValues.begin(), outputTestValues.end(), static_cast<vtkm::Id>(0xDEADDEAD));
 
   InvocationType2 invocation2(execObjects);
+  TestWorkletProxy2 worklet2;
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task2 = TaskTypes::MakeTask(worklet, invocation2, vtkm::Id());
+  auto task2 = TaskTypes::MakeTask(worklet2, invocation2, vtkm::Id());
 
   task2.SetErrorMessageBuffer(errorMessage);
 
@@ -375,11 +391,11 @@ void Test3DNormalTaskTilingInvoke()
 
   std::cout << "  Try void return." << std::endl;
 
-  TestWorkletProxy worklet;
+  TestWorkletProxy1 worklet1;
   InvocationType1 invocation1(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task1 = TaskTypes::MakeTask(worklet, invocation1, vtkm::Id3());
+  auto task1 = TaskTypes::MakeTask(worklet1, invocation1, vtkm::Id3());
   for (vtkm::Id k = 0; k < 8; ++k)
   {
     for (vtkm::Id j = 0; j < 8; j += 2)
@@ -402,9 +418,10 @@ void Test3DNormalTaskTilingInvoke()
   std::fill(inputTestValues.begin(), inputTestValues.end(), 6);
   std::fill(outputTestValues.begin(), outputTestValues.end(), static_cast<vtkm::Id>(0xDEADDEAD));
 
+  TestWorkletProxy2 worklet2;
   InvocationType2 invocation2(execObjects);
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task2 = TaskTypes::MakeTask(worklet, invocation2, vtkm::Id3());
+  auto task2 = TaskTypes::MakeTask(worklet2, invocation2, vtkm::Id3());
 
   //verify that linear order of values being processed is not presumed
   for (vtkm::Id i = 0; i < 8; ++i)
