@@ -35,8 +35,17 @@ VTKM_FILTER_COMMON_EXPORT void RunFilter(Filter* self,
   vtkm::cont::Algorithm::Synchronize();
   delete filterClone;
 }
+} // internal
+
+// FIXME: void return type?
+VTKM_FILTER_COMMON_EXPORT bool Filter::MapFieldOntoOutput(vtkm::cont::DataSet& result,
+                                                          const vtkm::cont::Field& field)
+{
+  // The default operation of mapping a field from input to output is to
+  // just add the filed.
+  result.AddField(field);
+  return true;
 }
 
-
-}
-}
+} // namespace filter
+} // namespace vtkm

@@ -114,7 +114,7 @@ VTKM_CONT_EXPORT vtkm::cont::DataSet DotProduct::DoExecute(const vtkm::cont::Dat
                         this->GetFieldFromDataSet(inDataSet).GetAssociation(),
                         outArray });
 
-  CallMapFieldOntoOutput(inDataSet, outDataSet, vtkm::filter::PolicyDefault{});
+  CallMapFieldOntoOutput(inDataSet, outDataSet);
 
   return outDataSet;
 }

@@ -131,17 +131,22 @@ public:
   VTKM_CONT
   vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& concrete) override;
 
-  template <typename DerivedPolicy>
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                    const vtkm::cont::Field& field,
-                                    vtkm::filter::PolicyBase<DerivedPolicy> policy)
+  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
   {
     if (field.IsFieldPoint())
     {
       // If the field is a point field, then we need to do a custom interpolation of the points.
       // In this case, we need to call the superclass's MapFieldOntoOutput, which will in turn
       // call our DoMapField.
-      return this->FilterDataSetWithField::MapFieldOntoOutput(result, field, policy);
+      //      return this->FilterDataSetWithField::MapFieldOntoOutput(result, field);
+      auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
+
+      auto functor = [&, this](auto concrete) {
+        auto fieldArray = this->Worklet.template ProcessPointField(concrete);
+        result.template AddPointField(field.GetName(), fieldArray);
+      };
+      array.CastAndCallWithFloatFallback(functor);
+      return true;
     }
     else if (field.IsFieldCell())
     {
@@ -158,26 +163,6 @@ public:
     {
       return false;
     }
-  }
-
-  //Map a new field onto the resulting dataset after running the filter
-  //this call is only valid
-  template <typename T, typename StorageType, typename DerivedPolicy>
-  VTKM_CONT bool DoMapField(vtkm::cont::DataSet& result,
-                            const vtkm::cont::ArrayHandle<T, StorageType>& input,
-                            const vtkm::filter::FieldMetadata& fieldMeta,
-                            vtkm::filter::PolicyBase<DerivedPolicy>)
-  {
-    // All other conditions should be handled by MapFieldOntoOutput directly.
-    VTKM_ASSERT(fieldMeta.IsPointField());
-
-    vtkm::cont::ArrayHandle<T> fieldArray;
-
-    fieldArray = this->Worklet.ProcessPointField(input);
-
-    //use the same meta data as the input so we get the same field name, etc.
-    result.AddField(fieldMeta.AsField(fieldArray));
-    return true;
   }
 
 protected:

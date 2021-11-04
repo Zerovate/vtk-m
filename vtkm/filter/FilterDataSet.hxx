@@ -28,36 +28,5 @@ inline VTKM_CONT FilterDataSet::FilterDataSet() {}
 //----------------------------------------------------------------------------
 inline VTKM_CONT FilterDataSet::~FilterDataSet() {}
 
-//-----------------------------------------------------------------------------
-template <typename DerivedPolicy>
-inline VTKM_CONT bool FilterDataSet::MapFieldOntoOutput(
-  vtkm::cont::DataSet& result,
-  const vtkm::cont::Field& field,
-  vtkm::filter::PolicyBase<DerivedPolicy> policy)
-{
-  bool valid = false;
-
-  vtkm::filter::FieldMetadata metaData(field);
-  using FunctorType = internal::ResolveFieldTypeAndMap<FilterDataSet, DerivedPolicy>;
-  FunctorType functor(this, result, metaData, policy, valid);
-
-  try
-  {
-    vtkm::cont::CastAndCall(vtkm::filter::ApplyPolicyFieldNotActive(field, policy), functor);
-  }
-  catch (vtkm::cont::ErrorBadType& error)
-  {
-    VTKM_LOG_S(vtkm::cont::LogLevel::Warn,
-               "Failed to map field " << field.GetName()
-                                      << " because it is an unknown type. Cast error:\n"
-                                      << error.GetMessage());
-    (void)error; // Suppress unused error message if logging is turned off.
-  }
-
-  //the bool valid will be modified by the map algorithm to hold if the
-  //mapping occurred or not. If the mapping was good a new field has been
-  //added to the result that was passed in.
-  return valid;
-}
 }
 }

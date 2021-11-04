@@ -13,7 +13,7 @@
 #include <vtkm/filter/Contour/vtkm_filter_contour_export.h>
 
 #include <vtkm/filter/Contour/Contour.h>
-#include <vtkm/filter/FilterDataSet.h>
+#include <vtkm/filter/Filter.h>
 
 #include <vtkm/ImplicitFunction.h>
 
@@ -22,7 +22,7 @@ namespace vtkm
 namespace filter
 {
 
-class VTKM_FILTER_CONTOUR_EXPORT Slice : public vtkm::filter::FilterDataSet
+class VTKM_FILTER_CONTOUR_EXPORT Slice : public vtkm::filter::Filter
 {
 public:
   /// Set/Get the implicit function that is used to perform the slicing.
@@ -95,23 +95,9 @@ public:
 
   VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
-  template <typename DerivedPolicy>
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                    const vtkm::cont::Field& field,
-                                    vtkm::filter::PolicyBase<DerivedPolicy> policy)
+  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
   {
-    return this->ContourFilter.MapFieldOntoOutput(result, field, policy);
-  }
-
-  //Map a new field onto the resulting dataset after running the filter
-  //this call is only valid
-  template <typename T, typename StorageType, typename DerivedPolicy>
-  VTKM_CONT bool DoMapField(vtkm::cont::DataSet& result,
-                            const vtkm::cont::ArrayHandle<T, StorageType>& input,
-                            const vtkm::filter::FieldMetadata& fieldMeta,
-                            vtkm::filter::PolicyBase<DerivedPolicy> policy)
-  {
-    return this->ContourFilter.DoMapField(result, input, fieldMeta, policy);
+    return this->ContourFilter.MapFieldOntoOutput(result, field);
   }
 
 private:

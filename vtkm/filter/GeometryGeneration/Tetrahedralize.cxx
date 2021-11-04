@@ -33,8 +33,7 @@ namespace filter
 
 //-----------------------------------------------------------------------------
 VTKM_CONT Tetrahedralize::Tetrahedralize()
-  : vtkm::filter::FilterDataSet()
-  , Worklet(std::make_unique<vtkm::worklet::Tetrahedralize>())
+  : Worklet(std::make_unique<vtkm::worklet::Tetrahedralize>())
 {
 }
 
@@ -57,7 +56,7 @@ VTKM_CONT vtkm::cont::DataSet Tetrahedralize::DoExecute(const vtkm::cont::DataSe
   output.SetCellSet(outCellSet);
   output.AddCoordinateSystem(input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex()));
 
-  CallMapFieldOntoOutput(input, output, vtkm::filter::PolicyDefault{});
+  CallMapFieldOntoOutput(input, output);
 
   return output;
 }

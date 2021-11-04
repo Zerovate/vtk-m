@@ -13,7 +13,7 @@
 
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
 #include <vtkm/filter/EntityExtraction/vtkm_filter_entityextraction_export.h>
-#include <vtkm/filter/FilterDataSet.h>
+#include <vtkm/filter/Filter.h>
 #include <vtkm/filter/MapFieldPermutation.h>
 
 namespace vtkm
@@ -33,7 +33,7 @@ namespace filter
 /// @warning
 /// This filter is currently only supports propagation of point properties
 ///
-class VTKM_FILTER_ENTITYEXTRACTION_EXPORT ExternalFaces : public vtkm::filter::FilterDataSet
+class VTKM_FILTER_ENTITYEXTRACTION_EXPORT ExternalFaces : public vtkm::filter::Filter
 {
 public:
   ExternalFaces();
@@ -57,14 +57,6 @@ public:
   VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field);
-
-  template <typename DerivedPolicy>
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                    const vtkm::cont::Field& field,
-                                    vtkm::filter::PolicyBase<DerivedPolicy>)
-  {
-    return this->MapFieldOntoOutput(result, field);
-  }
 
 private:
   bool CompactPoints;

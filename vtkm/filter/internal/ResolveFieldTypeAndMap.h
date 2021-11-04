@@ -24,39 +24,33 @@ namespace filter
 namespace internal
 {
 
-template <typename Derived, typename DerivedPolicy>
 struct ResolveFieldTypeAndMap
 {
-  using Self = ResolveFieldTypeAndMap<Derived, DerivedPolicy>;
-
-  Derived* DerivedClass;
+  Filter* DerivedClass;
   vtkm::cont::DataSet& InputResult;
   const vtkm::filter::FieldMetadata& Metadata;
-  const vtkm::filter::PolicyBase<DerivedPolicy>& Policy;
   bool& RanProperly;
 
-  ResolveFieldTypeAndMap(Derived* derivedClass,
+  ResolveFieldTypeAndMap(Filter* derivedClass,
                          vtkm::cont::DataSet& inResult,
                          const vtkm::filter::FieldMetadata& fieldMeta,
-                         const vtkm::filter::PolicyBase<DerivedPolicy>& policy,
                          bool& ran)
     : DerivedClass(derivedClass)
     , InputResult(inResult)
     , Metadata(fieldMeta)
-    , Policy(policy)
     , RanProperly(ran)
   {
   }
 
   template <typename T, typename StorageTag>
-  void operator()(const vtkm::cont::ArrayHandle<T, StorageTag>& field) const
+  void operator()(const vtkm::cont::ArrayHandle<T, StorageTag>&) const
   {
-    this->RanProperly =
-      this->DerivedClass->DoMapField(this->InputResult, field, this->Metadata, this->Policy);
+    //    this->RanProperly =
+    //      this->DerivedClass->DoMapField(this->InputResult, field, this->Metadata, vtkm::filter::PolicyDefault{});
   }
 
 private:
-  void operator=(const ResolveFieldTypeAndMap<Derived, DerivedPolicy>&) = delete;
+  void operator=(const ResolveFieldTypeAndMap&) = delete;
 };
 }
 }

@@ -50,8 +50,8 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
                                               vtkm::cont::CellSetExplicit<>& outputCellSet)
 {
   using VecId = std::size_t;
-  const VecId activeCoordIndex = static_cast<VecId>(this->GetActiveCoordinateSystemIndex());
-  const VecId numCoordSystems = static_cast<VecId>(inData.GetNumberOfCoordinateSystems());
+  const auto activeCoordIndex = static_cast<VecId>(this->GetActiveCoordinateSystemIndex());
+  const auto numCoordSystems = static_cast<VecId>(inData.GetNumberOfCoordinateSystems());
 
   std::vector<vtkm::cont::CoordinateSystem> outputCoordinateSystems(numCoordSystems);
 
@@ -179,7 +179,7 @@ vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
 
   auto outData = this->GenerateOutput(inData, outputCellSet);
 
-  CallMapFieldOntoOutput(inData, outData, vtkm::filter::PolicyDefault{});
+  CallMapFieldOntoOutput(inData, outData);
 
   return outData;
 }

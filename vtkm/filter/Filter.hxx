@@ -112,45 +112,6 @@ void CallPreExecute(Derived* self,
 }
 
 //--------------------------------------------------------------------------------
-template <typename Derived, typename DerivedPolicy>
-void CallMapFieldOntoOutputInternal(std::true_type,
-                                    Derived* self,
-                                    const vtkm::cont::DataSet& input,
-                                    vtkm::cont::DataSet& output,
-                                    const vtkm::filter::PolicyBase<DerivedPolicy>& policy)
-{
-  for (vtkm::IdComponent cc = 0; cc < input.GetNumberOfFields(); ++cc)
-  {
-    auto field = input.GetField(cc);
-    if (self->GetFieldsToPass().IsFieldSelected(field))
-    {
-      self->MapFieldOntoOutput(output, field, policy);
-    }
-  }
-}
-
-//--------------------------------------------------------------------------------
-template <typename Derived, typename DerivedPolicy>
-void CallMapFieldOntoOutputInternal(std::false_type,
-                                    Derived* self,
-                                    const vtkm::cont::DataSet& input,
-                                    vtkm::cont::DataSet& output,
-                                    const vtkm::filter::PolicyBase<DerivedPolicy>&)
-{
-  // no MapFieldOntoOutput method is present. In that case, we simply copy the
-  // requested input fields to the output.
-  for (vtkm::IdComponent cc = 0; cc < input.GetNumberOfFields(); ++cc)
-  {
-    auto field = input.GetField(cc);
-    if (self->GetFieldsToPass().IsFieldSelected(field))
-    {
-      output.AddField(field);
-    }
-  }
-}
-
-
-//--------------------------------------------------------------------------------
 // forward declare.
 template <typename Derived, typename InputType>
 InputType CallPrepareForExecution(Derived* self, const InputType& input);
@@ -259,16 +220,17 @@ inline VTKM_CONT Filter::Filter()
 inline VTKM_CONT Filter::~Filter() = default;
 
 //--------------------------------------------------------------------------------
-template <typename DerivedPolicy>
 inline VTKM_CONT void Filter::CallMapFieldOntoOutput(const vtkm::cont::DataSet& input,
-                                                     vtkm::cont::DataSet& output,
-                                                     vtkm::filter::PolicyBase<DerivedPolicy> policy)
+                                                     vtkm::cont::DataSet& output)
 {
-  using Derived = decltype(*this);
-  using call_supported_t =
-    typename internal::SupportsMapFieldOntoOutput<Derived, DerivedPolicy>::type;
-  vtkm::filter::internal::CallMapFieldOntoOutputInternal(
-    call_supported_t(), this, input, output, policy);
+  for (vtkm::IdComponent cc = 0; cc < input.GetNumberOfFields(); ++cc)
+  {
+    auto field = input.GetField(cc);
+    if (this->GetFieldsToPass().IsFieldSelected(field))
+    {
+      this->MapFieldOntoOutput(output, field);
+    }
+  }
 }
 
 //----------------------------------------------------------------------------

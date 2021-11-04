@@ -20,8 +20,7 @@ namespace filter
 
 //-----------------------------------------------------------------------------
 ExternalFaces::ExternalFaces()
-  : vtkm::filter::FilterDataSet() // FIXME: is this even necessary?
-  , CompactPoints(false)
+  : CompactPoints(false)
   , Worklet(std::make_unique<vtkm::worklet::ExternalFaces>())
 {
   this->SetPassPolyData(true);
@@ -100,7 +99,7 @@ vtkm::cont::DataSet ExternalFaces::DoExecute(const vtkm::cont::DataSet& input)
 
   auto output = this->GenerateOutput(input, outCellSet);
 
-  CallMapFieldOntoOutput(input, output, vtkm::filter::PolicyDefault{});
+  CallMapFieldOntoOutput(input, output);
 
   return output;
 }

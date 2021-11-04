@@ -29,22 +29,10 @@ class FilterDataSet : public virtual vtkm::filter::Filter
 {
 public:
   VTKM_CONT
-  FilterDataSet();
+  FilterDataSet() = default;
 
   VTKM_CONT
-  ~FilterDataSet();
-
-  /// These are provided to satisfy the Filter API requirements.
-
-  //From the field we can extract the association component
-  // Association::ANY -> unable to map
-  // Association::WHOLE_MESH -> (I think this is points)
-  // Association::POINTS -> map using point mapping
-  // Association::CELL_SET -> how do we map this?
-  template <typename DerivedPolicy>
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                    const vtkm::cont::Field& field,
-                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
+  ~FilterDataSet() = default;
 
 protected:
   vtkm::filter::FilterDataSet& operator=(const vtkm::filter::FilterDataSet&) = default;
@@ -57,6 +45,6 @@ private:
 }
 } // namespace vtkm::filter
 
-#include <vtkm/filter/FilterDataSet.hxx>
+//#include <vtkm/filter/FilterDataSet.hxx>
 
 #endif // vtk_m_filter_DataSetFilter_h

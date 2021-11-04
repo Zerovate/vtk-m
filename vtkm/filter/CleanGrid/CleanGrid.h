@@ -11,7 +11,7 @@
 #define vtk_m_filter_CleanGrid_h
 
 #include <vtkm/filter/CleanGrid/vtkm_filter_cleangrid_export.h>
-#include <vtkm/filter/FilterDataSet.h>
+#include <vtkm/filter/Filter.h>
 
 namespace vtkm
 {
@@ -38,11 +38,11 @@ struct SharedStates;
 /// \todo Add a feature to merge points that are coincident or within a
 /// tolerance.
 ///
-class VTKM_FILTER_CLEANGRID_EXPORT CleanGrid : public vtkm::filter::FilterDataSet
+class VTKM_FILTER_CLEANGRID_EXPORT CleanGrid : public vtkm::filter::Filter
 {
 public:
   CleanGrid();
-  ~CleanGrid();
+  ~CleanGrid() override;
 
   VTKM_CONT
   Filter* Clone() const override
@@ -95,22 +95,15 @@ public:
   VTKM_CONT bool GetFastMerge() const { return this->FastMerge; }
   VTKM_CONT void SetFastMerge(bool flag) { this->FastMerge = flag; }
 
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field);
-
-  virtual vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) override;
-
-  template <typename DerivedPolicy>
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                    const vtkm::cont::Field& field,
-                                    vtkm::filter::PolicyBase<DerivedPolicy>)
-  {
-    return this->MapFieldOntoOutput(result, field);
-  }
+                                    const vtkm::cont::Field& field) override;
+
+  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) override;
 
   VTKM_CONT
   void CopyStateFrom(const CleanGrid* cleanGrid)
   {
-    this->FilterDataSet::CopyStateFrom(cleanGrid);
+    this->Filter::CopyStateFrom(cleanGrid);
 
     this->CompactPointFields = cleanGrid->CompactPointFields;
     this->MergePoints = cleanGrid->MergePoints;

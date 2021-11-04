@@ -11,7 +11,7 @@
 #ifndef vtk_m_filter_Tetrahedralize_h
 #define vtk_m_filter_Tetrahedralize_h
 
-#include <vtkm/filter/FilterDataSet.h>
+#include <vtkm/filter/Filter.h>
 #include <vtkm/filter/GeometryGeneration/vtkm_filter_geometrygeneration_export.h>
 
 namespace vtkm
@@ -23,7 +23,7 @@ class Tetrahedralize;
 namespace filter
 {
 
-class VTKM_FILTER_GEOMETRYGENERATION_EXPORT Tetrahedralize : public vtkm::filter::FilterDataSet
+class VTKM_FILTER_GEOMETRYGENERATION_EXPORT Tetrahedralize : public vtkm::filter::Filter
 {
 public:
   VTKM_CONT
@@ -36,14 +36,6 @@ public:
 
   // Map new field onto the resulting dataset after running the filter
   VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field);
-
-  template <typename DerivedPolicy>
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                    const vtkm::cont::Field& field,
-                                    vtkm::filter::PolicyBase<DerivedPolicy>)
-  {
-    return this->MapFieldOntoOutput(result, field);
-  }
 
 private:
   std::unique_ptr<vtkm::worklet::Tetrahedralize> Worklet;
