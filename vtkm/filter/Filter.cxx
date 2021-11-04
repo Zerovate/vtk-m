@@ -28,7 +28,6 @@ VTKM_FILTER_COMMON_EXPORT void RunFilter(Filter* self,
   while (input.GetTask(task))
   {
     auto outDS = CallPrepareForExecution(filterClone, task.second);
-    //    filterClone->CallMapFieldOntoOutput(task.second, outDS, policy);
     output.Push(std::make_pair(task.first, std::move(outDS)));
   }
 
@@ -133,6 +132,7 @@ vtkm::cont::PartitionedDataSet Filter::ExecuteThreaded(const vtkm::cont::Partiti
   return output;
 }
 
+// TODO: should we turn it back to a standalone function?
 //--------------------------------------------------------------------------------
 void Filter::CallMapFieldOntoOutput(const vtkm::cont::DataSet& input, vtkm::cont::DataSet& output)
 {

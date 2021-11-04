@@ -297,7 +297,6 @@ public:
   VTKM_CONT virtual vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) = 0;
 
   // TODO: make it private/protected?
-  // TODO: further remove Policy object from the call chain.
   VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input)
   {
     return this->DoExecute(input);
@@ -324,6 +323,7 @@ public:
   VTKM_CONT virtual vtkm::cont::PartitionedDataSet Execute(
     const vtkm::cont::PartitionedDataSet& input);
 
+  // TODO: unused dup of Execute, to be remved.
   VTKM_CONT vtkm::cont::PartitionedDataSet ExecuteThreaded(
     const vtkm::cont::PartitionedDataSet& input,
     vtkm::Id numThreads);
@@ -336,6 +336,7 @@ public:
                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
   //@}
 
+  // FIXME: Is this actually materialize? Are there different kinds of Invoker?
   /// Specify the vtkm::cont::Invoker to be used to execute worklets by
   /// this filter instance. Overriding the default allows callers to control
   /// which device adapters a filter uses.

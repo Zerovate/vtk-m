@@ -219,9 +219,6 @@ VTKM_CONT vtkm::cont::PartitionedDataSet Filter::Execute(
                  "Filter (%d partitions): '%s'",
                  (int)input.GetNumberOfPartitions(),
                  vtkm::cont::TypeToString<decltype((*this))>().c_str());
-
-  //  Derived* self = static_cast<Derived*>(this);
-
   // Call `void Derived::PreExecute<DerivedPolicy>(input, policy)`, if defined.
   internal::CallPreExecute(this, input, policy);
 
