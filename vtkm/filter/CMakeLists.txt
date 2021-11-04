@@ -199,7 +199,7 @@ vtkm_pyexpander_generated_file(ClipWithImplicitFunctionExternInstantiations.h)
 
 set_source_files_properties(ExtractStructured.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
-add_library(vtkm_filter INTERFACE)
+add_library(vtkm_filter INTERFACE ../cont/testing/MakeTestDataSet.cxx)
 
 vtkm_library(
   NAME vtkm_filter_common

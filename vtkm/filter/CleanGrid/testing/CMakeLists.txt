@@ -18,5 +18,6 @@ set(libraries
 vtkm_unit_tests(
   SOURCES ${unit_tests}
   LIBRARIES ${libraries}
+  ALL_BACKENDS # TODO: can we remove it?
   USE_VTKM_JOB_POOL
 )
