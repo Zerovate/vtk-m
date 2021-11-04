@@ -11,8 +11,6 @@
 #include <vtkm/filter/FieldMetadata.h>
 #include <vtkm/filter/PolicyDefault.h>
 
-#include <vtkm/filter/internal/ResolveFieldTypeAndMap.h>
-
 #include <vtkm/cont/ErrorFilterExecution.h>
 #include <vtkm/cont/Field.h>
 #include <vtkm/cont/Logging.h>
@@ -68,20 +66,6 @@ struct SupportsPrepareForExecution
 {
   template <typename U,
             typename S = decltype(std::declval<U>().PrepareForExecution(std::declval<InputType>()))>
-  static std::true_type has(int);
-  template <typename U>
-  static std::false_type has(...);
-  using type = decltype(has<T>(0));
-};
-
-template <typename T, typename DerivedPolicy>
-struct SupportsMapFieldOntoOutput
-{
-  template <typename U,
-            typename S = decltype(std::declval<U>().MapFieldOntoOutput(
-              std::declval<vtkm::cont::DataSet&>(),
-              std::declval<vtkm::cont::Field>(),
-              std::declval<vtkm::filter::PolicyBase<DerivedPolicy>>()))>
   static std::true_type has(int);
   template <typename U>
   static std::false_type has(...);
@@ -163,7 +147,6 @@ vtkm::cont::PartitionedDataSet CallPrepareForExecutionInternal(
     for (const auto& inBlock : input)
     {
       vtkm::cont::DataSet outBlock = CallPrepareForExecution(self, inBlock);
-      //      self->CallMapFieldOntoOutput(inBlock, outBlock, policy);
       output.AppendPartition(outBlock);
     }
   }
@@ -208,125 +191,6 @@ void CallPostExecute(Derived* self,
 }
 }
 
-//----------------------------------------------------------------------------
-inline VTKM_CONT Filter::Filter()
-  : Invoke()
-  , CoordinateSystemIndex(0)
-  , FieldsToPass(vtkm::filter::FieldSelection::MODE_ALL)
-{
-}
-
-//----------------------------------------------------------------------------
-inline VTKM_CONT Filter::~Filter() = default;
-
-//--------------------------------------------------------------------------------
-inline VTKM_CONT void Filter::CallMapFieldOntoOutput(const vtkm::cont::DataSet& input,
-                                                     vtkm::cont::DataSet& output)
-{
-  for (vtkm::IdComponent cc = 0; cc < input.GetNumberOfFields(); ++cc)
-  {
-    auto field = input.GetField(cc);
-    if (this->GetFieldsToPass().IsFieldSelected(field))
-    {
-      this->MapFieldOntoOutput(output, field);
-    }
-  }
-}
-
-//----------------------------------------------------------------------------
-inline VTKM_CONT vtkm::cont::DataSet Filter::Execute(const vtkm::cont::DataSet& input)
-{
-  //  Derived* self = dynamic_cast<Derived*>(this);
-  //  VTKM_ASSERT(self != nullptr);
-
-  vtkm::cont::PartitionedDataSet output = this->Execute(vtkm::cont::PartitionedDataSet(input));
-  if (output.GetNumberOfPartitions() > 1)
-  {
-    throw vtkm::cont::ErrorFilterExecution("Expecting at most 1 block.");
-  }
-  return output.GetNumberOfPartitions() == 1 ? output.GetPartition(0) : vtkm::cont::DataSet();
-}
-
-inline VTKM_CONT vtkm::cont::PartitionedDataSet Filter::Execute(
-  const vtkm::cont::PartitionedDataSet& input)
-{
-  VTKM_LOG_SCOPE(vtkm::cont::LogLevel::Perf,
-                 "Filter (%d partitions): '%s'",
-                 (int)input.GetNumberOfPartitions(),
-                 vtkm::cont::TypeToString<decltype(*this)>().c_str());
-
-  //  Derived* self = dynamic_cast<Derived*>(this);
-  //  VTKM_ASSERT(self != nullptr);
-
-  vtkm::filter::PolicyDefault policy;
-
-  // Call `void Derived::PreExecute<DerivedPolicy>(input, policy)`, if defined.
-  internal::CallPreExecute(this, input, policy);
-
-  // Call `PrepareForExecution` (which should probably be renamed at some point)
-  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(this, input);
-
-  // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
-  internal::CallPostExecute(this, input, output, policy);
-  return output;
-}
-
-inline VTKM_CONT vtkm::Id Filter::DetermineNumberOfThreads(
-  const vtkm::cont::PartitionedDataSet& input)
-{
-  vtkm::Id numDS = input.GetNumberOfPartitions();
-
-  //Aribitrary constants.
-  const vtkm::Id threadsPerGPU = 8;
-  const vtkm::Id threadsPerCPU = 4;
-
-  vtkm::Id availThreads = 1;
-
-  auto& tracker = vtkm::cont::GetRuntimeDeviceTracker();
-
-  if (tracker.CanRunOn(vtkm::cont::DeviceAdapterTagCuda{}))
-    availThreads = threadsPerGPU;
-  else if (tracker.CanRunOn(vtkm::cont::DeviceAdapterTagKokkos{}))
-  {
-    //Kokkos doesn't support threading on the CPU.
-#ifdef VTKM_KOKKOS_CUDA
-    availThreads = threadsPerGPU;
-#else
-    availThreads = 1;
-#endif
-  }
-  else if (tracker.CanRunOn(vtkm::cont::DeviceAdapterTagSerial{}))
-    availThreads = 1;
-  else
-    availThreads = threadsPerCPU;
-
-  vtkm::Id numThreads = std::min<vtkm::Id>(numDS, availThreads);
-  return numThreads;
-}
-
-inline VTKM_CONT vtkm::cont::PartitionedDataSet Filter::ExecuteThreaded(
-  const vtkm::cont::PartitionedDataSet& input,
-  vtkm::Id vtkmNotUsed(numThreads))
-{
-  VTKM_LOG_SCOPE(vtkm::cont::LogLevel::Perf,
-                 "Filter (%d partitions): '%s'",
-                 (int)input.GetNumberOfPartitions(),
-                 vtkm::cont::TypeToString<decltype(*this)>().c_str());
-
-  //  Derived* self = static_cast<Derived*>(this);
-
-  vtkm::filter::PolicyDefault policy;
-
-  // Call `void Derived::PreExecute<DerivedPolicy>(input, policy)`, if defined.
-  internal::CallPreExecute(this, input, policy);
-
-  // Call `PrepareForExecution` (which should probably be renamed at some point)
-  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(this, input);
-
-  // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
-  internal::CallPostExecute(this, input, output, policy);
-  return output;
-}
 
 //----------------------------------------------------------------------------
 template <typename DerivedPolicy>

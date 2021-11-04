@@ -172,7 +172,7 @@ namespace filter
 /// map an input field from the corresponding input partition to the output
 /// partition.
 ///
-class Filter
+class VTKM_FILTER_COMMON_EXPORT Filter
 {
 public:
   VTKM_CONT

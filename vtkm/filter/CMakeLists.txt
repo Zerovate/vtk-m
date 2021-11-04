@@ -51,7 +51,6 @@ set(common_header_template_sources
   ExtractGeometry.hxx
   ExtractPoints.hxx
   ExtractStructured.hxx
-  FilterDataSet.hxx
   Filter.hxx
   FilterParticleAdvection.hxx
   FilterTemporalParticleAdvection.hxx
@@ -250,7 +249,6 @@ target_link_libraries(vtkm_filter PUBLIC INTERFACE
 install(TARGETS vtkm_filter EXPORT ${VTKm_EXPORT_NAME})
 
 
-add_subdirectory(internal)
 add_subdirectory(particleadvection)
 add_subdirectory(CleanGrid)
 add_subdirectory(Contour)
