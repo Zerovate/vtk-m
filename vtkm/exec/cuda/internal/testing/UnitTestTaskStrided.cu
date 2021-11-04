@@ -211,11 +211,26 @@ struct TestWorkletProxy : vtkm::exec::FunctorBase
   }
 };
 
+struct TestWorkletProxy1 : TestWorkletProxy
+{
+  using ControlSignature = TestControlSignature;
+  using ExecutionSignature = TestExecutionSignature1;
+};
+
+struct TestWorkletProxy2 : TestWorkletProxy
+{
+  using ControlSignature = TestControlSignature;
+  using ExecutionSignature = TestExecutionSignature2;
+};
+
 #define ERROR_MESSAGE "Expected worklet error."
 
 // Not a full worklet, but provides operators that we expect in a worklet.
 struct TestWorkletErrorProxy : vtkm::exec::FunctorBase
 {
+  using ControlSignature = TestControlSignature;
+  using ExecutionSignature = TestExecutionSignature1;
+
   VTKM_EXEC
   void operator()(vtkm::Id, vtkm::Id) const { this->RaiseError(ERROR_MESSAGE); }
 
@@ -237,29 +252,6 @@ struct TestWorkletErrorProxy : vtkm::exec::FunctorBase
   }
 };
 
-// Check behavior of InvocationToFetch helper class.
-
-VTKM_STATIC_ASSERT(
-  (std::is_same<
-    vtkm::exec::internal::detail::
-      InvocationToFetch<vtkm::exec::arg::ThreadIndicesBasic, InvocationType1, 1>::type,
-    vtkm::exec::arg::Fetch<TestFetchTagInput, vtkm::exec::arg::AspectTagDefault, TestExecObject>>::
-     type::value));
-
-VTKM_STATIC_ASSERT(
-  (std::is_same<
-    vtkm::exec::internal::detail::
-      InvocationToFetch<vtkm::exec::arg::ThreadIndicesBasic, InvocationType1, 2>::type,
-    vtkm::exec::arg::Fetch<TestFetchTagOutput, vtkm::exec::arg::AspectTagDefault, TestExecObject>>::
-     type::value));
-
-VTKM_STATIC_ASSERT(
-  (std::is_same<
-    vtkm::exec::internal::detail::
-      InvocationToFetch<vtkm::exec::arg::ThreadIndicesBasic, InvocationType2, 0>::type,
-    vtkm::exec::arg::Fetch<TestFetchTagOutput, vtkm::exec::arg::AspectTagDefault, TestExecObject>>::
-     type::value));
-
 template <typename DeviceAdapter>
 void TestNormalFunctorInvoke()
 {
@@ -278,11 +270,11 @@ void TestNormalFunctorInvoke()
       TestExecObject(output.PrepareForOutput(3, DeviceAdapter(), token)));
 
   std::cout << "  Try void return." << std::endl;
-  TestWorkletProxy worklet;
+  TestWorkletProxy1 worklet1;
   InvocationType1 invocation1(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task1 = TaskTypes::MakeTask(worklet, invocation1, vtkm::Id());
+  auto task1 = TaskTypes::MakeTask(worklet1, invocation1, vtkm::Id());
 
   ScheduleTaskStrided<decltype(task1)><<<32, 256>>>(task1, 1, 2);
   cudaDeviceSynchronize();
@@ -300,10 +292,11 @@ void TestNormalFunctorInvoke()
     TestExecObject(input.PrepareForInPlace(DeviceAdapter(), token)),
     TestExecObject(output.PrepareForOutput(3, DeviceAdapter(), token)));
 
+  TestWorkletProxy2 worklet2;
   InvocationType2 invocation2(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task2 = TaskTypes::MakeTask(worklet, invocation2, vtkm::Id());
+  auto task2 = TaskTypes::MakeTask(worklet2, invocation2, vtkm::Id());
 
   ScheduleTaskStrided<decltype(task2)><<<32, 256>>>(task2, 2, 3);
   cudaDeviceSynchronize();
