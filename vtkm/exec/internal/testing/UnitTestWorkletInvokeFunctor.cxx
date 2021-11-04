@@ -8,7 +8,7 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/exec/internal/TaskSingular.h>
+#include <vtkm/exec/internal/WorkletInvokeFunctor.h>
 
 #include <vtkm/exec/FunctorBase.h>
 #include <vtkm/exec/arg/BasicArg.h>
@@ -142,9 +142,19 @@ using TestExecutionInterface1 = vtkm::internal::FunctionInterface<TestExecutionS
 using TestExecutionSignature2 = vtkm::exec::arg::BasicArg<2>(vtkm::exec::arg::BasicArg<1>);
 using TestExecutionInterface2 = vtkm::internal::FunctionInterface<TestExecutionSignature2>;
 
+using TestControlSignatureReverse = void(TestControlSignatureTagOutput, TestControlSignatureTagInput);
+using TestControlInterfaceReverse = vtkm::internal::FunctionInterface<TestControlSignatureReverse>;
+
+using TestExecutionSignatureReverse = void(vtkm::exec::arg::BasicArg<2>, vtkm::exec::arg::BasicArg<1>);
+using TestExecutionInterfaceReverse = vtkm::internal::FunctionInterface<TestExecutionSignatureReverse>;
+
 // Not a full worklet, but provides operators that we expect in a worklet.
+template <typename ControlSig, typename ExecSig>
 struct TestWorkletProxy : vtkm::exec::FunctorBase
 {
+  using ControlSignature = ControlSig;
+  using ExecutionSignature = ExecSig;
+
   VTKM_EXEC
   void operator()(vtkm::Id input, vtkm::Id& output) const { output = input + 100; }
 
@@ -176,7 +186,7 @@ void CallDoWorkletInvokeFunctor(const Invocation& invocation, vtkm::Id index)
 {
   const vtkm::Id outputIndex = invocation.ThreadToOutputMap.Get(index);
   vtkm::exec::internal::detail::DoWorkletInvokeFunctor(
-    TestWorkletProxy(),
+    TestWorkletProxy<typename Invocation::ControlInterface::Signature, typename Invocation::ExecutionInterface::Signature>(),
     invocation,
     vtkm::exec::arg::ThreadIndicesBasic(index,
                                         invocation.OutputToInputMap.Get(outputIndex),
@@ -219,6 +229,22 @@ void TestDoWorkletInvoke()
                              2);
   VTKM_TEST_ASSERT(inputTestValue == 6, "Input value changed.");
   VTKM_TEST_ASSERT(outputTestValue == inputTestValue + 200 + 30 * 2, "Output value not set right.");
+
+  std::cout << "  Try reversed arguments." << std::endl;
+  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)> execObjectsReverse =
+    vtkm::internal::make_FunctionInterface<void>(TestExecObject(&outputTestValue),
+                                                 TestExecObject(&inputTestValue));
+  inputTestValue = 7;
+  outputTestValue = static_cast<vtkm::Id>(0xDEADDEAD);
+  CallDoWorkletInvokeFunctor(vtkm::internal::make_Invocation<2>(execObjectsReverse,
+                                                                TestControlInterfaceReverse(),
+                                                                TestExecutionInterfaceReverse(),
+                                                                MyOutputToInputMapPortal(),
+                                                                MyVisitArrayPortal(),
+                                                                MyThreadToOutputMapPortal()),
+                             3);
+  VTKM_TEST_ASSERT(inputTestValue == 7, "Input value changed.");
+  VTKM_TEST_ASSERT(outputTestValue == inputTestValue + 100 + 30 * 3, "Output value not set right.");
 }
 
 void TestWorkletInvokeFunctor()
