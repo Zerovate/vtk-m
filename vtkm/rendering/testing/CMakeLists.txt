@@ -26,6 +26,7 @@ set(unit_tests
   UnitTestMapperWireframer.cxx
   UnitTestMapperVolume.cxx
   UnitTestScalarRenderer.cxx
+  UnitTestOpenMPActor.cxx
 )
 
 vtkm_unit_tests(SOURCES ${unit_tests} ALL_BACKENDS LIBRARIES vtkm_rendering)
