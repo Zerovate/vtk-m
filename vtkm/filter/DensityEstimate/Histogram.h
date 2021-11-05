@@ -11,6 +11,7 @@
 #ifndef vtk_m_filter_Histogram_h
 #define vtk_m_filter_Histogram_h
 
+#include <vtkm/filter/DensityEstimate/vtkm_filter_densityestimate_export.h>
 #include <vtkm/filter/FilterField.h>
 
 namespace vtkm
@@ -22,7 +23,7 @@ namespace filter
 ///
 /// Construct a histogram with a default of 10 bins.
 ///
-class Histogram : public vtkm::filter::FilterField<Histogram>
+class VTKM_FILTER_DENSITYESTIMATE_EXPORT Histogram : public vtkm::filter::FilterField
 {
 public:
   using SupportedTypes = vtkm::TypeListScalarAll;
@@ -58,24 +59,16 @@ public:
   VTKM_CONT
   vtkm::Range GetComputedRange() const { return this->ComputedRange; }
 
-  template <typename T, typename StorageType, typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input,
-                                          const vtkm::cont::ArrayHandle<T, StorageType>& field,
-                                          const vtkm::filter::FieldMetadata& fieldMeta,
-                                          vtkm::filter::PolicyBase<DerivedPolicy> policy);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
   //@{
   /// when operating on vtkm::cont::PartitionedDataSet, we
   /// want to do processing across ranks as well. Just adding pre/post handles
   /// for the same does the trick.
-  template <typename DerivedPolicy>
-  VTKM_CONT void PreExecute(const vtkm::cont::PartitionedDataSet& input,
-                            const vtkm::filter::PolicyBase<DerivedPolicy>& policy);
+  VTKM_CONT void PreExecute(const vtkm::cont::PartitionedDataSet& input);
 
-  template <typename DerivedPolicy>
   VTKM_CONT void PostExecute(const vtkm::cont::PartitionedDataSet& input,
-                             vtkm::cont::PartitionedDataSet& output,
-                             const vtkm::filter::PolicyBase<DerivedPolicy>&);
+                             vtkm::cont::PartitionedDataSet& output);
   //@}
 
 private:
@@ -87,6 +80,6 @@ private:
 }
 } // namespace vtkm::filter
 
-#include <vtkm/filter/Histogram.hxx>
+//#include <vtkm/filter/DensityEstimate/Histogram.cxx>
 
 #endif // vtk_m_filter_Histogram_h

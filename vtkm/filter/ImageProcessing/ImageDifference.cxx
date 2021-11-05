@@ -10,12 +10,12 @@
 #ifndef vtk_m_filter_ImageDifference_hxx
 #define vtk_m_filter_ImageDifference_hxx
 
-#include <vtkm/filter/ImageProcessing/ImageDifference.h>
-
 #include <vtkm/cont/Algorithm.h>
 #include <vtkm/cont/ArrayCopy.h>
+#include <vtkm/cont/ErrorFilterExecution.h>
 #include <vtkm/cont/Logging.h>
 
+#include <vtkm/filter/ImageProcessing/ImageDifference.h>
 #include <vtkm/filter/ImageProcessing/worklet/ImageDifference.h>
 #include <vtkm/worklet/AveragePointNeighborhood.h>
 

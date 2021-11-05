@@ -8,8 +8,17 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 #include <vtkm/cont/Algorithm.h>
+#include <vtkm/cont/ErrorFilterExecution.h>
+#include <vtkm/cont/Field.h>
+#include <vtkm/cont/Logging.h>
+#include <vtkm/cont/RuntimeDeviceTracker.h>
+
 #include <vtkm/filter/Filter.h>
+#include <vtkm/filter/PolicyDefault.h>
+#include <vtkm/filter/TaskQueue.h>
 #include <vtkm/filter/vtkm_filter_common_export.h>
+
+#include <future>
 
 namespace vtkm
 {
@@ -27,13 +36,54 @@ VTKM_FILTER_COMMON_EXPORT void RunFilter(Filter* self,
   std::pair<vtkm::Id, vtkm::cont::DataSet> task;
   while (input.GetTask(task))
   {
-    auto outDS = CallPrepareForExecution(filterClone, task.second);
+    auto outDS = filterClone->PrepareForExecution(task.second);
     output.Push(std::make_pair(task.first, std::move(outDS)));
   }
 
   vtkm::cont::Algorithm::Synchronize();
   delete filterClone;
 }
+
+VTKM_FILTER_COMMON_EXPORT vtkm::cont::PartitionedDataSet CallPrepareForExecution(
+  Filter* self,
+  const vtkm::cont::PartitionedDataSet& input)
+{
+  vtkm::cont::PartitionedDataSet output;
+
+  if (self->GetRunMultiThreadedFilter())
+  {
+    vtkm::filter::DataSetQueue inputQueue(input);
+    vtkm::filter::DataSetQueue outputQueue;
+
+    vtkm::Id numThreads = self->DetermineNumberOfThreads(input);
+
+    //Run 'numThreads' filters.
+    std::vector<std::future<void>> futures(static_cast<std::size_t>(numThreads));
+    for (std::size_t i = 0; i < static_cast<std::size_t>(numThreads); i++)
+    {
+      auto f = std::async(
+        std::launch::async, RunFilter, self, std::ref(inputQueue), std::ref(outputQueue));
+      futures[i] = std::move(f);
+    }
+
+    for (auto& f : futures)
+      f.get();
+
+    //Get results from the outputQueue.
+    output = outputQueue.Get();
+  }
+  else
+  {
+    for (const auto& inBlock : input)
+    {
+      vtkm::cont::DataSet outBlock = self->PrepareForExecution(inBlock);
+      output.AppendPartition(outBlock);
+    }
+  }
+
+  return output;
+}
+
 } // internal
 
 //----------------------------------------------------------------------------
@@ -65,16 +115,15 @@ vtkm::cont::PartitionedDataSet Filter::Execute(const vtkm::cont::PartitionedData
                  (int)input.GetNumberOfPartitions(),
                  vtkm::cont::TypeToString<decltype(*this)>().c_str());
 
-  vtkm::filter::PolicyDefault policy;
-
   // Call `void Derived::PreExecute<DerivedPolicy>(input, policy)`, if defined.
-  internal::CallPreExecute(this, input, policy);
+  this->PreExecute(input);
 
   // Call `PrepareForExecution` (which should probably be renamed at some point)
   vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(this, input);
 
   // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
-  internal::CallPostExecute(this, input, output, policy);
+  this->PostExecute(input, output);
+
   return output;
 }
 
@@ -108,28 +157,6 @@ vtkm::Id Filter::DetermineNumberOfThreads(const vtkm::cont::PartitionedDataSet& 
 
   vtkm::Id numThreads = std::min<vtkm::Id>(numDS, availThreads);
   return numThreads;
-}
-
-// FIXME: unused, dup of Execute(PartitionedDataSet), to be removed
-vtkm::cont::PartitionedDataSet Filter::ExecuteThreaded(const vtkm::cont::PartitionedDataSet& input,
-                                                       vtkm::Id vtkmNotUsed(numThreads))
-{
-  VTKM_LOG_SCOPE(vtkm::cont::LogLevel::Perf,
-                 "Filter (%d partitions): '%s'",
-                 (int)input.GetNumberOfPartitions(),
-                 vtkm::cont::TypeToString<decltype(*this)>().c_str());
-
-  vtkm::filter::PolicyDefault policy;
-
-  // Call `void Derived::PreExecute<DerivedPolicy>(input, policy)`, if defined.
-  internal::CallPreExecute(this, input, policy);
-
-  // Call `PrepareForExecution` (which should probably be renamed at some point)
-  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(this, input);
-
-  // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
-  internal::CallPostExecute(this, input, output, policy);
-  return output;
 }
 
 // TODO: should we turn it back to a standalone function?

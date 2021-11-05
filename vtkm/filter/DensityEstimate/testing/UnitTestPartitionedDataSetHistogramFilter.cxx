@@ -7,7 +7,7 @@
 //  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
-#include <vtkm/filter/Histogram.h>
+#include <vtkm/filter/DensityEstimate/Histogram.h>
 
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/PartitionedDataSet.h>

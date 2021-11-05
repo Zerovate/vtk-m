@@ -51,7 +51,6 @@ set(common_header_template_sources
   ExtractGeometry.hxx
   ExtractPoints.hxx
   ExtractStructured.hxx
-  Filter.hxx
   FilterParticleAdvection.hxx
   FilterTemporalParticleAdvection.hxx
   PointAverage.hxx
@@ -83,7 +82,6 @@ set(extra_headers
   FieldToColors.h
   GhostCellClassify.h
   GhostCellRemove.h
-  Histogram.h
   ImageConnectivity.h
   ImageMedian.h
   Lagrangian.h
@@ -135,7 +133,6 @@ set(extra_header_template_sources
   FieldToColors.hxx
   GhostCellClassify.hxx
   GhostCellRemove.hxx
-  Histogram.hxx
   ImageConnectivity.hxx
   ImageMedian.hxx
   Lagrangian.hxx
@@ -252,6 +249,7 @@ install(TARGETS vtkm_filter EXPORT ${VTKm_EXPORT_NAME})
 add_subdirectory(particleadvection)
 add_subdirectory(CleanGrid)
 add_subdirectory(Contour)
+add_subdirectory(DensityEstimate)
 add_subdirectory(EntityExtraction)
 add_subdirectory(FieldTransform)
 add_subdirectory(GeometryGeneration)

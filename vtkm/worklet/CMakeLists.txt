@@ -30,7 +30,7 @@ set(headers
   ExtractPoints.h
   ExtractStructured.h
   FieldEntropy.h
-  FieldHistogram.h
+  ../filter/DensityEstimate/worklet/FieldHistogram.h
   FieldStatistics.h
   Gradient.h
   KdTree3D.h            # Deprecated

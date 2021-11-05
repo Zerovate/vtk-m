@@ -22,6 +22,7 @@
 #include <vtkm/filter/FieldSelection.h>
 #include <vtkm/filter/FilterTraits.h>
 #include <vtkm/filter/PolicyBase.h>
+#include <vtkm/filter/PolicyDefault.h>
 #include <vtkm/filter/vtkm_filter_common_export.h>
 
 
@@ -294,6 +295,18 @@ public:
   vtkm::Id GetActiveCoordinateSystemIndex() const { return this->CoordinateSystemIndex; }
   //@}
 
+  //@{
+  /// when operating on vtkm::cont::PartitionedDataSet, we
+  /// want to do processing across ranks as well. Just adding pre/post handles
+  /// for the same does the trick.
+  VTKM_CONT virtual void PreExecute(const vtkm::cont::PartitionedDataSet&) {}
+
+  VTKM_CONT virtual void PostExecute(const vtkm::cont::PartitionedDataSet&,
+                                     vtkm::cont::PartitionedDataSet&)
+  {
+  }
+  //@}
+
   VTKM_CONT virtual vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) = 0;
 
   // TODO: make it private/protected?
@@ -307,13 +320,14 @@ public:
   ///
   /// On success, this the dataset produced. On error, vtkm::cont::ErrorExecution will be thrown.
   VTKM_CONT virtual vtkm::cont::DataSet Execute(const vtkm::cont::DataSet& input);
-
+#if 0
   template <typename DerivedPolicy>
   VTKM_DEPRECATED(1.6,
                   "Filter::Execute no longer guarantees policy modifications. "
                   "Specify default types in CMake configuration instead.")
   VTKM_CONT vtkm::cont::DataSet
     Execute(const vtkm::cont::DataSet& input, vtkm::filter::PolicyBase<DerivedPolicy> policy);
+#endif
   //@}
 
   //@{
@@ -323,17 +337,14 @@ public:
   VTKM_CONT virtual vtkm::cont::PartitionedDataSet Execute(
     const vtkm::cont::PartitionedDataSet& input);
 
-  // TODO: unused dup of Execute, to be remved.
-  VTKM_CONT vtkm::cont::PartitionedDataSet ExecuteThreaded(
-    const vtkm::cont::PartitionedDataSet& input,
-    vtkm::Id numThreads);
-
+#if 0
   template <typename DerivedPolicy>
   VTKM_DEPRECATED(1.6,
                   "Filter::Execute no longer guarantees policy modifications. "
                   "Specify default types in CMake configuration instead.")
   VTKM_CONT vtkm::cont::PartitionedDataSet Execute(const vtkm::cont::PartitionedDataSet& input,
                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
+#endif
   //@}
 
   // FIXME: Is this actually materialize? Are there different kinds of Invoker?
@@ -422,5 +433,4 @@ private:
 #define VTKM_FILTER_GRADIENT_INSTANTIATE_EXECUTE_METHOD(Name) \
   VTKM_FILTER_GRADIENT_INSTANTIATE_EXECUTE_METHOD_WITH_POLICY(Name, vtkm::filter::PolicyDefault)
 
-#include <vtkm/filter/Filter.hxx>
 #endif

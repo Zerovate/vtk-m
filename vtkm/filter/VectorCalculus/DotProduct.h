@@ -12,7 +12,6 @@
 #define vtk_m_filter_DotProduct_h
 
 #include <vtkm/filter/FilterField.h>
-
 #include <vtkm/filter/VectorCalculus/vtkm_filter_vectorcalculus_export.h>
 
 namespace vtkm
