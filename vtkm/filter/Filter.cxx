@@ -16,7 +16,6 @@
 #include <vtkm/filter/Filter.h>
 #include <vtkm/filter/PolicyDefault.h>
 #include <vtkm/filter/TaskQueue.h>
-#include <vtkm/filter/vtkm_filter_common_export.h>
 
 #include <future>
 
@@ -24,11 +23,9 @@ namespace vtkm
 {
 namespace filter
 {
-namespace internal
+namespace
 {
-VTKM_FILTER_COMMON_EXPORT void RunFilter(Filter* self,
-                                         vtkm::filter::DataSetQueue& input,
-                                         vtkm::filter::DataSetQueue& output)
+void RunFilter(Filter* self, vtkm::filter::DataSetQueue& input, vtkm::filter::DataSetQueue& output)
 {
   auto filterClone = self->Clone();
   VTKM_ASSERT(filterClone != nullptr);
@@ -44,9 +41,8 @@ VTKM_FILTER_COMMON_EXPORT void RunFilter(Filter* self,
   delete filterClone;
 }
 
-VTKM_FILTER_COMMON_EXPORT vtkm::cont::PartitionedDataSet CallPrepareForExecution(
-  Filter* self,
-  const vtkm::cont::PartitionedDataSet& input)
+vtkm::cont::PartitionedDataSet CallPrepareForExecution(Filter* self,
+                                                       const vtkm::cont::PartitionedDataSet& input)
 {
   vtkm::cont::PartitionedDataSet output;
 
@@ -84,7 +80,7 @@ VTKM_FILTER_COMMON_EXPORT vtkm::cont::PartitionedDataSet CallPrepareForExecution
   return output;
 }
 
-} // internal
+} // anonymous namespace
 
 //----------------------------------------------------------------------------
 Filter::Filter()
@@ -119,7 +115,7 @@ vtkm::cont::PartitionedDataSet Filter::Execute(const vtkm::cont::PartitionedData
   this->PreExecute(input);
 
   // Call `PrepareForExecution` (which should probably be renamed at some point)
-  vtkm::cont::PartitionedDataSet output = internal::CallPrepareForExecution(this, input);
+  vtkm::cont::PartitionedDataSet output = CallPrepareForExecution(this, input);
 
   // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
   this->PostExecute(input, output);
