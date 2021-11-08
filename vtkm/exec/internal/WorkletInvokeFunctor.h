@@ -14,6 +14,8 @@
 #include <vtkm/Pair.h>
 #include <vtkm/Tuple.h>
 
+#include <vtkm/cont/Logging.h>
+
 #include <vtkm/worklet/internal/Placeholders.h>
 
 #include <vtkm/exec/arg/FetchTagExecObject.h>
@@ -296,6 +298,11 @@ VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet
                                                       Device,
                                                       const ExecObjTuple& execObjectTuple)
 {
+  static bool printedMessage = false;
+  if (!printedMessage)
+  {
+//    std::cout << "Starting invoke for " << vtkm::cont::TypeToString<WorkletType>() << std::endl;
+  }
   using ExecutionSignature = detail::ExecutionSignature<WorkletType>;
   detail::SignatureToTuple<ExecutionSignature> executionTags;
 
@@ -317,6 +324,13 @@ VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet
     detail::StoreExecObjFunctor<WorkletType, ThreadIndicesType, Device, ExecObjTuple>(
       threadIndices, execObjectTuple));
   callWorkletFunctor.StoreResult(threadIndices, execObjectTuple);
+
+  if (!printedMessage)
+  {
+//    std::cout << "Finishing invoke for " << vtkm::cont::TypeToString<WorkletType>()
+//              << " normally (first thread)" << std::endl;
+    printedMessage = true;
+  }
 }
 
 namespace detail
