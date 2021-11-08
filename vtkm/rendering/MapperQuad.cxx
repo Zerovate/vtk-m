@@ -87,11 +87,13 @@ void MapperQuad::RenderCells(const vtkm::cont::DynamicCellSet& cellset,
   //
   // Add supported shapes
   //
+  std::cout << "      extracting quads" << std::endl;
   vtkm::Bounds shapeBounds;
   raytracing::QuadExtractor quadExtractor;
   quadExtractor.ExtractCells(cellset);
   if (quadExtractor.GetNumberOfQuads() > 0)
   {
+    std::cout << "      adding quads" << std::endl;
     auto quadIntersector = std::make_shared<raytracing::QuadIntersector>();
     quadIntersector->SetData(coords, quadExtractor.GetQuadIds());
     this->Internals->Tracer.AddShapeIntersector(quadIntersector);
@@ -101,6 +103,7 @@ void MapperQuad::RenderCells(const vtkm::cont::DynamicCellSet& cellset,
   //
   // Create rays
   //
+  std::cout << "      creating rays" << std::endl;
   vtkm::Int32 width = (vtkm::Int32)this->Internals->Canvas->GetWidth();
   vtkm::Int32 height = (vtkm::Int32)this->Internals->Canvas->GetHeight();
 
@@ -111,24 +114,29 @@ void MapperQuad::RenderCells(const vtkm::cont::DynamicCellSet& cellset,
   raytracing::RayOperations::MapCanvasToRays(
     this->Internals->Rays, camera, *this->Internals->Canvas);
 
+  std::cout << "      rendering rays" << std::endl;
   this->Internals->Tracer.GetCamera() = this->Internals->RayCamera;
   this->Internals->Tracer.SetField(scalarField, scalarRange);
   this->Internals->Tracer.SetColorMap(this->ColorMap);
   this->Internals->Tracer.Render(this->Internals->Rays);
 
   timer.Start();
+  std::cout << "      write rays" << std::endl;
   this->Internals->Canvas->WriteToCanvas(
     this->Internals->Rays, this->Internals->Rays.Buffers.at(0).Buffer, camera);
 
   if (this->Internals->CompositeBackground)
   {
+    std::cout << "      composite background" << std::endl;
     this->Internals->Canvas->BlendBackground();
   }
 
+  std::cout << "      log results" << std::endl;
   vtkm::Float64 time = timer.GetElapsedTime();
   logger->AddLogData("write_to_canvas", time);
   time = tot_timer.GetElapsedTime();
   logger->CloseLogEntry(time);
+  std::cout << "      done" << std::endl;
 }
 
 void MapperQuad::SetCompositeBackground(bool on)
