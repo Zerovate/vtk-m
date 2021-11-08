@@ -48,6 +48,7 @@ void Scene::Render(vtkm::rendering::Mapper& mapper,
 {
   for (vtkm::IdComponent actorIndex = 0; actorIndex < this->GetNumberOfActors(); actorIndex++)
   {
+    std::cout << "    rendering actor " << actorIndex << std::endl;
     const vtkm::rendering::Actor& actor = this->GetActor(actorIndex);
     actor.Render(mapper, canvas, camera);
   }
