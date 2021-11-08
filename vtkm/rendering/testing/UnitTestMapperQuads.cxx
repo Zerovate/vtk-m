@@ -29,18 +29,24 @@ void RenderTests()
   typedef vtkm::rendering::View2D V2;
 
   vtkm::cont::testing::MakeTestDataSet maker;
+  std::cout << "Making color table" << std::endl;
   vtkm::cont::ColorTable colorTable("inferno");
 
+  std::cout << "Render 3d regular 0" << std::endl;
   vtkm::rendering::testing::Render<M, C, V3>(
     maker.Make3DRegularDataSet0(), "pointvar", colorTable, "rt_reg3D.pnm");
+  std::cout << "Render 3d rectilinear 0" << std::endl;
   vtkm::rendering::testing::Render<M, C, V3>(
     maker.Make3DRectilinearDataSet0(), "pointvar", colorTable, "rt_rect3D.pnm");
+  std::cout << "Render 3d exlicit 4" << std::endl;
   vtkm::rendering::testing::Render<M, C, V3>(
     maker.Make3DExplicitDataSet4(), "pointvar", colorTable, "rt_expl3D.pnm");
 
+  std::cout << "Render 2d uniform 1" << std::endl;
   vtkm::rendering::testing::Render<M, C, V2>(
     maker.Make2DUniformDataSet1(), "pointvar", colorTable, "uni2D.pnm");
 
+  std::cout << "Render 3d explicit 5" << std::endl;
   //hexahedron, wedge, pyramid, tetrahedron
   vtkm::rendering::testing::Render<M, C, V3>(
     maker.Make3DExplicitDataSet5(), "cellvar", colorTable, "rt_hex3d.pnm");
