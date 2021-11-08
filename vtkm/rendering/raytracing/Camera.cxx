@@ -382,12 +382,13 @@ public:
                             vtkm::Id& pixelIndex) const
   {
     vtkm::Vec<Precision, 3> ray_dir(rayDirX, rayDirY, rayDirZ);
-    int i = vtkm::Int32(idx) % SubsetWidth;
-    int j = vtkm::Int32(idx) / SubsetWidth;
+    vtkm::Int32 i = vtkm::Int32(idx) % SubsetWidth;
+    vtkm::Int32 j = vtkm::Int32(idx) / SubsetWidth;
     i += Minx;
     j += Miny;
     // Write out the global pixelId
     pixelIndex = static_cast<vtkm::Id>(j * w + i);
+    pixelIndex = j;
     ray_dir = nlook + delta_x * ((2.f * Precision(i) - Precision(w)) / 2.0f) +
       delta_y * ((2.f * Precision(j) - Precision(h)) / 2.0f);
     // avoid some numerical issues
@@ -786,6 +787,7 @@ VTKM_CONT void Camera::CreateRaysImpl(Ray<Precision>& rays, const vtkm::Bounds b
   //Reset the camera look vector
   this->Look = this->LookAt - this->Position;
   vtkm::Normalize(this->Look);
+  std::cout << "        ortho: " << ortho << std::endl;
   if (ortho)
   {
 
@@ -807,6 +809,11 @@ VTKM_CONT void Camera::CreateRaysImpl(Ray<Precision>& rays, const vtkm::Bounds b
   else
   {
     //Create the ray direction
+    std::cout << "        "
+              << this->SubsetWidth << " "
+              << this->SubsetMinX << " "
+              << this->SubsetMinY << " "
+              << this->Width << std::endl;
     vtkm::worklet::DispatcherMapField<PerspectiveRayGen> dispatcher(
       PerspectiveRayGen(this->Width,
                         this->Height,
@@ -829,6 +836,7 @@ VTKM_CONT void Camera::CreateRaysImpl(Ray<Precision>& rays, const vtkm::Bounds b
     vtkm::cont::ArrayHandleConstant<Precision> posZ(this->Position[2], rays.NumRays);
     vtkm::cont::Algorithm::Copy(posZ, rays.OriginZ);
   }
+  vtkm::cont::printSummary_ArrayHandle(rays.PixelIdx, std::cout);
 
   time = timer.GetElapsedTime();
   logger->AddLogData("ray_gen", time);
