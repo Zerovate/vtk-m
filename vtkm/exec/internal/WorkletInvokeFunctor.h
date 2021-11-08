@@ -305,7 +305,9 @@ VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet
   auto tagAndWorkletArgs = executionTags.Transform(
     detail::FetchExecObjFunctor<WorkletType, ThreadIndicesType, Device, ExecObjTuple>(
       threadIndices, execObjectTuple));
+  (void)tagAndWorkletArgs;
 
+#if 0
   // Call the worklet with all the arguments (after pulling them out of the pairs).
   detail::CallWorklet<WorkletType,
                       detail::ExpectedWorkletReturn<WorkletType, ThreadIndicesType, ExecObjTuple>>
@@ -317,6 +319,10 @@ VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet
     detail::StoreExecObjFunctor<WorkletType, ThreadIndicesType, Device, ExecObjTuple>(
       threadIndices, execObjectTuple));
   callWorkletFunctor.StoreResult(threadIndices, execObjectTuple);
+#endif
+  (void)worklet;
+  (void)threadIndices;
+  (void)execObjectTuple;
 }
 
 namespace detail
