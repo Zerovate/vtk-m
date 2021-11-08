@@ -31,6 +31,10 @@
 
 #include <type_traits>
 
+// TODO: Delete these
+#include <vtkm/internal/FunctionInterface.h>
+#include <vtkmstd/integer_sequence.h>
+
 namespace vtkm
 {
 namespace cont
@@ -1191,26 +1195,69 @@ template <typename DeviceTag>
 class DeviceTaskTypes
 {
 public:
-  template <typename WorkletType, typename InvocationType>
-  static vtkm::exec::internal::TaskSingular<WorkletType, InvocationType> MakeTask(
-    WorkletType& worklet,
-    InvocationType& invocation,
-    vtkm::Id,
-    vtkm::Id globalIndexOffset = 0)
+  template <typename WorkletType,
+            typename OutToInPortalType,
+            typename VisitPortalType,
+            typename ThreadToOutPortalType,
+            typename InputDomainType,
+            typename... ExecutionObjectTypes>
+  VTKM_NEVER_EXPORT static vtkm::exec::internal::TaskSingular<DeviceTag,
+                                                              WorkletType,
+                                                              OutToInPortalType,
+                                                              VisitPortalType,
+                                                              ThreadToOutPortalType,
+                                                              InputDomainType,
+                                                              ExecutionObjectTypes...>
+  MakeTask(const WorkletType& worklet,
+           const OutToInPortalType& outToInPortal,
+           const VisitPortalType& visitPortal,
+           const ThreadToOutPortalType& threadToOut,
+           const InputDomainType& inputDomain,
+           ExecutionObjectTypes&&... executionObjects)
   {
-    using Task = vtkm::exec::internal::TaskSingular<WorkletType, InvocationType>;
-    return Task(worklet, invocation, globalIndexOffset);
+    using Task = vtkm::exec::internal::TaskSingular<DeviceTag,
+                                                    WorkletType,
+                                                    OutToInPortalType,
+                                                    VisitPortalType,
+                                                    ThreadToOutPortalType,
+                                                    InputDomainType,
+                                                    ExecutionObjectTypes...>;
+    return Task(worklet,
+                outToInPortal,
+                visitPortal,
+                threadToOut,
+                inputDomain,
+                std::forward<ExecutionObjectTypes>(executionObjects)...);
   }
 
-  template <typename WorkletType, typename InvocationType>
-  static vtkm::exec::internal::TaskSingular<WorkletType, InvocationType> MakeTask(
-    WorkletType& worklet,
-    InvocationType& invocation,
-    vtkm::Id3,
-    vtkm::Id globalIndexOffset = 0)
+  // TODO: Delete this!!!
+  template <typename WorkletType,
+            typename InvocationType,
+            typename RangeType,
+            vtkm::IdComponent... Indices>
+  static auto MakeTask(WorkletType& worklet,
+                       InvocationType& invocation,
+                       RangeType,
+                       std::integer_sequence<vtkm::IdComponent, Indices...>)
   {
-    using Task = vtkm::exec::internal::TaskSingular<WorkletType, InvocationType>;
-    return Task(worklet, invocation, globalIndexOffset);
+    return MakeTask(worklet,
+                    invocation.OutputToInputMap,
+                    invocation.VisitArray,
+                    invocation.ThreadToOutputMap,
+                    invocation.GetInputDomain(),
+                    vtkm::internal::ParameterGet<Indices + 1>(invocation.Parameters)...);
+  }
+
+  // TODO: Delete this!!!
+  template <typename WorkletType, typename InvocationType, typename RangeType>
+  static auto MakeTask(WorkletType& worklet, InvocationType& invocation, RangeType range)
+  {
+    return MakeTask(
+      worklet,
+      invocation,
+      range,
+      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
+                                              InvocationType::ParameterInterface::ARITY>{});
   }
 };
 }
