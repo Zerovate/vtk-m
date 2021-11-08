@@ -14,6 +14,8 @@
 #include <vtkm/Pair.h>
 #include <vtkm/Tuple.h>
 
+#include <vtkm/cont/Logging.h>
+
 #include <vtkm/worklet/internal/Placeholders.h>
 
 #include <vtkm/exec/arg/FetchTagExecObject.h>
@@ -296,6 +298,12 @@ VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet
                                                       Device,
                                                       const ExecObjTuple& execObjectTuple)
 {
+  static bool printedMessage = false;
+  if (!printedMessage)
+  {
+    std::cout << vtkm::cont::TypeToString<ExecObjTuple>() << std::endl;
+    printedMessage = true;
+  }
   using ExecutionSignature = detail::ExecutionSignature<WorkletType>;
   detail::SignatureToTuple<ExecutionSignature> executionTags;
 
