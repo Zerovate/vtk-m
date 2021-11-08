@@ -187,6 +187,8 @@ static __global__ void ScheduleTaskStrided(TaskType task, vtkm::Id start, vtkm::
 // Not a full worklet, but provides operators that we expect in a worklet.
 struct TestWorkletProxy : vtkm::exec::FunctorBase
 {
+  using InputDomain = vtkm::exec::arg::BasicArg<1>;
+
   VTKM_EXEC
   void operator()(vtkm::Id input, vtkm::Id& output) const { output = input + 100; }
 
@@ -230,6 +232,8 @@ struct TestWorkletErrorProxy : vtkm::exec::FunctorBase
 {
   using ControlSignature = TestControlSignature;
   using ExecutionSignature = TestExecutionSignature1;
+
+  using InputDomain = vtkm::exec::arg::BasicArg<1>;
 
   VTKM_EXEC
   void operator()(vtkm::Id, vtkm::Id) const { this->RaiseError(ERROR_MESSAGE); }
@@ -327,8 +331,6 @@ void TestErrorFunctorInvoke()
       TestExecObject(input.PrepareForInPlace(DeviceAdapter(), token)),
       TestExecObject(output.PrepareForInPlace(DeviceAdapter(), token)));
 
-  using TaskStrided1 =
-    vtkm::exec::cuda::internal::TaskStrided1D<TestWorkletErrorProxy, InvocationType1>;
   TestWorkletErrorProxy worklet;
   InvocationType1 invocation(execObjects);
 

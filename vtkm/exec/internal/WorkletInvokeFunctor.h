@@ -263,41 +263,6 @@ VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet
   callWorkletFunctor.StoreResult(threadIndices, execObjectTuple);
 }
 
-namespace detail
-{
-
-template <typename Worklet,
-          typename Invocation,
-          typename ThreadIndices,
-          vtkm::IdComponent... Indices>
-VTKM_EXEC void DoWorkletInvokeFunctor(const Worklet& worklet,
-                                      const Invocation& invocation,
-                                      const ThreadIndices& threadIndices,
-                                      std::integer_sequence<vtkm::IdComponent, Indices...>)
-{
-  vtkm::exec::internal::WorkletInvokeFunctor(
-    worklet,
-    threadIndices,
-    typename Invocation::DeviceAdapterTag{},
-    vtkm::MakeTuple(vtkm::internal::ParameterGet<Indices + 1>(invocation.Parameters)...));
-}
-
-// TODO: Remove this function and replace with WorkletInvokeFunctor
-template <typename Worklet, typename Invocation, typename ThreadIndices>
-VTKM_EXEC void DoWorkletInvokeFunctor(const Worklet& worklet,
-                                      const Invocation& invocation,
-                                      const ThreadIndices& threadIndices)
-{
-  DoWorkletInvokeFunctor(
-    worklet,
-    invocation,
-    threadIndices,
-    typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
-                                            Invocation::ParameterInterface::ARITY>{});
-}
-
-} // namespace detail
-
 } // namespace vtkm::exec::internal
 } // namespace vtkm::exec
 } // namespace vtkm
