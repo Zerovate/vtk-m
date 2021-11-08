@@ -296,9 +296,12 @@ VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet
                                                       Device,
                                                       const ExecObjTuple& execObjectTuple)
 {
+  std::cout << "Invoking worklet for thread index " << threadIndices.GetThreadIndex() << "\n";
+  std::cout << "Getting Tuple of ExecutionSignature" << std::endl;
   using ExecutionSignature = detail::ExecutionSignature<WorkletType>;
   detail::SignatureToTuple<ExecutionSignature> executionTags;
 
+  std::cout << "Loading worklet arguments" << std::endl;
   // Get the fetch object associated with each executionTag (which is in turn associated with
   // each worklet argument) and load the associated worklet argument. Return a `Tuple` containing
   // `Pair`s of each `ExecTag` and its associated worklet argument.
@@ -306,16 +309,19 @@ VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet
     detail::FetchExecObjFunctor<WorkletType, ThreadIndicesType, Device, ExecObjTuple>(
       threadIndices, execObjectTuple));
 
+  std::cout << "Caling worklet" << std::endl;
   // Call the worklet with all the arguments (after pulling them out of the pairs).
   detail::CallWorklet<WorkletType,
                       detail::ExpectedWorkletReturn<WorkletType, ThreadIndicesType, ExecObjTuple>>
     callWorkletFunctor(worklet);
   tagAndWorkletArgs.Apply(callWorkletFunctor);
 
+  std::cout << "Storing worklet arguments" << std::endl;
   // Store the arguments
   tagAndWorkletArgs.ForEach(
     detail::StoreExecObjFunctor<WorkletType, ThreadIndicesType, Device, ExecObjTuple>(
       threadIndices, execObjectTuple));
+  std::cout << "Storing worklet return" << std::endl;
   callWorkletFunctor.StoreResult(threadIndices, execObjectTuple);
 }
 
