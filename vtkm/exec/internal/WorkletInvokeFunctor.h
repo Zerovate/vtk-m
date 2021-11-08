@@ -138,6 +138,81 @@ VTKM_NEVER_EXPORT VTKM_EXEC inline Device GetAdjustedExecObj(
   return device;
 }
 
+// A functor that takes a tag from an ExecutionSignature, finds the associated fetch
+// in the `ControlSignature` of a worklet, and gets the appropriate execution object
+// from a tuple of execution objects passed to `WorkletInvokeFunctor`. This functor is
+// used in transform operation on the arguments of an ExecutionSignature.
+template <typename WorkletType,
+          typename ThreadIndicesType,
+          typename Device,
+          typename ExecObjTupleType>
+struct VTKM_NEVER_EXPORT FetchExecObjFunctor
+{
+  // Note these are references. Be careful about scoping.
+  const ThreadIndicesType& ThreadIndices;
+  const ExecObjTupleType& ExecObjTuple;
+  VTKM_EXEC inline FetchExecObjFunctor(const ThreadIndicesType& threadIndices,
+                                       const ExecObjTupleType& execObjTuple)
+    : ThreadIndices(threadIndices)
+    , ExecObjTuple(execObjTuple)
+  {
+  }
+
+  // All input arguments are references starting at index 1. Also, index 0 is specially
+  // reserved to hold the DeviceAdapterTag. Handle both of these by extending the control
+  // tags and execObjects by one.
+  using ExtendedControlTagList = detail::ExtendedControlSignatureToList<WorkletType>;
+
+  template <typename ExecTag>
+  VTKM_EXEC inline auto operator()(ExecTag execTag) const
+  {
+    using ContTag = vtkm::ListAt<ExtendedControlTagList, ExecTag::INDEX>;
+    using FetchTag = typename ContTag::FetchTag;
+    auto&& execArg = detail::GetAdjustedExecObj(
+      std::integral_constant<vtkm::IdComponent, ExecTag::INDEX>{}, this->ExecObjTuple, Device{});
+    vtkm::exec::arg::Fetch<FetchTag, typename ExecTag::AspectTag, std::decay_t<decltype(execArg)>>
+      fetch;
+    return vtkm::make_Pair(execTag, fetch.Load(this->ThreadIndices, execArg));
+  }
+};
+
+// A functor that takes a pair of ExecutionSignature tag and worklet argument (as
+// constructed from `FetchExecObjFunctor`, and stores the worklet argument back
+// into the associated execution argument.
+template <typename WorkletType,
+          typename ThreadIndicesType,
+          typename Device,
+          typename ExecObjTupleType>
+struct VTKM_NEVER_EXPORT StoreExecObjFunctor
+{
+  // Note these are references. Be careful about scoping.
+  const ThreadIndicesType& ThreadIndices;
+  const ExecObjTupleType& ExecObjTuple;
+  VTKM_EXEC inline StoreExecObjFunctor(const ThreadIndicesType& threadIndices,
+                                       const ExecObjTupleType& execObjTuple)
+    : ThreadIndices(threadIndices)
+    , ExecObjTuple(execObjTuple)
+  {
+  }
+
+  // All input arguments are references starting at index 1. Also, index 0 is specially
+  // reserved to hold the DeviceAdapterTag. Handle both of these by extending the control
+  // tags and execObjects by one.
+  using ExtendedControlTagList = detail::ExtendedControlSignatureToList<WorkletType>;
+
+  template <typename ExecTag, typename Arg>
+  VTKM_EXEC inline void operator()(vtkm::Pair<ExecTag, Arg>& execTagAndArg) const
+  {
+    using ContTag = vtkm::ListAt<ExtendedControlTagList, ExecTag::INDEX>;
+    using FetchTag = typename ContTag::FetchTag;
+    auto&& execArg = detail::GetAdjustedExecObj(
+      std::integral_constant<vtkm::IdComponent, ExecTag::INDEX>{}, this->ExecObjTuple, Device{});
+    vtkm::exec::arg::Fetch<FetchTag, typename ExecTag::AspectTag, std::decay_t<decltype(execArg)>>
+      fetch;
+    fetch.Store(this->ThreadIndices, execArg, execTagAndArg.second);
+  }
+};
+
 template <typename WorkletType, typename ReturnType>
 struct VTKM_NEVER_EXPORT CallWorklet
 {
@@ -218,30 +293,18 @@ struct VTKM_NEVER_EXPORT CallWorklet<WorkletType, void>
 template <typename WorkletType, typename ThreadIndicesType, typename Device, typename ExecObjTuple>
 VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet,
                                                       const ThreadIndicesType& threadIndices,
-                                                      Device device,
+                                                      Device,
                                                       const ExecObjTuple& execObjectTuple)
 {
   using ExecutionSignature = detail::ExecutionSignature<WorkletType>;
   detail::SignatureToTuple<ExecutionSignature> executionTags;
 
-  // All input arguments are references starting at index 1. Also, index 0 is specially
-  // reserved to hold the DeviceAdapterTag. Handle both of these by extending the control
-  // tags and execObjects by one.
-  using ExtendedControlTagList = detail::ExtendedControlSignatureToList<WorkletType>;
-
   // Get the fetch object associated with each executionTag (which is in turn associated with
   // each worklet argument) and load the associated worklet argument. Return a `Tuple` containing
   // `Pair`s of each `ExecTag` and its associated worklet argument.
-  auto tagAndWorkletArgs = executionTags.Transform([&](auto execTag) {
-    using ExecTag = decltype(execTag);
-    using ContTag = vtkm::ListAt<ExtendedControlTagList, ExecTag::INDEX>;
-    using FetchTag = typename ContTag::FetchTag;
-    auto&& execArg = detail::GetAdjustedExecObj(
-      std::integral_constant<vtkm::IdComponent, ExecTag::INDEX>{}, execObjectTuple, device);
-    vtkm::exec::arg::Fetch<FetchTag, typename ExecTag::AspectTag, std::decay_t<decltype(execArg)>>
-      fetch;
-    return vtkm::make_Pair(execTag, fetch.Load(threadIndices, execArg));
-  });
+  auto tagAndWorkletArgs = executionTags.Transform(
+    detail::FetchExecObjFunctor<WorkletType, ThreadIndicesType, Device, ExecObjTuple>(
+      threadIndices, execObjectTuple));
 
   // Call the worklet with all the arguments (after pulling them out of the pairs).
   detail::CallWorklet<WorkletType,
@@ -250,16 +313,9 @@ VTKM_NEVER_EXPORT VTKM_EXEC void WorkletInvokeFunctor(const WorkletType& worklet
   tagAndWorkletArgs.Apply(callWorkletFunctor);
 
   // Store the arguments
-  tagAndWorkletArgs.ForEach([&](auto& fetchAndArg) {
-    using ExecTag = decltype(fetchAndArg.first);
-    using ContTag = vtkm::ListAt<ExtendedControlTagList, ExecTag::INDEX>;
-    using FetchTag = typename ContTag::FetchTag;
-    auto&& execArg = detail::GetAdjustedExecObj(
-      std::integral_constant<vtkm::IdComponent, ExecTag::INDEX>{}, execObjectTuple, device);
-    vtkm::exec::arg::Fetch<FetchTag, typename ExecTag::AspectTag, std::decay_t<decltype(execArg)>>
-      fetch;
-    return fetch.Store(threadIndices, execArg, fetchAndArg.second);
-  });
+  tagAndWorkletArgs.ForEach(
+    detail::StoreExecObjFunctor<WorkletType, ThreadIndicesType, Device, ExecObjTuple>(
+      threadIndices, execObjectTuple));
   callWorkletFunctor.StoreResult(threadIndices, execObjectTuple);
 }
 
