@@ -645,9 +645,9 @@ public:
   }
 
   //----------------------------------------------------------------------------
-  template <typename WType, typename IType>
+  template <typename TaskType>
   VTKM_CONT static void ScheduleTask(
-    vtkm::exec::kokkos::internal::TaskBasic1D<WType, IType>& functor,
+    TaskType& task, // Must be TaskBase1DWorklet or TaskBase1DFunctor
     vtkm::Id numInstances)
   {
     VTKM_LOG_SCOPE_FUNCTION(vtkm::cont::LogLevel::Perf);
@@ -658,17 +658,17 @@ public:
       return;
     }
 
-    functor.SetErrorMessageBuffer(GetErrorMessageBufferInstance());
+    task.SetErrorMessageBuffer(GetErrorMessageBufferInstance());
 
     Kokkos::RangePolicy<vtkm::cont::kokkos::internal::ExecutionSpace, vtkm::Id> policy(
       vtkm::cont::kokkos::internal::GetExecutionSpaceInstance(), 0, numInstances);
-    Kokkos::parallel_for(policy, functor);
+    Kokkos::parallel_for(policy, task);
     CheckForErrors(); // synchronizes
   }
 
-  template <typename WType, typename IType>
+  template <typename TaskType>
   VTKM_CONT static void ScheduleTask(
-    vtkm::exec::kokkos::internal::TaskBasic3D<WType, IType>& functor,
+    TaskType& task, // Must be TaskBase3DWorklet or TaskBase3DFunctor
     vtkm::Id3 rangeMax)
   {
     VTKM_LOG_SCOPE_FUNCTION(vtkm::cont::LogLevel::Perf);
@@ -679,7 +679,7 @@ public:
       return;
     }
 
-    functor.SetErrorMessageBuffer(GetErrorMessageBufferInstance());
+    task.SetErrorMessageBuffer(GetErrorMessageBufferInstance());
 
     Kokkos::MDRangePolicy<vtkm::cont::kokkos::internal::ExecutionSpace,
                           Kokkos::Rank<3>,
@@ -699,7 +699,7 @@ public:
     Kokkos::parallel_for(
       policy, KOKKOS_LAMBDA(vtkm::Id i, vtkm::Id j, vtkm::Id k) {
         auto flatIdx = i + (j * rMax_0) + (k * rMax_0 * rMax_1);
-        functor(vtkm::Id3(i, j, k), flatIdx);
+        task(vtkm::Id3(i, j, k), flatIdx);
       });
     CheckForErrors(); // synchronizes
   }
@@ -709,8 +709,8 @@ public:
   {
     VTKM_LOG_SCOPE_FUNCTION(vtkm::cont::LogLevel::Perf);
 
-    vtkm::exec::kokkos::internal::TaskBasic1D<Functor, vtkm::internal::NullType> kernel(functor);
-    ScheduleTask(kernel, numInstances);
+    vtkm::exec::kokkos::internal::TaskBasic1DFunctor<Functor> task(functor);
+    ScheduleTask(task, numInstances);
   }
 
   template <class Functor>
@@ -718,8 +718,8 @@ public:
   {
     VTKM_LOG_SCOPE_FUNCTION(vtkm::cont::LogLevel::Perf);
 
-    vtkm::exec::kokkos::internal::TaskBasic3D<Functor, vtkm::internal::NullType> kernel(functor);
-    ScheduleTask(kernel, rangeMax);
+    vtkm::exec::kokkos::internal::TaskBasic3DFunctor<Functor> task(functor);
+    ScheduleTask(task, rangeMax);
   }
 
   //----------------------------------------------------------------------------
@@ -769,20 +769,96 @@ template <>
 class DeviceTaskTypes<vtkm::cont::DeviceAdapterTagKokkos>
 {
 public:
-  template <typename WorkletType, typename InvocationType>
-  VTKM_CONT static vtkm::exec::kokkos::internal::TaskBasic1D<WorkletType, InvocationType>
-  MakeTask(WorkletType& worklet, InvocationType& invocation, vtkm::Id)
+  template <typename WorkletType,
+            typename OutToInPortalType,
+            typename VisitPortalType,
+            typename ThreadToOutPortalType,
+            typename... ExecutionObjectTypes>
+  static vtkm::exec::kokkos::internal::TaskBasic1DWorklet<WorkletType,
+                                                          OutToInPortalType,
+                                                          VisitPortalType,
+                                                          ThreadToOutPortalType,
+                                                          vtkm::cont::DeviceAdapterTagKokkos,
+                                                          ExecutionObjectTypes...>
+  MakeTask(const WorkletType& worklet,
+           const OutToInPortalType& outToInPortal,
+           const VisitPortalType& visitPortal,
+           const ThreadToOutPortalType& threadToOutPortal,
+           vtkm::Id,
+           ExecutionObjectTypes&&... executionObjects)
   {
-    return vtkm::exec::kokkos::internal::TaskBasic1D<WorkletType, InvocationType>(worklet,
-                                                                                  invocation);
+    return vtkm::exec::kokkos::internal::TaskBasic1DWorklet<WorkletType,
+                                                            OutToInPortalType,
+                                                            VisitPortalType,
+                                                            ThreadToOutPortalType,
+                                                            vtkm::cont::DeviceAdapterTagKokkos,
+                                                            ExecutionObjectTypes...>(
+      worklet,
+      outToInPortal,
+      visitPortal,
+      threadToOutPortal,
+      std::forward<ExecutionObjectTypes>(executionObjects)...);
   }
 
-  template <typename WorkletType, typename InvocationType>
-  VTKM_CONT static vtkm::exec::kokkos::internal::TaskBasic3D<WorkletType, InvocationType>
-  MakeTask(WorkletType& worklet, InvocationType& invocation, vtkm::Id3)
+  template <typename WorkletType,
+            typename OutToInPortalType,
+            typename VisitPortalType,
+            typename ThreadToOutPortalType,
+            typename... ExecutionObjectTypes>
+  static vtkm::exec::kokkos::internal::TaskBasic3DWorklet<WorkletType,
+                                                          OutToInPortalType,
+                                                          VisitPortalType,
+                                                          ThreadToOutPortalType,
+                                                          vtkm::cont::DeviceAdapterTagKokkos,
+                                                          ExecutionObjectTypes...>
+  MakeTask(const WorkletType& worklet,
+           const OutToInPortalType& outToInPortal,
+           const VisitPortalType& visitPortal,
+           const ThreadToOutPortalType& threadToOutPortal,
+           vtkm::Id3,
+           ExecutionObjectTypes&&... executionObjects)
   {
-    return vtkm::exec::kokkos::internal::TaskBasic3D<WorkletType, InvocationType>(worklet,
-                                                                                  invocation);
+    return vtkm::exec::kokkos::internal::TaskBasic3DWorklet<WorkletType,
+                                                            OutToInPortalType,
+                                                            VisitPortalType,
+                                                            ThreadToOutPortalType,
+                                                            vtkm::cont::DeviceAdapterTagKokkos,
+                                                            ExecutionObjectTypes...>(
+      worklet,
+      outToInPortal,
+      visitPortal,
+      threadToOutPortal,
+      std::forward<ExecutionObjectTypes>(executionObjects)...);
+  }
+
+  // TODO: Delete this!!!
+  template <typename WorkletType,
+            typename InvocationType,
+            typename RangeType,
+            vtkm::IdComponent... Indices>
+  static auto MakeTask(WorkletType& worklet,
+                       InvocationType& invocation,
+                       RangeType range,
+                       std::integer_sequence<vtkm::IdComponent, Indices...>)
+  {
+    return MakeTask(worklet,
+                    invocation.OutputToInputMap,
+                    invocation.VisitArray,
+                    invocation.ThreadToOutputMap,
+                    range,
+                    vtkm::internal::ParameterGet<Indices + 1>(invocation.Parameters)...);
+  }
+
+  // TODO: Delete this!!!
+  template <typename WorkletType, typename InvocationType, typename RangeType>
+  static auto MakeTask(WorkletType& worklet, InvocationType& invocation, RangeType range)
+  {
+    return MakeTask(
+      worklet,
+      invocation,
+      range,
+      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
+                                              InvocationType::ParameterInterface::ARITY>{});
   }
 };
 }
