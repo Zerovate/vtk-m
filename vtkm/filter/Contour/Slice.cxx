@@ -8,9 +8,6 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#ifndef vtk_m_filter_Slice_cxx
-#define vtk_m_filter_Slice_cxx
-
 #include <vtkm/cont/ArrayHandleTransform.h>
 #include <vtkm/filter/Contour/Slice.h>
 
@@ -45,5 +42,3 @@ vtkm::cont::DataSet Slice::DoExecute(const vtkm::cont::DataSet& input)
 
 }
 } // vtkm::filter
-
-#endif // vtk_m_filter_Slice_cxx
