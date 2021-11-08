@@ -79,6 +79,11 @@ public:
                             const Vec<Precision, 3>& origin,
                             const DepthPortalType& depths) const
   {
+    (void)pixelId;
+    (void)maxDistance;
+    (void)origin;
+    (void)depths;
+#if 0
     vtkm::Vec4f_32 position;
     position[0] = static_cast<vtkm::Float32>(pixelId % Width);
     position[1] = static_cast<vtkm::Float32>(pixelId / Width);
@@ -99,6 +104,7 @@ public:
 
 
     maxDistance = vtkm::Magnitude(p);
+#endif
   }
 }; //class RayMapMinDistances
 
