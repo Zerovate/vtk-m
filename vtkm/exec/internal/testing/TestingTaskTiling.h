@@ -186,6 +186,8 @@ using InvocationType2 = vtkm::internal::Invocation<ExecutionParameterInterface,
 // Not a full worklet, but provides operators that we expect in a worklet.
 struct TestWorkletProxy : vtkm::exec::FunctorBase
 {
+  using InputDomain = vtkm::exec::arg::BasicArg<1>;
+
   VTKM_EXEC
   void operator()(vtkm::Id input, vtkm::Id& output) const { output = input + 100; }
 
@@ -244,6 +246,8 @@ struct TestWorkletProxy2 : TestWorkletProxy
 // Not a full worklet, but provides operators that we expect in a worklet.
 struct TestWorkletErrorProxy : vtkm::exec::FunctorBase
 {
+  using InputDomain = vtkm::exec::arg::BasicArg<1>;
+
   using ControlSignature = TestControlSignature;
   using ExecutionSignature = TestExecutionSignature1;
 

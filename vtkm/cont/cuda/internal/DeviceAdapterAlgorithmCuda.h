@@ -1649,7 +1649,7 @@ public:
   static void CheckForErrors(); // throws vtkm::cont::ErrorExecution
 
   VTKM_CONT_EXPORT
-  static void SetupErrorBuffer(vtkm::exec::cuda::internal::TaskStrided& functor);
+  static vtkm::exec::internal::ErrorMessageBuffer GetErrorMessageBuffer();
 
   VTKM_CONT_EXPORT
   static void GetBlocksAndThreads(vtkm::UInt32& blocks,
@@ -1674,8 +1674,8 @@ public:
                               const dim3& size);
 
 public:
-  template <typename WType, typename IType>
-  static void ScheduleTask(vtkm::exec::cuda::internal::TaskStrided1D<WType, IType>& functor,
+  template <typename TaskType>
+  static void ScheduleTask(TaskType& task, // Must be TaskStrided1DWorklet or TaskStrided1DFunctor
                            vtkm::Id numInstances)
   {
     VTKM_LOG_SCOPE_FUNCTION(vtkm::cont::LogLevel::Perf);
@@ -1688,7 +1688,7 @@ public:
     }
 
     CheckForErrors();
-    SetupErrorBuffer(functor);
+    task.SetErrorMessageBuffer(GetErrorMessageBuffer());
 
     vtkm::UInt32 blocks, threadsPerBlock;
     GetBlocksAndThreads(blocks, threadsPerBlock, numInstances);
@@ -1696,20 +1696,20 @@ public:
 #ifdef VTKM_ENABLE_LOGGING
     if (GetStderrLogLevel() >= vtkm::cont::LogLevel::KernelLaunches)
     {
-      using FunctorType = vtkm::exec::cuda::internal::TaskStrided1D<WType, IType>;
       cudaFuncAttributes empty_kernel_attrs;
-      VTKM_CUDA_CALL(cudaFuncGetAttributes(&empty_kernel_attrs,
-                                           cuda::internal::TaskStrided1DLaunch<FunctorType>));
-      LogKernelLaunch(empty_kernel_attrs, typeid(WType), blocks, threadsPerBlock, numInstances);
+      VTKM_CUDA_CALL(
+        cudaFuncGetAttributes(&empty_kernel_attrs, cuda::internal::TaskStrided1DLaunch<TaskType>));
+      LogKernelLaunch(
+        empty_kernel_attrs, task.GetFunctorTypeId(), blocks, threadsPerBlock, numInstances);
     }
 #endif
 
     cuda::internal::TaskStrided1DLaunch<<<blocks, threadsPerBlock, 0, cudaStreamPerThread>>>(
-      functor, numInstances);
+      task, numInstances);
   }
 
-  template <typename WType, typename IType>
-  static void ScheduleTask(vtkm::exec::cuda::internal::TaskStrided3D<WType, IType>& functor,
+  template <typename TaskType>
+  static void ScheduleTask(TaskType& task, // Must be TaskStrided3DWorklet or TaskStrided3DFunctor
                            vtkm::Id3 rangeMax)
   {
     VTKM_LOG_SCOPE_FUNCTION(vtkm::cont::LogLevel::Perf);
@@ -1722,7 +1722,7 @@ public:
     }
 
     CheckForErrors();
-    SetupErrorBuffer(functor);
+    task.SetErrorMessageBuffer(GetErrorMessageBuffer());
 
     const dim3 ranges(static_cast<vtkm::UInt32>(rangeMax[0]),
                       static_cast<vtkm::UInt32>(rangeMax[1]),
@@ -1735,16 +1735,15 @@ public:
 #ifdef VTKM_ENABLE_LOGGING
     if (GetStderrLogLevel() >= vtkm::cont::LogLevel::KernelLaunches)
     {
-      using FunctorType = vtkm::exec::cuda::internal::TaskStrided3D<WType, IType>;
       cudaFuncAttributes empty_kernel_attrs;
-      VTKM_CUDA_CALL(cudaFuncGetAttributes(&empty_kernel_attrs,
-                                           cuda::internal::TaskStrided3DLaunch<FunctorType>));
-      LogKernelLaunch(empty_kernel_attrs, typeid(WType), blocks, threadsPerBlock, ranges);
+      VTKM_CUDA_CALL(
+        cudaFuncGetAttributes(&empty_kernel_attrs, cuda::internal::TaskStrided3DLaunch<TaskType>));
+      LogKernelLaunch(empty_kernel_attrs, task.GetFunctorTypeId(), blocks, threadsPerBlock, ranges);
     }
 #endif
 
     cuda::internal::TaskStrided3DLaunch<<<blocks, threadsPerBlock, 0, cudaStreamPerThread>>>(
-      functor, rangeMax);
+      task, rangeMax);
   }
 
   template <class Functor>
@@ -1752,7 +1751,7 @@ public:
   {
     VTKM_LOG_SCOPE_FUNCTION(vtkm::cont::LogLevel::Perf);
 
-    vtkm::exec::cuda::internal::TaskStrided1D<Functor, vtkm::internal::NullType> kernel(functor);
+    vtkm::exec::cuda::internal::TaskStrided1DFunctor<Functor> kernel(functor);
 
     ScheduleTask(kernel, numInstances);
   }
@@ -1762,7 +1761,7 @@ public:
   {
     VTKM_LOG_SCOPE_FUNCTION(vtkm::cont::LogLevel::Perf);
 
-    vtkm::exec::cuda::internal::TaskStrided3D<Functor, vtkm::internal::NullType> kernel(functor);
+    vtkm::exec::cuda::internal::TaskStrided3DFunctor<Functor> kernel(functor);
     ScheduleTask(kernel, rangeMax);
   }
 
@@ -1894,22 +1893,99 @@ template <>
 class DeviceTaskTypes<vtkm::cont::DeviceAdapterTagCuda>
 {
 public:
-  template <typename WorkletType, typename InvocationType>
-  static vtkm::exec::cuda::internal::TaskStrided1D<WorkletType, InvocationType>
-  MakeTask(WorkletType& worklet, InvocationType& invocation, vtkm::Id)
+  template <typename WorkletType,
+            typename OutToInPortalType,
+            typename VisitPortalType,
+            typename ThreadToOutPortalType,
+            typename... ExecutionObjectTypes>
+  static vtkm::exec::cuda::internal::TaskStrided1DWorklet<WorkletType,
+                                                          OutToInPortalType,
+                                                          VisitPortalType,
+                                                          ThreadToOutPortalType,
+                                                          vtkm::cont::DeviceAdapterTagCuda,
+                                                          ExecutionObjectTypes...>
+  MakeTask(const WorkletType& worklet,
+           const OutToInPortalType& outToInPortal,
+           const VisitPortalType& visitPortal,
+           const ThreadToOutPortalType& threadToOutPortal,
+           vtkm::Id,
+           ExecutionObjectTypes&&... executionObjects)
   {
-    using Task = vtkm::exec::cuda::internal::TaskStrided1D<WorkletType, InvocationType>;
-    return Task(worklet, invocation);
+    return vtkm::exec::cuda::internal::TaskStrided1DWorklet<WorkletType,
+                                                            OutToInPortalType,
+                                                            VisitPortalType,
+                                                            ThreadToOutPortalType,
+                                                            vtkm::cont::DeviceAdapterTagCuda,
+                                                            ExecutionObjectTypes...>(
+      worklet,
+      outToInPortal,
+      visitPortal,
+      threadToOutPortal,
+      std::forward<ExecutionObjectTypes>(executionObjects)...);
   }
 
-  template <typename WorkletType, typename InvocationType>
-  static vtkm::exec::cuda::internal::TaskStrided3D<WorkletType, InvocationType>
-  MakeTask(WorkletType& worklet, InvocationType& invocation, vtkm::Id3)
+  template <typename WorkletType,
+            typename OutToInPortalType,
+            typename VisitPortalType,
+            typename ThreadToOutPortalType,
+            typename... ExecutionObjectTypes>
+  static vtkm::exec::cuda::internal::TaskStrided3DWorklet<WorkletType,
+                                                          OutToInPortalType,
+                                                          VisitPortalType,
+                                                          ThreadToOutPortalType,
+                                                          vtkm::cont::DeviceAdapterTagCuda,
+                                                          ExecutionObjectTypes...>
+  MakeTask(const WorkletType& worklet,
+           const OutToInPortalType& outToInPortal,
+           const VisitPortalType& visitPortal,
+           const ThreadToOutPortalType& threadToOutPortal,
+           vtkm::Id3,
+           ExecutionObjectTypes&&... executionObjects)
   {
-    using Task = vtkm::exec::cuda::internal::TaskStrided3D<WorkletType, InvocationType>;
-    return Task(worklet, invocation);
+    return vtkm::exec::cuda::internal::TaskStrided3DWorklet<WorkletType,
+                                                            OutToInPortalType,
+                                                            VisitPortalType,
+                                                            ThreadToOutPortalType,
+                                                            vtkm::cont::DeviceAdapterTagCuda,
+                                                            ExecutionObjectTypes...>(
+      worklet,
+      outToInPortal,
+      visitPortal,
+      threadToOutPortal,
+      std::forward<ExecutionObjectTypes>(executionObjects)...);
+  }
+
+  // TODO: Delete this!!!
+  template <typename WorkletType,
+            typename InvocationType,
+            typename RangeType,
+            vtkm::IdComponent... Indices>
+  static auto MakeTask(WorkletType& worklet,
+                       InvocationType& invocation,
+                       RangeType range,
+                       std::integer_sequence<vtkm::IdComponent, Indices...>)
+  {
+    return MakeTask(worklet,
+                    invocation.OutputToInputMap,
+                    invocation.VisitArray,
+                    invocation.ThreadToOutputMap,
+                    range,
+                    vtkm::internal::ParameterGet<Indices + 1>(invocation.Parameters)...);
+  }
+
+  // TODO: Delete this!!!
+  template <typename WorkletType, typename InvocationType, typename RangeType>
+  static auto MakeTask(WorkletType& worklet, InvocationType& invocation, RangeType range)
+  {
+    return MakeTask(
+      worklet,
+      invocation,
+      range,
+      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
+                                              InvocationType::ParameterInterface::ARITY>{});
   }
 };
+
 }
 } // namespace vtkm::cont
 
