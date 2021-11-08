@@ -234,17 +234,27 @@ void TestNormalFunctorInvoke()
 
   vtkm::Id inputTestValue;
   vtkm::Id outputTestValue;
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)> execObjects =
-    vtkm::internal::make_FunctionInterface<void>(TestExecObject(&inputTestValue),
-                                                 TestExecObject(&outputTestValue));
 
   std::cout << "  Try void return." << std::endl;
   inputTestValue = 5;
   outputTestValue = static_cast<vtkm::Id>(0xDEADDEAD);
-  using TaskSingular1 = vtkm::exec::internal::TaskSingular<TestWorkletProxy1, InvocationType1>;
+  using TaskSingular1 = vtkm::exec::internal::TaskSingular<
+    vtkm::internal::NullType, // Stand in for DeviceAdapterTag
+    TestWorkletProxy1,
+    MyOutputToInputMapPortal,
+    MyVisitArrayPortal,
+    MyThreadToOutputMapPortal,
+    TestExecObject,
+    TestExecObject,
+    TestExecObject>;
   TestWorkletProxy1 worklet1;
-  InvocationType1 invocation1(execObjects);
-  TaskSingular1 taskInvokeWorklet1(worklet1, invocation1);
+  TaskSingular1 taskInvokeWorklet1(worklet1,
+                                   MyOutputToInputMapPortal{},
+                                   MyVisitArrayPortal{},
+                                   MyThreadToOutputMapPortal{},
+                                   TestExecObject(&inputTestValue),
+                                   TestExecObject(&inputTestValue),
+                                   TestExecObject(&outputTestValue));
 
   taskInvokeWorklet1(1);
   VTKM_TEST_ASSERT(inputTestValue == 5, "Input value changed.");
@@ -253,10 +263,23 @@ void TestNormalFunctorInvoke()
   std::cout << "  Try return value." << std::endl;
   inputTestValue = 6;
   outputTestValue = static_cast<vtkm::Id>(0xDEADDEAD);
-  using TaskSingular2 = vtkm::exec::internal::TaskSingular<TestWorkletProxy2, InvocationType2>;
+  using TaskSingular2 = vtkm::exec::internal::TaskSingular<
+    vtkm::internal::NullType, // Stand in for DeviceAdapterTag
+    TestWorkletProxy2,
+    MyOutputToInputMapPortal,
+    MyVisitArrayPortal,
+    MyThreadToOutputMapPortal,
+    TestExecObject,
+    TestExecObject,
+    TestExecObject>;
   TestWorkletProxy2 worklet2;
-  InvocationType2 invocation2(execObjects);
-  TaskSingular2 taskInvokeWorklet2(worklet2, invocation2);
+  TaskSingular2 taskInvokeWorklet2(worklet2,
+                                   MyOutputToInputMapPortal{},
+                                   MyVisitArrayPortal{},
+                                   MyThreadToOutputMapPortal{},
+                                   TestExecObject(&inputTestValue),
+                                   TestExecObject(&inputTestValue),
+                                   TestExecObject(&outputTestValue));
 
   taskInvokeWorklet2(2);
   VTKM_TEST_ASSERT(inputTestValue == 6, "Input value changed.");
@@ -269,14 +292,24 @@ void TestErrorFunctorInvoke()
 
   vtkm::Id inputTestValue = 5;
   vtkm::Id outputTestValue = static_cast<vtkm::Id>(0xDEADDEAD);
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)> execObjects =
-    vtkm::internal::make_FunctionInterface<void>(TestExecObject(&inputTestValue),
-                                                 TestExecObject(&outputTestValue));
 
-  using TaskSingular1 = vtkm::exec::internal::TaskSingular<TestWorkletErrorProxy, InvocationType1>;
+  using TaskSingular1 = vtkm::exec::internal::TaskSingular<
+    vtkm::internal::NullType, // Stand in for DeviceAdapterTag
+    TestWorkletErrorProxy,
+    MyOutputToInputMapPortal,
+    MyVisitArrayPortal,
+    MyThreadToOutputMapPortal,
+    TestExecObject,
+    TestExecObject,
+    TestExecObject>;
   TestWorkletErrorProxy worklet;
-  InvocationType1 invocation(execObjects);
-  TaskSingular1 taskInvokeWorklet1 = TaskSingular1(worklet, invocation);
+  TaskSingular1 taskInvokeWorklet1(worklet,
+                                   MyOutputToInputMapPortal{},
+                                   MyVisitArrayPortal{},
+                                   MyThreadToOutputMapPortal{},
+                                   TestExecObject(&inputTestValue),
+                                   TestExecObject(&inputTestValue),
+                                   TestExecObject(&outputTestValue));
 
   char message[1024];
   message[0] = '\0';

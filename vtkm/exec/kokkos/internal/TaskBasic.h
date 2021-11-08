@@ -12,6 +12,8 @@
 
 #include <vtkm/exec/TaskBase.h>
 
+#include <vtkm/Tuple.h>
+
 #include <vtkm/exec/internal/WorkletInvokeFunctor.h>
 
 namespace vtkm
@@ -23,13 +25,39 @@ namespace kokkos
 namespace internal
 {
 
-template <typename WType, typename IType>
-class TaskBasic1D : public vtkm::exec::TaskBase
+template <typename WorkletType,
+          typename OutToInPortalType,
+          typename VisitPortalType,
+          typename ThreadToOutPortalType,
+          typename Device,
+          typename... ExecutionObjectTypes>
+class VTKM_NEVER_EXPORT TaskBasic1DWorklet : public vtkm::exec::TaskBase
 {
+  std::decay_t<WorkletType> Worklet;
+  std::decay_t<OutToInPortalType> OutToInPortal;
+  std::decay_t<VisitPortalType> VisitPortal;
+  std::decay_t<ThreadToOutPortalType> ThreadToOutPortal;
+  vtkm::Tuple<std::decay_t<ExecutionObjectTypes>...> ExecutionObjects;
+
+  inline auto GetInputDomain() const
+  {
+    // Note: Worklet parameter tags (such as _1, _2, _3), as is used for `InputDomain`
+    // start their indexing at 1 whereas `Tuple` starts its indexing at 0.
+    return vtkm::Get<WorkletType::InputDomain::INDEX - 1>(this->ExecutionObjects);
+  }
+
 public:
-  TaskBasic1D(const WType& worklet, const IType& invocation)
+  TaskBasic1DWorklet(
+      const WorkletType& worklet,
+      const OutToInPortalType& outToInPortal,
+      const VisitPortalType& visitPortal,
+      const ThreadToOutPortalType& threadToOutPortal,
+      const ExecutionObjectTypes&&... executionObjects)
     : Worklet(worklet)
-    , Invocation(invocation)
+    , OutToInPortal(outToInPortal)
+    , VisitPortal(visitPortal)
+    , ThreadToOutPortal(threadToOutPortal)
+    , ExecutionObjects(std::forward<ExecutionObjectTypes>(executionObjects)...)
   {
   }
 
@@ -41,27 +69,72 @@ public:
   VTKM_EXEC
   void operator()(vtkm::Id index) const
   {
-    vtkm::exec::internal::detail::DoWorkletInvokeFunctor(
-      this->Worklet,
-      this->Invocation,
-      this->Worklet.GetThreadIndices(index,
-                                     this->Invocation.OutputToInputMap,
-                                     this->Invocation.VisitArray,
-                                     this->Invocation.ThreadToOutputMap,
-                                     this->Invocation.GetInputDomain()));
+    vtkm::exec::internal::WorkletInvokeFunctor(
+          this->Worklet,
+          this->Worklet.GetThreadIndices(
+            index,
+            this->OutToInPortal,
+            this->VisitPortal,
+            this->ThreadToOutPortal,
+            this->GetInputDomain()),
+          Device{},
+          this->ExecutionObjects);
   }
-
-private:
-  typename std::remove_const<WType>::type Worklet;
-  IType Invocation;
 };
 
-template <typename WType>
-class TaskBasic1D<WType, vtkm::internal::NullType> : public vtkm::exec::TaskBase
+template <typename FunctorType>
+class VTKM_NEVER_EXPORT TaskBasic1DFunctor : public vtkm::exec::TaskBase
 {
+  typename std::remove_const<FunctorType>::type Functor;
+
 public:
-  explicit TaskBasic1D(const WType& worklet)
+  explicit TaskBasic1DFunctor(const FunctorType& functor)
+    : Functor(functor)
+  {
+  }
+
+  void SetErrorMessageBuffer(const vtkm::exec::internal::ErrorMessageBuffer& buffer)
+  {
+    this->Functor.SetErrorMessageBuffer(buffer);
+  }
+
+  VTKM_EXEC
+  void operator()(vtkm::Id index) const { this->Functor(index); }
+};
+
+template <typename WorkletType,
+          typename OutToInPortalType,
+          typename VisitPortalType,
+          typename ThreadToOutPortalType,
+          typename Device,
+          typename... ExecutionObjectTypes>
+class VTKM_NEVER_EXPORT TaskBasic3DWorklet : public vtkm::exec::TaskBase
+{
+  std::decay_t<WorkletType> Worklet;
+  std::decay_t<OutToInPortalType> OutToInPortal;
+  std::decay_t<VisitPortalType> VisitPortal;
+  std::decay_t<ThreadToOutPortalType> ThreadToOutPortal;
+  vtkm::Tuple<std::decay_t<ExecutionObjectTypes>...> ExecutionObjects;
+
+  inline auto GetInputDomain() const
+  {
+    // Note: Worklet parameter tags (such as _1, _2, _3), as is used for `InputDomain`
+    // start their indexing at 1 whereas `Tuple` starts its indexing at 0.
+    return vtkm::Get<WorkletType::InputDomain::INDEX - 1>(this->ExecutionObjects);
+  }
+
+public:
+  TaskBasic3DWorklet(
+      const WorkletType& worklet,
+      const OutToInPortalType& outToInPortal,
+      const VisitPortalType& visitPortal,
+      const ThreadToOutPortalType& threadToOutPortal,
+      ExecutionObjectTypes&&... executionObjects)
     : Worklet(worklet)
+    , OutToInPortal(outToInPortal)
+    , VisitPortal(visitPortal)
+    , ThreadToOutPortal(threadToOutPortal)
+    , ExecutionObjects(std::forward<ExecutionObjectTypes>(executionObjects)...)
   {
   }
 
@@ -71,66 +144,42 @@ public:
   }
 
   VTKM_EXEC
-  void operator()(vtkm::Id index) const { this->Worklet(index); }
-
-private:
-  typename std::remove_const<WType>::type Worklet;
+  void operator()(vtkm::Id3 index, vtkm::Id flatIndex) const
+  {
+    vtkm::exec::internal::WorkletInvokeFunctor(
+          this->Worklet,
+          this->Worklet.GetThreadIndices(
+            flatIndex,
+            index,
+            this->OutToInPortal,
+            this->VisitPortal,
+            this->ThreadToOutPortal,
+            this->GetInputDomain()),
+          Device{},
+          this->ExecutionObjects);
+  }
 };
 
-template <typename WType, typename IType>
-class TaskBasic3D : public vtkm::exec::TaskBase
+template <typename FunctorType>
+class VTKM_NEVER_EXPORT TaskBasic3DFunctor : public vtkm::exec::TaskBase
 {
+  typename std::remove_const<FunctorType>::type Functor;
+
 public:
-  TaskBasic3D(const WType& worklet, const IType& invocation)
-    : Worklet(worklet)
-    , Invocation(invocation)
+  explicit TaskBasic3DFunctor(const FunctorType& functor)
+    : Functor(functor)
   {
   }
 
   void SetErrorMessageBuffer(const vtkm::exec::internal::ErrorMessageBuffer& buffer)
   {
-    this->Worklet.SetErrorMessageBuffer(buffer);
+    this->Functor.SetErrorMessageBuffer(buffer);
   }
 
   VTKM_EXEC
-  void operator()(vtkm::Id3 idx, vtkm::Id flatIdx) const
-  {
-    vtkm::exec::internal::detail::DoWorkletInvokeFunctor(
-      this->Worklet,
-      this->Invocation,
-      this->Worklet.GetThreadIndices(flatIdx,
-                                     idx,
-                                     this->Invocation.OutputToInputMap,
-                                     this->Invocation.VisitArray,
-                                     this->Invocation.ThreadToOutputMap,
-                                     this->Invocation.GetInputDomain()));
-  }
-
-private:
-  typename std::remove_const<WType>::type Worklet;
-  IType Invocation;
+  void operator()(vtkm::Id3 idx, vtkm::Id) const { this->Functor(idx); }
 };
 
-template <typename WType>
-class TaskBasic3D<WType, vtkm::internal::NullType> : public vtkm::exec::TaskBase
-{
-public:
-  explicit TaskBasic3D(const WType& worklet)
-    : Worklet(worklet)
-  {
-  }
-
-  void SetErrorMessageBuffer(const vtkm::exec::internal::ErrorMessageBuffer& buffer)
-  {
-    this->Worklet.SetErrorMessageBuffer(buffer);
-  }
-
-  VTKM_EXEC
-  void operator()(vtkm::Id3 idx, vtkm::Id) const { this->Worklet(idx); }
-
-private:
-  typename std::remove_const<WType>::type Worklet;
-};
 }
 }
 }

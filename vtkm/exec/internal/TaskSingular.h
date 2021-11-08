@@ -10,7 +10,7 @@
 #ifndef vtk_m_exec_internal_TaskSingular_h
 #define vtk_m_exec_internal_TaskSingular_h
 
-#include <vtkm/internal/Invocation.h>
+#include <vtkm/Tuple.h>
 
 #include <vtkm/exec/TaskBase.h>
 
@@ -30,14 +30,30 @@ namespace internal
 // this single dimension no order is preferred.
 //
 //
-template <typename WorkletType, typename InvocationType>
-class TaskSingular : public vtkm::exec::TaskBase
+template <typename Device,
+          typename WorkletType,
+          typename OutToInPortalType,
+          typename VisitPortalType,
+          typename ThreadToOutPortalType,
+          typename InputDomainType,
+          typename... ExecutionObjectTypes>
+class VTKM_NEVER_EXPORT TaskSingular : public vtkm::exec::TaskBase
 {
 public:
+  template <typename... EOTs>
   VTKM_CONT
-  TaskSingular(const WorkletType& worklet, const InvocationType& invocation)
+  TaskSingular(const WorkletType& worklet,
+               OutToInPortalType outToInPortal,
+               VisitPortalType visitPortal,
+               ThreadToOutPortalType threadToOutPortal,
+               InputDomainType inputDomain,
+               EOTs&&... executionObjects)
     : Worklet(worklet)
-    , Invocation(invocation)
+    , OutToInPortal(outToInPortal)
+    , VisitPortal(visitPortal)
+    , ThreadToOutPortal(threadToOutPortal)
+    , InputDomain(inputDomain)
+    , ExecutionObjects(std::forward<EOTs>(executionObjects)...)
   {
   }
 
@@ -50,24 +66,28 @@ public:
   template <typename T>
   VTKM_EXEC void operator()(T index) const
   {
-    //Todo: rename this function to DoTaskSingular
-    detail::DoWorkletInvokeFunctor(
+    vtkm::exec::internal::WorkletInvokeFunctor(
       this->Worklet,
-      this->Invocation,
       this->Worklet.GetThreadIndices(index,
-                                     this->Invocation.OutputToInputMap,
-                                     this->Invocation.VisitArray,
-                                     this->Invocation.ThreadToOutputMap,
-                                     this->Invocation.GetInputDomain()));
+                                     this->OutToInPortal,
+                                     this->VisitPortal,
+                                     this->ThreadToOutPortal,
+                                     this->InputDomain),
+      Device{},
+      this->ExecutionObjects);
   }
 
 private:
   typename std::remove_const<WorkletType>::type Worklet;
-  // This is held by by value so that when we transfer the invocation object
+  OutToInPortalType OutToInPortal;
+  VisitPortalType VisitPortal;
+  ThreadToOutPortalType ThreadToOutPortal;
+  InputDomainType InputDomain;
+  // This is held by by value so that when we transfer the execution objects
   // over to CUDA it gets properly copied to the device. While we want to
   // hold by reference to reduce the number of copies, it is not possible
   // currently.
-  const InvocationType Invocation;
+  const vtkm::Tuple<std::decay_t<ExecutionObjectTypes>...> ExecutionObjects;
 };
 }
 }

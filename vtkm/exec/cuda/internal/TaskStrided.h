@@ -26,42 +26,48 @@ namespace cuda
 namespace internal
 {
 
-template <typename WType>
-void TaskStridedSetErrorBuffer(void* w, const vtkm::exec::internal::ErrorMessageBuffer& buffer)
+template <typename WorkletType,
+          typename OutToInPortalType,
+          typename VisitPortalType,
+          typename ThreadToOutPortalType,
+          typename Device,
+          typename... ExecutionObjectTypes>
+class VTKM_NEVER_EXPORT TaskStrided1DWorklet : public vtkm::exec::TaskBase
 {
-  using WorkletType = typename std::remove_cv<WType>::type;
-  WorkletType* const worklet = static_cast<WorkletType*>(w);
-  worklet->SetErrorMessageBuffer(buffer);
-}
+  std::decay_t<WorkletType> Worklet;
+  std::decay_t<OutToInPortalType> OutToInPortal;
+  std::decay_t<VisitPortalType> VisitPortal;
+  std::decay_t<ThreadToOutPortalType> ThreadToOutPortal;
+  vtkm::Tuple<std::decay_t<ExecutionObjectTypes>...> ExecutionObjects;
 
-class TaskStrided : public vtkm::exec::TaskBase
-{
+  VTKM_EXEC inline auto GetInputDomain() const
+  {
+    // Note: Worklet parameter tags (such as _1, _2, _3), as is used for `InputDomain`
+    // start their indexing at 1 whereas `Tuple` starts its indexing at 0.
+    return vtkm::Get<WorkletType::InputDomain::INDEX - 1>(this->ExecutionObjects);
+  }
+
 public:
+  TaskStrided1DWorklet(
+      const WorkletType& worklet,
+      const OutToInPortalType& outToInPortal,
+      const VisitPortalType& visitPortal,
+      const ThreadToOutPortalType& threadToOutPortal,
+      const ExecutionObjectTypes&&... executionObjects)
+    : Worklet(worklet)
+    , OutToInPortal(outToInPortal)
+    , VisitPortal(visitPortal)
+    , ThreadToOutPortal(threadToOutPortal)
+    , ExecutionObjects(std::forward<ExecutionObjectTypes>(executionObjects)...)
+  {
+  }
+
+  // Used for logging kernel launches
+  const std::type_info& GetFunctorTypeId() const { return typeid(std::decay_t<WorkletType>); }
+
   void SetErrorMessageBuffer(const vtkm::exec::internal::ErrorMessageBuffer& buffer)
   {
-    (void)buffer;
-    this->SetErrorBufferFunction(this->WPtr, buffer);
-  }
-
-protected:
-  void* WPtr = nullptr;
-
-  using SetErrorBufferSignature = void (*)(void*, const vtkm::exec::internal::ErrorMessageBuffer&);
-  SetErrorBufferSignature SetErrorBufferFunction = nullptr;
-};
-
-template <typename WType, typename IType>
-class TaskStrided1D : public TaskStrided
-{
-public:
-  TaskStrided1D(const WType& worklet, const IType& invocation)
-    : TaskStrided()
-    , Worklet(worklet)
-    , Invocation(invocation)
-  {
-    this->SetErrorBufferFunction = &TaskStridedSetErrorBuffer<WType>;
-    //Bind the Worklet to void*
-    this->WPtr = (void*)&this->Worklet;
+    this->Worklet.SetErrorMessageBuffer(buffer);
   }
 
   VTKM_EXEC
@@ -69,38 +75,37 @@ public:
   {
     for (vtkm::Id index = start; index < end; index += inc)
     {
-      //Todo: rename this function to DoTaskInvokeWorklet
-      vtkm::exec::internal::detail::DoWorkletInvokeFunctor(
-        this->Worklet,
-        this->Invocation,
-        this->Worklet.GetThreadIndices(index,
-                                       this->Invocation.OutputToInputMap,
-                                       this->Invocation.VisitArray,
-                                       this->Invocation.ThreadToOutputMap,
-                                       this->Invocation.GetInputDomain()));
+      vtkm::exec::internal::WorkletInvokeFunctor(
+            this->Worklet,
+            this->Worklet.GetThreadIndices(
+              index,
+              this->OutToInPortal,
+              this->VisitPortal,
+              this->ThreadToOutPortal,
+              this->GetInputDomain()),
+            Device{},
+            this->ExecutionObjects);
     }
   }
-
-private:
-  typename std::remove_const<WType>::type Worklet;
-  // This is held by by value so that when we transfer the invocation object
-  // over to CUDA it gets properly copied to the device. While we want to
-  // hold by reference to reduce the number of copies, it is not possible
-  // currently.
-  const IType Invocation;
 };
 
-template <typename WType>
-class TaskStrided1D<WType, vtkm::internal::NullType> : public TaskStrided
+template <typename FunctorType>
+class VTKM_NEVER_EXPORT TaskStrided1DFunctor : public vtkm::exec::TaskBase
 {
+  typename std::remove_const<FunctorType>::type Functor;
+
 public:
-  TaskStrided1D(WType& worklet)
-    : TaskStrided()
-    , Worklet(worklet)
+  explicit TaskStrided1DFunctor(const FunctorType& functor)
+    : Functor(functor)
   {
-    this->SetErrorBufferFunction = &TaskStridedSetErrorBuffer<WType>;
-    //Bind the Worklet to void*
-    this->WPtr = (void*)&this->Worklet;
+  }
+
+  // Used for logging kernel launches
+  const std::type_info& GetFunctorTypeId() const { return typeid(std::remove_const_t<FunctorType>); }
+
+  void SetErrorMessageBuffer(const vtkm::exec::internal::ErrorMessageBuffer& buffer)
+  {
+    this->Functor.SetErrorMessageBuffer(buffer);
   }
 
   VTKM_EXEC
@@ -108,26 +113,53 @@ public:
   {
     for (vtkm::Id index = start; index < end; index += inc)
     {
-      this->Worklet(index);
+      this->Functor(index);
     }
   }
-
-private:
-  typename std::remove_const<WType>::type Worklet;
 };
 
-template <typename WType, typename IType>
-class TaskStrided3D : public TaskStrided
+template <typename WorkletType,
+          typename OutToInPortalType,
+          typename VisitPortalType,
+          typename ThreadToOutPortalType,
+          typename Device,
+          typename... ExecutionObjectTypes>
+class VTKM_NEVER_EXPORT TaskStrided3DWorklet : public vtkm::exec::TaskBase
 {
-public:
-  TaskStrided3D(const WType& worklet, const IType& invocation)
-    : TaskStrided()
-    , Worklet(worklet)
-    , Invocation(invocation)
+  std::decay_t<WorkletType> Worklet;
+  std::decay_t<OutToInPortalType> OutToInPortal;
+  std::decay_t<VisitPortalType> VisitPortal;
+  std::decay_t<ThreadToOutPortalType> ThreadToOutPortal;
+  vtkm::Tuple<std::decay_t<ExecutionObjectTypes>...> ExecutionObjects;
+
+  VTKM_EXEC inline auto GetInputDomain() const
   {
-    this->SetErrorBufferFunction = &TaskStridedSetErrorBuffer<WType>;
-    //Bind the Worklet to void*
-    this->WPtr = (void*)&this->Worklet;
+    // Note: Worklet parameter tags (such as _1, _2, _3), as is used for `InputDomain`
+    // start their indexing at 1 whereas `Tuple` starts its indexing at 0.
+    return vtkm::Get<WorkletType::InputDomain::INDEX - 1>(this->ExecutionObjects);
+  }
+
+public:
+  TaskStrided3DWorklet(
+      const WorkletType& worklet,
+      const OutToInPortalType& outToInPortal,
+      const VisitPortalType& visitPortal,
+      const ThreadToOutPortalType& threadToOutPortal,
+      ExecutionObjectTypes&&... executionObjects)
+    : Worklet(worklet)
+    , OutToInPortal(outToInPortal)
+    , VisitPortal(visitPortal)
+    , ThreadToOutPortal(threadToOutPortal)
+    , ExecutionObjects(std::forward<ExecutionObjectTypes>(executionObjects)...)
+  {
+  }
+
+  // Used for logging kernel launches
+  const std::type_info& GetFunctorTypeId() const { return typeid(std::decay_t<WorkletType>); }
+
+  void SetErrorMessageBuffer(const vtkm::exec::internal::ErrorMessageBuffer& buffer)
+  {
+    this->Worklet.SetErrorMessageBuffer(buffer);
   }
 
   VTKM_EXEC
@@ -143,43 +175,42 @@ public:
     for (vtkm::Id i = start; i < end; i += inc, threadIndex1D += inc)
     {
       index[0] = i;
-      //Todo: rename this function to DoTaskInvokeWorklet
-      vtkm::exec::internal::detail::DoWorkletInvokeFunctor(
-        this->Worklet,
-        this->Invocation,
-        this->Worklet.GetThreadIndices(threadIndex1D,
-                                       index,
-                                       this->Invocation.OutputToInputMap,
-                                       this->Invocation.VisitArray,
-                                       this->Invocation.ThreadToOutputMap,
-                                       this->Invocation.GetInputDomain()));
+      vtkm::exec::internal::WorkletInvokeFunctor(
+            this->Worklet,
+            this->Worklet.GetThreadIndices(
+              threadIndex1D,
+              index,
+              this->OutToInPortal,
+              this->VisitPortal,
+              this->ThreadToOutPortal,
+              this->GetInputDomain()),
+            Device{},
+            this->ExecutionObjects);
     }
   }
-
-private:
-  typename std::remove_const<WType>::type Worklet;
-  // This is held by by value so that when we transfer the invocation object
-  // over to CUDA it gets properly copied to the device. While we want to
-  // hold by reference to reduce the number of copies, it is not possible
-  // currently.
-  const IType Invocation;
 };
 
-template <typename WType>
-class TaskStrided3D<WType, vtkm::internal::NullType> : public TaskStrided
+template <typename FunctorType>
+class VTKM_NEVER_EXPORT TaskStrided3DFunctor : public vtkm::exec::TaskBase
 {
+  typename std::remove_const<FunctorType>::type Functor;
+
 public:
-  TaskStrided3D(WType& worklet)
-    : TaskStrided()
-    , Worklet(worklet)
+  explicit TaskStrided3DFunctor(const FunctorType& functor)
+    : Functor(functor)
   {
-    this->SetErrorBufferFunction = &TaskStridedSetErrorBuffer<WType>;
-    //Bind the Worklet to void*
-    this->WPtr = (void*)&this->Worklet;
+  }
+
+  // Used for logging kernel launches
+  const std::type_info& GetFunctorTypeId() const { return typeid(std::remove_const_t<FunctorType>); }
+
+  void SetErrorMessageBuffer(const vtkm::exec::internal::ErrorMessageBuffer& buffer)
+  {
+    this->Functor.SetErrorMessageBuffer(buffer);
   }
 
   VTKM_EXEC
-  void operator()(const vtkm::Id3& size,
+  void operator()(const vtkm::Id3& vtkmNotUsed(size),
                   vtkm::Id start,
                   vtkm::Id end,
                   vtkm::Id inc,
@@ -190,13 +221,11 @@ public:
     for (vtkm::Id i = start; i < end; i += inc)
     {
       index[0] = i;
-      this->Worklet(index);
+      this->Functor(index);
     }
   }
-
-private:
-  typename std::remove_const<WType>::type Worklet;
 };
+
 }
 }
 }

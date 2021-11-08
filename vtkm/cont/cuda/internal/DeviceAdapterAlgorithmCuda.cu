@@ -180,12 +180,11 @@ auto DeviceAdapterAlgorithm<vtkm::cont::DeviceAdapterTagCuda>::GetPinnedErrorArr
   return local;
 }
 
-void DeviceAdapterAlgorithm<vtkm::cont::DeviceAdapterTagCuda>::SetupErrorBuffer(
-  vtkm::exec::cuda::internal::TaskStrided& functor)
+vtkm::exec::internal::ErrorMessageBuffer
+DeviceAdapterAlgorithm<vtkm::cont::DeviceAdapterTagCuda>::GetErrorMessageBuffer()
 {
   auto pinnedArray = GetPinnedErrorArray();
-  vtkm::exec::internal::ErrorMessageBuffer errorMessage(pinnedArray.DevicePtr, pinnedArray.Size);
-  functor.SetErrorMessageBuffer(errorMessage);
+  return vtkm::exec::internal::ErrorMessageBuffer(pinnedArray.DevicePtr, pinnedArray.Size);
 }
 
 void DeviceAdapterAlgorithm<vtkm::cont::DeviceAdapterTagCuda>::CheckForErrors()

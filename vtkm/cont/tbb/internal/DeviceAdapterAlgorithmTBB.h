@@ -421,20 +421,79 @@ template <>
 class DeviceTaskTypes<vtkm::cont::DeviceAdapterTagTBB>
 {
 public:
-  template <typename WorkletType, typename InvocationType>
-  static vtkm::exec::tbb::internal::TaskTiling1D MakeTask(WorkletType& worklet,
-                                                          InvocationType& invocation,
-                                                          vtkm::Id)
+  template <typename WorkletType,
+            typename OutToInPortalType,
+            typename VisitPortalType,
+            typename ThreadToOutPortalType,
+            typename... ExecutionObjectTypes>
+  static vtkm::exec::tbb::internal::TaskTiling1D MakeTask(
+      const WorkletType& worklet,
+      const OutToInPortalType& outToInPortal,
+      const VisitPortalType& visitPortal,
+      const ThreadToOutPortalType& threadToOutPortal,
+      vtkm::Id,
+      ExecutionObjectTypes&&... executionObjects)
   {
-    return vtkm::exec::tbb::internal::TaskTiling1D(worklet, invocation);
+    return vtkm::exec::tbb::internal::TaskTiling1D(
+          worklet,
+          outToInPortal,
+          visitPortal,
+          threadToOutPortal,
+          vtkm::cont::DeviceAdapterTagTBB{},
+          std::forward<ExecutionObjectTypes>(executionObjects)...);
   }
 
-  template <typename WorkletType, typename InvocationType>
-  static vtkm::exec::tbb::internal::TaskTiling3D MakeTask(WorkletType& worklet,
-                                                          InvocationType& invocation,
-                                                          vtkm::Id3)
+  template <typename WorkletType,
+            typename OutToInPortalType,
+            typename VisitPortalType,
+            typename ThreadToOutPortalType,
+            typename... ExecutionObjectTypes>
+  static vtkm::exec::tbb::internal::TaskTiling3D MakeTask(
+      const WorkletType& worklet,
+      const OutToInPortalType& outToInPortal,
+      const VisitPortalType& visitPortal,
+      const ThreadToOutPortalType& threadToOutPortal,
+      vtkm::Id3,
+      ExecutionObjectTypes&&... executionObjects)
   {
-    return vtkm::exec::tbb::internal::TaskTiling3D(worklet, invocation);
+    return vtkm::exec::tbb::internal::TaskTiling3D(
+          worklet,
+          outToInPortal,
+          visitPortal,
+          threadToOutPortal,
+          vtkm::cont::DeviceAdapterTagTBB{},
+          std::forward<ExecutionObjectTypes>(executionObjects)...);
+  }
+
+  // TODO: Delete this!!!
+  template <typename WorkletType, typename InvocationType, typename RangeType, vtkm::IdComponent... Indices>
+  static auto MakeTask(
+    WorkletType& worklet,
+    InvocationType& invocation,
+    RangeType range,
+    std::integer_sequence<vtkm::IdComponent, Indices...>)
+  {
+    return MakeTask(worklet,
+                    invocation.OutputToInputMap,
+                    invocation.VisitArray,
+                    invocation.ThreadToOutputMap,
+                    range,
+                    vtkm::internal::ParameterGet<Indices + 1>(invocation.Parameters)...);
+  }
+
+  // TODO: Delete this!!!
+  template <typename WorkletType, typename InvocationType, typename RangeType>
+  static auto MakeTask(
+    WorkletType& worklet,
+    InvocationType& invocation,
+    RangeType range)
+  {
+    return MakeTask(
+      worklet,
+      invocation,
+      range,
+      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
+                                              InvocationType::ParameterInterface::ARITY>{});
   }
 };
 }
