@@ -38,9 +38,13 @@ View3D::~View3D() {}
 
 void View3D::Paint()
 {
+  std::cout << "  in paint" << std::endl;
   this->GetCanvas().Clear();
+  std::cout << "  rendering annotations" << std::endl;
   this->RenderAnnotations();
+  std::cout << "  render scene" << std::endl;
   this->GetScene().Render(this->GetMapper(), this->GetCanvas(), this->GetCamera());
+  std::cout << "  done paint" << std::endl;
 }
 
 void View3D::RenderScreenAnnotations()
