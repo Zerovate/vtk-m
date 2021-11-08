@@ -387,7 +387,8 @@ public:
     i += Minx;
     j += Miny;
     // Write out the global pixelId
-    pixelIndex = static_cast<vtkm::Id>(j * w + i);
+//    pixelIndex = static_cast<vtkm::Id>(j * w + i);
+    pixelIndex = idx;
     ray_dir = nlook + delta_x * ((2.f * Precision(i) - Precision(w)) / 2.0f) +
       delta_y * ((2.f * Precision(j) - Precision(h)) / 2.0f);
     // avoid some numerical issues
@@ -786,6 +787,7 @@ VTKM_CONT void Camera::CreateRaysImpl(Ray<Precision>& rays, const vtkm::Bounds b
   //Reset the camera look vector
   this->Look = this->LookAt - this->Position;
   vtkm::Normalize(this->Look);
+  std::cout << "        ortho: " << ortho << std::endl;
   if (ortho)
   {
 
@@ -829,6 +831,7 @@ VTKM_CONT void Camera::CreateRaysImpl(Ray<Precision>& rays, const vtkm::Bounds b
     vtkm::cont::ArrayHandleConstant<Precision> posZ(this->Position[2], rays.NumRays);
     vtkm::cont::Algorithm::Copy(posZ, rays.OriginZ);
   }
+  vtkm::cont::printSummary_ArrayHandle(rays.PixelIdx, std::cout);
 
   time = timer.GetElapsedTime();
   logger->AddLogData("ray_gen", time);
