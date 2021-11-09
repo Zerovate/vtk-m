@@ -191,10 +191,6 @@ VTKM_CONT bool Contour::MapFieldOntoOutput(vtkm::cont::DataSet& result,
 {
   if (field.IsFieldPoint())
   {
-    // If the field is a point field, then we need to do a custom interpolation of the points.
-    // In this case, we need to call the superclass's MapFieldOntoOutput, which will in turn
-    // call our DoMapField.
-    //      return this->FilterDataSetWithField::MapFieldOntoOutput(result, field);
     auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
 
     auto functor = [&, this](auto concrete) {

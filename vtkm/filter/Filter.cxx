@@ -33,7 +33,7 @@ void RunFilter(Filter* self, vtkm::filter::DataSetQueue& input, vtkm::filter::Da
   std::pair<vtkm::Id, vtkm::cont::DataSet> task;
   while (input.GetTask(task))
   {
-    auto outDS = filterClone->PrepareForExecution(task.second);
+    auto outDS = filterClone->DoExecute(task.second);
     output.Push(std::make_pair(task.first, std::move(outDS)));
   }
 
@@ -41,8 +41,8 @@ void RunFilter(Filter* self, vtkm::filter::DataSetQueue& input, vtkm::filter::Da
   delete filterClone;
 }
 
-vtkm::cont::PartitionedDataSet CallPrepareForExecution(Filter* self,
-                                                       const vtkm::cont::PartitionedDataSet& input)
+vtkm::cont::PartitionedDataSet CallDoExecute(Filter* self,
+                                             const vtkm::cont::PartitionedDataSet& input)
 {
   vtkm::cont::PartitionedDataSet output;
 
@@ -72,7 +72,7 @@ vtkm::cont::PartitionedDataSet CallPrepareForExecution(Filter* self,
   {
     for (const auto& inBlock : input)
     {
-      vtkm::cont::DataSet outBlock = self->PrepareForExecution(inBlock);
+      vtkm::cont::DataSet outBlock = self->DoExecute(inBlock);
       output.AppendPartition(outBlock);
     }
   }
@@ -115,7 +115,7 @@ vtkm::cont::PartitionedDataSet Filter::Execute(const vtkm::cont::PartitionedData
   this->PreExecute(input);
 
   // Call `PrepareForExecution` (which should probably be renamed at some point)
-  vtkm::cont::PartitionedDataSet output = CallPrepareForExecution(this, input);
+  vtkm::cont::PartitionedDataSet output = CallDoExecute(this, input);
 
   // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
   this->PostExecute(input, output);
