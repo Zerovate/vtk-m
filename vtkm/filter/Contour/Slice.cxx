@@ -31,6 +31,8 @@ vtkm::cont::DataSet Slice::DoExecute(const vtkm::cont::DataSet& input)
   vtkm::cont::DataSet clone = input;
   clone.AddField(field);
 
+  // TODO: these two lines prevent DoExecute() from being const. Can we make
+  // Contour a local variable? How about MapField?
   this->Contour::SetIsoValue(0.0);
   this->Contour::SetActiveField("sliceScalars");
   result = this->Contour::DoExecute(clone);

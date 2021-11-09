@@ -181,10 +181,15 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
     this->Worklet->ReleaseCellMapArrays();
   }
 
-  CallMapFieldOntoOutput(inDataSet, output);
+  CallMapFieldOntoOutput(inDataSet, output, &Worklet);
 
   return output;
 }
+
+
+// TODO: turn MapFieldOntoOutput into a static function (for real implementation) and
+//  a virtual function for extension by sub-class.
+// MapFieldOntoOutput() { Contour::static_function(); }
 
 VTKM_CONT bool Contour::MapFieldOntoOutput(vtkm::cont::DataSet& result,
                                            const vtkm::cont::Field& field)
@@ -194,8 +199,10 @@ VTKM_CONT bool Contour::MapFieldOntoOutput(vtkm::cont::DataSet& result,
     auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
 
     auto functor = [&, this](auto concrete) {
-      auto fieldArray = this->Worklet->template ProcessPointField(concrete);
-      result.template AddPointField(field.GetName(), fieldArray);
+      // TODO: once Worklet is not a data member by a local variable, we don't need
+      // `this`. This function can be made static.
+      auto fieldArray = this->Worklet->ProcessPointField(concrete);
+      result.AddPointField(field.GetName(), fieldArray);
     };
     array.CastAndCallWithFloatFallback(functor);
     return true;

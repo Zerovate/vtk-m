@@ -307,6 +307,7 @@ public:
   }
   //@}
 
+  // TODO: can we make this private?
   VTKM_CONT virtual vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) = 0;
 
   //@{
@@ -333,15 +334,15 @@ public:
   VTKM_CONT
   virtual vtkm::Id DetermineNumberOfThreads(const vtkm::cont::PartitionedDataSet& input);
 
-  // TODO: make it protected?
-  VTKM_CONT virtual bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                            const vtkm::cont::Field& field);
-
 protected:
   vtkm::cont::Invoker Invoke;
   vtkm::Id CoordinateSystemIndex;
 
   vtkm::filter::Filter& operator=(const vtkm::filter::Filter&) = default;
+
+  // TODO: make it protected? To be removed.
+  VTKM_CONT virtual bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
+                                            const vtkm::cont::Field& field);
 
   VTKM_CONT void CallMapFieldOntoOutput(const vtkm::cont::DataSet& input,
                                         vtkm::cont::DataSet& output);
