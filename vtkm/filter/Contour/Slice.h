@@ -22,7 +22,7 @@ namespace vtkm
 namespace filter
 {
 
-class VTKM_FILTER_CONTOUR_EXPORT Slice : public vtkm::filter::Filter
+class VTKM_FILTER_CONTOUR_EXPORT Slice : public vtkm::filter::Contour
 {
 public:
   /// Set/Get the implicit function that is used to perform the slicing.
@@ -32,77 +32,10 @@ public:
   VTKM_CONT
   const vtkm::ImplicitFunctionGeneral& GetImplicitFunction() const { return this->Function; }
 
-  /// Set/Get whether the points generated should be unique for every triangle
-  /// or will duplicate points be merged together. Duplicate points are identified
-  /// by the unique edge it was generated from.
-  ///
-  VTKM_CONT
-  void SetMergeDuplicatePoints(bool on) { this->ContourFilter.SetMergeDuplicatePoints(on); }
-  VTKM_CONT
-  bool GetMergeDuplicatePoints() const { return this->ContourFilter.GetMergeDuplicatePoints(); }
-
-  /// Set/Get whether normals should be generated. Off by default. If enabled,
-  /// the default behaviour is to generate high quality normals for structured
-  /// datasets, using gradients, and generate fast normals for unstructured
-  /// datasets based on the result triangle mesh.
-  ///
-  VTKM_CONT
-  void SetGenerateNormals(bool on) { this->ContourFilter.SetGenerateNormals(on); }
-  VTKM_CONT
-  bool GetGenerateNormals() const { return this->ContourFilter.GetGenerateNormals(); }
-
-  /// Set/Get whether to append the ids of the intersected edges to the vertices of the isosurface
-  /// triangles. Off by default.
-  VTKM_CONT
-  void SetAddInterpolationEdgeIds(bool on) { this->ContourFilter.SetAddInterpolationEdgeIds(on); }
-  VTKM_CONT
-  bool GetAddInterpolationEdgeIds() const
-  {
-    return this->ContourFilter.GetAddInterpolationEdgeIds();
-  }
-
-  /// Set/Get whether the fast path should be used for normals computation for
-  /// structured datasets. Off by default.
-  VTKM_CONT
-  void SetComputeFastNormalsForStructured(bool on)
-  {
-    this->ContourFilter.SetComputeFastNormalsForStructured(on);
-  }
-  VTKM_CONT
-  bool GetComputeFastNormalsForStructured() const
-  {
-    return this->ContourFilter.GetComputeFastNormalsForStructured();
-  }
-
-  /// Set/Get whether the fast path should be used for normals computation for
-  /// unstructured datasets. On by default.
-  VTKM_CONT
-  void SetComputeFastNormalsForUnstructured(bool on)
-  {
-    this->ContourFilter.SetComputeFastNormalsForUnstructured(on);
-  }
-  VTKM_CONT
-  bool GetComputeFastNormalsForUnstructured() const
-  {
-    return this->ContourFilter.GetComputeFastNormalsForUnstructured();
-  }
-
-  VTKM_CONT
-  void SetNormalArrayName(const std::string& name) { this->ContourFilter.SetNormalArrayName(name); }
-
-  VTKM_CONT
-  const std::string& GetNormalArrayName() const { return this->ContourFilter.GetNormalArrayName(); }
-
   VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
-
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
-  {
-    return this->ContourFilter.MapFieldOntoOutput(result, field);
-  }
 
 private:
   vtkm::ImplicitFunctionGeneral Function;
-  vtkm::filter::Contour ContourFilter;
 };
 
 }

@@ -186,20 +186,23 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
   return output;
 }
 
+
+// TODO: turn MapFieldOntoOutput into a static function (for real implementation) and
+//  a virtual function for extension by sub-class.
+// MapFieldOntoOutput() { Contour::static_function(); }
+
 VTKM_CONT bool Contour::MapFieldOntoOutput(vtkm::cont::DataSet& result,
                                            const vtkm::cont::Field& field)
 {
   if (field.IsFieldPoint())
   {
-    // If the field is a point field, then we need to do a custom interpolation of the points.
-    // In this case, we need to call the superclass's MapFieldOntoOutput, which will in turn
-    // call our DoMapField.
-    //      return this->FilterDataSetWithField::MapFieldOntoOutput(result, field);
     auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
 
     auto functor = [&, this](auto concrete) {
-      auto fieldArray = this->Worklet->template ProcessPointField(concrete);
-      result.template AddPointField(field.GetName(), fieldArray);
+      // TODO: once Worklet is not a data member by a local variable, we don't need
+      // `this`. This function can be made static.
+      auto fieldArray = this->Worklet->ProcessPointField(concrete);
+      result.AddPointField(field.GetName(), fieldArray);
     };
     array.CastAndCallWithFloatFallback(functor);
     return true;

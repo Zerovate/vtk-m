@@ -307,27 +307,14 @@ public:
   }
   //@}
 
+  // TODO: can we make this private?
   VTKM_CONT virtual vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) = 0;
-
-  // TODO: make it private/protected?
-  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input)
-  {
-    return this->DoExecute(input);
-  }
 
   //@{
   /// Executes the filter on the input and produces a result dataset.
   ///
   /// On success, this the dataset produced. On error, vtkm::cont::ErrorExecution will be thrown.
   VTKM_CONT virtual vtkm::cont::DataSet Execute(const vtkm::cont::DataSet& input);
-#if 0
-  template <typename DerivedPolicy>
-  VTKM_DEPRECATED(1.6,
-                  "Filter::Execute no longer guarantees policy modifications. "
-                  "Specify default types in CMake configuration instead.")
-  VTKM_CONT vtkm::cont::DataSet
-    Execute(const vtkm::cont::DataSet& input, vtkm::filter::PolicyBase<DerivedPolicy> policy);
-#endif
   //@}
 
   //@{
@@ -336,15 +323,6 @@ public:
   /// On success, this the dataset produced. On error, vtkm::cont::ErrorExecution will be thrown.
   VTKM_CONT virtual vtkm::cont::PartitionedDataSet Execute(
     const vtkm::cont::PartitionedDataSet& input);
-
-#if 0
-  template <typename DerivedPolicy>
-  VTKM_DEPRECATED(1.6,
-                  "Filter::Execute no longer guarantees policy modifications. "
-                  "Specify default types in CMake configuration instead.")
-  VTKM_CONT vtkm::cont::PartitionedDataSet Execute(const vtkm::cont::PartitionedDataSet& input,
-                                                   vtkm::filter::PolicyBase<DerivedPolicy> policy);
-#endif
   //@}
 
   // FIXME: Is this actually materialize? Are there different kinds of Invoker?
@@ -356,15 +334,15 @@ public:
   VTKM_CONT
   virtual vtkm::Id DetermineNumberOfThreads(const vtkm::cont::PartitionedDataSet& input);
 
-  // TODO: make it protected?
-  VTKM_CONT virtual bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                            const vtkm::cont::Field& field);
-
 protected:
   vtkm::cont::Invoker Invoke;
   vtkm::Id CoordinateSystemIndex;
 
   vtkm::filter::Filter& operator=(const vtkm::filter::Filter&) = default;
+
+  // TODO: make it protected? To be removed.
+  VTKM_CONT virtual bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
+                                            const vtkm::cont::Field& field);
 
   VTKM_CONT void CallMapFieldOntoOutput(const vtkm::cont::DataSet& input,
                                         vtkm::cont::DataSet& output);

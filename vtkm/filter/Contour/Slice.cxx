@@ -8,9 +8,6 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#ifndef vtk_m_filter_Slice_cxx
-#define vtk_m_filter_Slice_cxx
-
 #include <vtkm/cont/ArrayHandleTransform.h>
 #include <vtkm/filter/Contour/Slice.h>
 
@@ -34,9 +31,11 @@ vtkm::cont::DataSet Slice::DoExecute(const vtkm::cont::DataSet& input)
   vtkm::cont::DataSet clone = input;
   clone.AddField(field);
 
-  this->ContourFilter.SetIsoValue(0.0);
-  this->ContourFilter.SetActiveField("sliceScalars");
-  result = this->ContourFilter.DoExecute(clone);
+  // TODO: these two lines prevent DoExecute() from being const. Can we make
+  // Contour a local variable? How about MapField?
+  this->Contour::SetIsoValue(0.0);
+  this->Contour::SetActiveField("sliceScalars");
+  result = this->Contour::DoExecute(clone);
 
   CallMapFieldOntoOutput(input, result);
 
@@ -45,5 +44,3 @@ vtkm::cont::DataSet Slice::DoExecute(const vtkm::cont::DataSet& input)
 
 }
 } // vtkm::filter
-
-#endif // vtk_m_filter_Slice_cxx
