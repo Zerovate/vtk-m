@@ -302,8 +302,8 @@ public:
     // not where the rays might intersect data like
     // the perspective ray gen
     //
-    int i = vtkm::Int32(idx) % SubsetWidth;
-    int j = vtkm::Int32(idx) / SubsetWidth;
+    vtkm::Int32 i = static_cast<vtkm::Int32>(idx % this->SubsetWidth);
+    vtkm::Int32 j = static_cast<vtkm::Int32>(idx / this->SubsetWidth);
 
     vtkm::Vec3f_32 pos;
     pos[0] = vtkm::Float32(i);
@@ -381,13 +381,13 @@ public:
                             Precision& rayDirZ,
                             vtkm::Id& pixelIndex) const
   {
-    vtkm::Vec<Precision, 3> ray_dir(rayDirX, rayDirY, rayDirZ);
-    int i = vtkm::Int32(idx) % SubsetWidth;
-    int j = vtkm::Int32(idx) / SubsetWidth;
+    vtkm::Int32 i = static_cast<vtkm::Int32>(idx % this->SubsetWidth);
+    vtkm::Int32 j = static_cast<vtkm::Int32>(idx / this->SubsetWidth);
     i += Minx;
     j += Miny;
     // Write out the global pixelId
     pixelIndex = static_cast<vtkm::Id>(j * w + i);
+    vtkm::Vec<Precision, 3> ray_dir;
     ray_dir = nlook + delta_x * ((2.f * Precision(i) - Precision(w)) / 2.0f) +
       delta_y * ((2.f * Precision(j) - Precision(h)) / 2.0f);
     // avoid some numerical issues
