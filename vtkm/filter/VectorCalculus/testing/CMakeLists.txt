@@ -9,7 +9,10 @@
 ##============================================================================
 
 set(unit_tests
-  UnitTestDotProductFilter.cxx)
+  UnitTestDotProductFilter.cxx
+  UnitTestGradientExplicit.cxx
+  UnitTestGradientUniform.cxx
+)
 
 set(libraries
   vtkm_filter_vectorcalculus)

@@ -30,8 +30,6 @@ set(unit_tests
 #  UnitTestFieldMetadata.cxx
 #  UnitTestFieldSelection.cxx
 #  UnitTestFieldToColors.cxx
-#  UnitTestGradientExplicit.cxx
-#  UnitTestGradientUniform.cxx
 #  UnitTestGhostCellClassify.cxx
 #  UnitTestGhostCellRemove.cxx
 #  UnitTestImageConnectivityFilter.cxx

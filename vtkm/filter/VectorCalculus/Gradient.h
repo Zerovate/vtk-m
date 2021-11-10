@@ -11,12 +11,8 @@
 #ifndef vtk_m_filter_Gradient_h
 #define vtk_m_filter_Gradient_h
 
-#include <vtkm/filter/vtkm_filter_gradient_export.h>
-
 #include <vtkm/filter/FilterField.h>
-#include <vtkm/filter/Instantiations.h>
-
-#include <vtkm/cont/ArrayHandleSOA.h>
+#include <vtkm/filter/VectorCalculus/vtkm_filter_vectorcalculus_export.h>
 
 namespace vtkm
 {
@@ -32,7 +28,7 @@ namespace filter
 ///
 /// Note: If no explicit name for the output field is provided the filter will
 /// default to "Gradients"
-class VTKM_FILTER_GRADIENT_EXPORT Gradient : public vtkm::filter::FilterField<Gradient>
+class VTKM_FILTER_VECTORCALCULUS_EXPORT Gradient : public vtkm::filter::FilterField
 {
 public:
   using SupportedTypes = vtkm::List<vtkm::Float32, vtkm::Float64, vtkm::Vec3f_32, vtkm::Vec3f_64>;
@@ -92,35 +88,7 @@ public:
   void SetQCriterionName(const std::string& name) { this->QCriterionName = name; }
   const std::string& GetQCriterionName() const { return this->QCriterionName; }
 
-  template <typename T, typename StorageType, typename DerivedPolicy>
-  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input,
-                                const vtkm::cont::ArrayHandle<T, StorageType>& field,
-                                const vtkm::filter::FieldMetadata& fieldMeta,
-                                vtkm::filter::PolicyBase<DerivedPolicy> policy);
-  VTKM_CONT
-  Filter* Clone() const override
-  {
-    Gradient* clone = new Gradient();
-    clone->CopyStateFrom(this);
-    return clone;
-  }
-
-  VTKM_CONT
-  bool CanThread() const override { return true; }
-
-protected:
-  VTKM_CONT
-  void CopyStateFrom(const Gradient* gradient)
-  {
-    this->FilterField<Gradient>::CopyStateFrom(gradient);
-
-    this->ComputePointGradient = gradient->ComputePointGradient;
-    this->ComputeDivergence = gradient->ComputeDivergence;
-    this->ComputeVorticity = gradient->ComputeVorticity;
-    this->ComputeQCriterion = gradient->ComputeQCriterion;
-    this->StoreGradient = gradient->StoreGradient;
-    this->RowOrdering = gradient->RowOrdering;
-  }
+  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input);
 
 private:
   bool ComputePointGradient = false;
@@ -136,6 +104,7 @@ private:
   std::string VorticityName = "Vorticity";
 };
 
+#if 0
 #ifndef vtkm_filter_Gradient_cxx
 
 VTKM_INSTANTIATION_BEGIN
@@ -239,7 +208,10 @@ extern template VTKM_FILTER_GRADIENT_TEMPLATE_EXPORT vtkm::cont::DataSet Gradien
 VTKM_INSTANTIATION_END
 
 #endif //vtkm_filter_Gradient_cxx
+#endif
+
 }
 } // namespace vtkm::filter
+
 
 #endif // vtk_m_filter_Gradient_h

@@ -30,9 +30,7 @@ set(headers
   ExtractPoints.h
   ExtractStructured.h
   FieldEntropy.h
-  ../filter/DensityEstimate/worklet/FieldHistogram.h
   FieldStatistics.h
-  Gradient.h
   KdTree3D.h            # Deprecated
   KernelSplatter.h
   Keys.h
@@ -124,7 +122,6 @@ add_subdirectory(contourtree)
 add_subdirectory(contourtree_augmented)
 add_subdirectory(contourtree_distributed)
 add_subdirectory(cosmotools)
-add_subdirectory(gradient)
 add_subdirectory(histogram)
 add_subdirectory(lcs)
 add_subdirectory(mir)

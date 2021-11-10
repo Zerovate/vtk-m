@@ -8,10 +8,10 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/filter/Gradient.h>
-
+#include <vtkm/cont/ErrorFilterExecution.h>
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
+#include <vtkm/filter/VectorCalculus/Gradient.h>
 
 namespace
 {

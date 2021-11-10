@@ -8,9 +8,14 @@
 ##  PURPOSE.  See the above copyright notice for more information.
 ##============================================================================
 set(vectorcalculus_headers
-  DotProduct.h)
+  DotProduct.h
+  Gradient.h
+)
+
 set(vectorcalculus_sources_device
-  DotProduct.cxx)
+  DotProduct.cxx
+  Gradient.cxx
+)
 
 vtkm_library(
   NAME vtkm_filter_vectorcalculus

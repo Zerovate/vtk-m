@@ -15,7 +15,7 @@
 #include <vtkm/cont/openmp/DeviceAdapterOpenMP.h>
 #include <vtkm/cont/tbb/DeviceAdapterTBB.h>
 
-#include <vtkm/filter/Gradient.h>
+#include <vtkm/filter/VectorCalculus/Gradient.h>
 
 
 namespace

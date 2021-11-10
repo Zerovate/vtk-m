@@ -177,19 +177,6 @@ set(extra_header_template_sources
 #  particleadvection/ParticleMessenger.cxx
 #)
 
-
-#set(gradient_headers
-#  Gradient.h
-#  )
-
-#set(gradient_header_template_sources
-#  Gradient.hxx
-#  )
-
-#set(gradient_sources_device
-#  ${GradientInstantiations}
-#  )
-
 vtkm_pyexpander_generated_file(ClipWithFieldExternInstantiations.h)
 vtkm_pyexpander_generated_file(ClipWithImplicitFunctionExternInstantiations.h)
 
@@ -210,15 +197,6 @@ vtkm_library(
 #  TEMPLATE_SOURCES ${extra_header_template_sources}
 #  HEADERS ${extra_headers}
 #  DEVICE_SOURCES ${extra_sources_device}
-#  USE_VTKM_JOB_POOL
-#  )
-
-
-#vtkm_library(
-#  NAME vtkm_filter_gradient
-#  TEMPLATE_SOURCES ${gradient_header_template_sources}
-#  HEADERS ${gradient_headers}
-#  DEVICE_SOURCES ${gradient_sources_device}
 #  USE_VTKM_JOB_POOL
 #  )
 

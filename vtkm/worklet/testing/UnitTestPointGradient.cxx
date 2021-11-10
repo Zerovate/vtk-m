@@ -8,8 +8,8 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
+#include <vtkm/filter/VectorCalculus/worklet/Gradient.h>
 #include <vtkm/worklet/DispatcherMapTopology.h>
-#include <vtkm/worklet/Gradient.h>
 
 #include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
