@@ -10,15 +10,13 @@
 
 #include <vtkm/Math.h>
 #include <vtkm/cont/DataSet.h>
-#include <vtkm/cont/testing/MakeTestDataSet.h>
 #include <vtkm/cont/testing/Testing.h>
 
 #include <vtkm/filter/CleanGrid/CleanGrid.h>
-#include <vtkm/filter/ClipWithField.h>
+#include <vtkm/filter/Contour/ClipWithField.h>
 #include <vtkm/filter/Contour/Contour.h>
 #include <vtkm/filter/VectorCalculus/Gradient.h>
 
-#include <vtkm/io/VTKDataSetReader.h>
 #include <vtkm/source/Tangle.h>
 
 namespace

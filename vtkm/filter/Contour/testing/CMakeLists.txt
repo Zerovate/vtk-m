@@ -8,6 +8,7 @@
 ##  PURPOSE.  See the above copyright notice for more information.
 ##============================================================================
 set(unit_tests
+  UnitTestClipWithFieldFilter.cxx
   UnitTestContourFilter.cxx
   UnitTestContourFilterNormals.cxx
 )

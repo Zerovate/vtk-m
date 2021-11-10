@@ -14,8 +14,8 @@
 #ifndef vtk_m_filter_ClipWithFieldExternInstantiations_h
 #define vtk_m_filter_ClipWithFieldExternInstantiations_h
 
-#include <vtkm/filter/ClipWithField.h>
-#include <vtkm/filter/ClipWithField.hxx>
+#include <vtkm/filter/Contour/ClipWithField.h>
+#include <vtkm/filter/Contour/ClipWithField.cxx>
 #include <vtkm/filter/Instantiations.h>
 
 #include <vtkm/cont/ArrayHandlePermutation.h>

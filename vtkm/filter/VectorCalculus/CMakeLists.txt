@@ -32,7 +32,7 @@ set_property(TARGET
 target_link_libraries(vtkm_filter_vectorcalculus PUBLIC vtkm_worklet vtkm_filter_common)
 target_link_libraries(vtkm_filter PUBLIC INTERFACE vtkm_filter_vectorcalculus)
 
-#add_subdirectory(worklet)
+add_subdirectory(worklet)
 
 #-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -
 if (VTKm_ENABLE_TESTING)

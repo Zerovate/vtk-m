@@ -11,6 +11,7 @@
 #vtkm_add_instantiations(ContourInstantiations FILTER Contour)
 
 set(contour_headers
+  ClipWithField.h
   Contour.h
 #        ContourTreeUniformAugmented.h
 #        ContourTreeUniformDistributed.h
@@ -25,6 +26,7 @@ set(contour_header_template_sources
 )
 
 set(contour_sources_device
+  ClipWithField.cxx
   Contour.cxx
 #  ${ContourInstantiations}
   Slice.cxx

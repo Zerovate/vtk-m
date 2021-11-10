@@ -10,15 +10,15 @@
 
 #vtkm_add_instantiations(GradientInstantiations FILTER Gradient)
 
-vtkm_add_instantiations(ClipWithFieldInstantiations
-  FILTER ClipWithField
-  INSTANTIATIONS_FILE ClipWithFieldExternInstantiations.h
-  )
-
-vtkm_add_instantiations(ClipWithImplicitFunctionInstantiations
-  FILTER ClipWithImplicitFunction
-  INSTANTIATIONS_FILE ClipWithImplicitFunctionExternInstantiations.h
-  )
+#vtkm_add_instantiations(ClipWithFieldInstantiations
+#  FILTER ClipWithField
+#  INSTANTIATIONS_FILE ClipWithFieldExternInstantiations.h
+#  )
+#
+#vtkm_add_instantiations(ClipWithImplicitFunctionInstantiations
+#  FILTER ClipWithImplicitFunction
+#  INSTANTIATIONS_FILE ClipWithImplicitFunctionExternInstantiations.h
+#  )
 
 set(common_headers
   CellAverage.h
@@ -71,7 +71,6 @@ set(common_sources_device
 
 set(extra_headers
   CellSetConnectivity.h
-  ClipWithField.h
   ClipWithImplicitFunction.h
   ComputeMoments.h
   CoordinateSystemTransform.h
@@ -122,7 +121,6 @@ set(extra_headers
 
 set(extra_header_template_sources
   CellSetConnectivity.hxx
-  ClipWithField.hxx
   ClipWithImplicitFunction.hxx
   ClipWithFieldExternInstantiations.h
   ClipWithImplicitFunctionExternInstantiations.h
@@ -177,8 +175,8 @@ set(extra_header_template_sources
 #  particleadvection/ParticleMessenger.cxx
 #)
 
-vtkm_pyexpander_generated_file(ClipWithFieldExternInstantiations.h)
-vtkm_pyexpander_generated_file(ClipWithImplicitFunctionExternInstantiations.h)
+#vtkm_pyexpander_generated_file(ClipWithFieldExternInstantiations.h)
+#vtkm_pyexpander_generated_file(ClipWithImplicitFunctionExternInstantiations.h)
 
 set_source_files_properties(ExtractStructured.cxx PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 

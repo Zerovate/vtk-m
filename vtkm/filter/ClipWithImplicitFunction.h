@@ -13,9 +13,9 @@
 #include <vtkm/filter/vtkm_filter_extra_export.h>
 
 #include <vtkm/ImplicitFunction.h>
+#include <vtkm/filter/Contour/worklet/Clip.h>
 #include <vtkm/filter/FilterDataSet.h>
 #include <vtkm/filter/MapFieldPermutation.h>
-#include <vtkm/worklet/Clip.h>
 
 namespace vtkm
 {

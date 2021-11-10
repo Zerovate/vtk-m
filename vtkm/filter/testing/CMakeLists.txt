@@ -16,7 +16,6 @@ set(unit_tests
 #  UnitTestCellAverageFilter.cxx
 #  UnitTestCellMeasuresFilter.cxx
 #  UnitTestCellSetConnectivityFilter.cxx
-#  UnitTestClipWithFieldFilter.cxx
 #  UnitTestClipWithImplicitFunctionFilter.cxx
 #  UnitTestContourTreeUniformFilter.cxx
 #  UnitTestContourTreeUniformAugmentedFilter.cxx
@@ -115,12 +114,12 @@ if ((TARGET vtkm::cuda) OR (TARGET vtkm::kokkos_cuda))
     )
 endif()
 
-#vtkm_unit_tests(
-#  SOURCES ${unit_tests}
-#  LIBRARIES ${libraries}
-#  ALL_BACKENDS
-#  USE_VTKM_JOB_POOL
-#  )
+vtkm_unit_tests(
+  SOURCES ${unit_tests}
+  LIBRARIES ${libraries}
+  ALL_BACKENDS
+  USE_VTKM_JOB_POOL
+  )
 
 #add distributed tests i.e.test to run with MPI
 #if MPI is enabled.

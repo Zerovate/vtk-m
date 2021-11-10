@@ -9,24 +9,9 @@
 ##============================================================================
 
 set(headers
-  Clip.h
-  CommonState.h
-  FieldPropagation.h
-  FlyingEdges.h
-  FlyingEdgesHelpers.h
-  FlyingEdgesPass1.h
-  FlyingEdgesPass2.h
-  FlyingEdgesPass4.h
-  FlyingEdgesPass4Common.h
-  FlyingEdgesPass4X.h
-  FlyingEdgesPass4XWithNormals.h
-  FlyingEdgesPass4Y.h
-  FlyingEdgesTables.h
-  MarchingCellTables.h
-  MarchingCells.h
+  Gradient.h
   )
 
-add_subdirectory(clip)
+add_subdirectory(gradient)
 
-#-----------------------------------------------------------------------------
 vtkm_declare_headers(${headers})

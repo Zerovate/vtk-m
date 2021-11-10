@@ -12,7 +12,7 @@
 #include <vtkm/io/VTKDataSetReader.h>
 #include <vtkm/io/VTKDataSetWriter.h>
 
-#include <vtkm/filter/ClipWithField.h>
+#include <vtkm/filter/Contour/ClipWithField.h>
 
 #include <cstdlib>
 #include <iostream>

@@ -184,7 +184,7 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
   }
 
   // TODO: do we want to explicit pass the "output" DataSet or just through lambda capture?
-  auto mapper = [&, this](auto& result, const auto& f) { DoMapField(result, f, Worklet); };
+  auto mapper = [&](auto& result, const auto& f) { DoMapField(result, f, Worklet); };
   MapFieldsOntoOutput(inDataSet, output, mapper);
 
   return output;
