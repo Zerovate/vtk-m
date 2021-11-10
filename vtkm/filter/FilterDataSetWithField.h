@@ -35,9 +35,6 @@ protected:
   vtkm::filter::FilterDataSetWithField& operator=(const vtkm::filter::FilterDataSetWithField&) =
     default;
 
-  VTKM_CONT
-  void CopyStateFrom(const FilterDataSetWithField* filter) { *this = *filter; }
-
 private:
   friend class vtkm::filter::Filter;
 };

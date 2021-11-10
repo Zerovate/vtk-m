@@ -27,18 +27,14 @@ namespace
 {
 void RunFilter(Filter* self, vtkm::filter::DataSetQueue& input, vtkm::filter::DataSetQueue& output)
 {
-  auto filterClone = self->Clone();
-  VTKM_ASSERT(filterClone != nullptr);
-
   std::pair<vtkm::Id, vtkm::cont::DataSet> task;
   while (input.GetTask(task))
   {
-    auto outDS = filterClone->DoExecute(task.second);
+    auto outDS = self->DoExecute(task.second);
     output.Push(std::make_pair(task.first, std::move(outDS)));
   }
 
   vtkm::cont::Algorithm::Synchronize();
-  delete filterClone;
 }
 
 vtkm::cont::PartitionedDataSet CallDoExecute(Filter* self,
@@ -153,29 +149,6 @@ vtkm::Id Filter::DetermineNumberOfThreads(const vtkm::cont::PartitionedDataSet& 
 
   vtkm::Id numThreads = std::min<vtkm::Id>(numDS, availThreads);
   return numThreads;
-}
-
-// TODO: should we turn it back to a standalone function?
-//--------------------------------------------------------------------------------
-void Filter::CallMapFieldOntoOutput(const vtkm::cont::DataSet& input, vtkm::cont::DataSet& output)
-{
-  for (vtkm::IdComponent cc = 0; cc < input.GetNumberOfFields(); ++cc)
-  {
-    auto field = input.GetField(cc);
-    if (this->GetFieldsToPass().IsFieldSelected(field))
-    {
-      this->MapFieldOntoOutput(output, field);
-    }
-  }
-}
-
-// FIXME: void return type?
-bool Filter::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
-{
-  // The default operation of mapping a field from input to output is to
-  // just add the filed.
-  result.AddField(field);
-  return true;
 }
 
 } // namespace filter

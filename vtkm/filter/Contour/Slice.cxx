@@ -37,8 +37,6 @@ vtkm::cont::DataSet Slice::DoExecute(const vtkm::cont::DataSet& input)
   this->Contour::SetActiveField("sliceScalars");
   result = this->Contour::DoExecute(clone);
 
-  CallMapFieldOntoOutput(input, result);
-
   return result;
 }
 

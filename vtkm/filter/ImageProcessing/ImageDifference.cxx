@@ -151,7 +151,7 @@ VTKM_CONT vtkm::cont::DataSet ImageDifference::DoExecute(const vtkm::cont::DataS
   VTKM_ASSERT(
     clone.HasField(this->GetThresholdFieldName(), vtkm::cont::Field::Association::POINTS));
 
-  CallMapFieldOntoOutput(input, clone);
+  MapFieldsOntoOutput(input, clone);
 
   return clone;
 }

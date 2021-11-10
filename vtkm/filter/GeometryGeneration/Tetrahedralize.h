@@ -34,11 +34,11 @@ public:
 
   VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
-  // Map new field onto the resulting dataset after running the filter
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field);
-
 private:
-  std::unique_ptr<vtkm::worklet::Tetrahedralize> Worklet;
+  // Map new field onto the resulting dataset after running the filter
+  VTKM_CONT static bool DoMapField(vtkm::cont::DataSet& result,
+                                   const vtkm::cont::Field& field,
+                                   vtkm::worklet::Tetrahedralize& worklet);
 };
 }
 } // namespace vtkm::filter

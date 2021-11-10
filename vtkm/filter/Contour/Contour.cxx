@@ -48,7 +48,6 @@ Contour::Contour()
   , ComputeFastNormalsForUnstructured(true)
   , NormalArrayName("normals")
   , InterpolationEdgeIdsArrayName("edgeIds")
-  , Worklet(std::make_unique<vtkm::worklet::Contour>())
 {
 }
 
@@ -56,18 +55,21 @@ Contour::~Contour() = default;
 
 void Contour::SetMergeDuplicatePoints(bool on)
 {
-  this->Worklet->SetMergeDuplicatePoints(on);
+  this->MergeDuplicatedPoints = on;
 }
 
 VTKM_CONT
 bool Contour::GetMergeDuplicatePoints() const
 {
-  return this->Worklet->GetMergeDuplicatePoints();
+  return MergeDuplicatedPoints;
 }
 
 //-----------------------------------------------------------------------------
 vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
 {
+  vtkm::worklet::Contour Worklet;
+  Worklet.SetMergeDuplicatePoints(this->GetMergeDuplicatePoints());
+
   // ApplyPolicyFeildActive turns the UnknownArrayHandle to UncerntainArrayHandle with
   // certain ValueType and Stroage based on PolicyDefault and Filter::Supported type. We
   // could just do it ourselves but here we are demonstrating what the "helper" function
@@ -127,20 +129,20 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
 
     if (this->GenerateNormals && generateHighQualityNormals)
     {
-      outputCells = this->Worklet->Run(ivalues,
-                                       vtkm::filter::ApplyPolicyCellSet(cells, policy, *this),
-                                       coords.GetData(),
-                                       concrete,
-                                       vertices,
-                                       normals);
+      outputCells = Worklet.Run(ivalues,
+                                vtkm::filter::ApplyPolicyCellSet(cells, policy, *this),
+                                coords.GetData(),
+                                concrete,
+                                vertices,
+                                normals);
     }
     else
     {
-      outputCells = this->Worklet->Run(ivalues,
-                                       vtkm::filter::ApplyPolicyCellSet(cells, policy, *this),
-                                       coords.GetData(),
-                                       concrete,
-                                       vertices);
+      outputCells = Worklet.Run(ivalues,
+                                vtkm::filter::ApplyPolicyCellSet(cells, policy, *this),
+                                coords.GetData(),
+                                concrete,
+                                vertices);
     }
   };
 
@@ -165,7 +167,7 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
   {
     vtkm::cont::Field interpolationEdgeIdsField(InterpolationEdgeIdsArrayName,
                                                 vtkm::cont::Field::Association::POINTS,
-                                                this->Worklet->GetInterpolationEdgeIds());
+                                                Worklet.GetInterpolationEdgeIds());
     output.AddField(interpolationEdgeIdsField);
   }
 
@@ -178,30 +180,26 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
 
   if (!hasCellFields)
   {
-    this->Worklet->ReleaseCellMapArrays();
+    Worklet.ReleaseCellMapArrays();
   }
 
-  CallMapFieldOntoOutput(inDataSet, output);
+  // TODO: do we want to explicit pass the "output" DataSet or just through lambda capture?
+  auto mapper = [&, this](auto& result, const auto& f) { DoMapField(result, f, Worklet); };
+  MapFieldsOntoOutput(inDataSet, output, mapper);
 
   return output;
 }
 
-
-// TODO: turn MapFieldOntoOutput into a static function (for real implementation) and
-//  a virtual function for extension by sub-class.
-// MapFieldOntoOutput() { Contour::static_function(); }
-
-VTKM_CONT bool Contour::MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                           const vtkm::cont::Field& field)
+VTKM_CONT bool Contour::DoMapField(vtkm::cont::DataSet& result,
+                                   const vtkm::cont::Field& field,
+                                   vtkm::worklet::Contour& Worklet)
 {
   if (field.IsFieldPoint())
   {
     auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
 
-    auto functor = [&, this](auto concrete) {
-      // TODO: once Worklet is not a data member by a local variable, we don't need
-      // `this`. This function can be made static.
-      auto fieldArray = this->Worklet->ProcessPointField(concrete);
+    auto functor = [&](auto concrete) {
+      auto fieldArray = Worklet.ProcessPointField(concrete);
       result.AddPointField(field.GetName(), fieldArray);
     };
     array.CastAndCallWithFloatFallback(functor);
@@ -210,7 +208,7 @@ VTKM_CONT bool Contour::MapFieldOntoOutput(vtkm::cont::DataSet& result,
   else if (field.IsFieldCell())
   {
     // Use the precompiled field permutation function.
-    vtkm::cont::ArrayHandle<vtkm::Id> permutation = this->Worklet->GetCellIdMap();
+    vtkm::cont::ArrayHandle<vtkm::Id> permutation = Worklet.GetCellIdMap();
     return vtkm::filter::MapFieldPermutation(field, permutation, result);
   }
   else if (field.IsFieldGlobal())

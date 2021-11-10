@@ -198,7 +198,7 @@ inline VTKM_CONT bool ThresholdPoints::MapFieldOntoOutput(
   {
     if (this->CompactPoints)
     {
-      return this->Compactor.MapFieldOntoOutput(result, field, policy);
+      return this->Compactor.DoMapField(result, field, policy);
     }
     else
     {

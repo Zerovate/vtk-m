@@ -155,15 +155,15 @@ namespace filter
 /// given full control over the execution, including any mapping of fields to
 /// output (described in next sub-section).
 ///
-/// \subsection FilterMapFieldOntoOutput MapFieldOntoOutput
+/// \subsection FilterMapFieldOntoOutput DoMapField
 ///
-/// Subclasses may provide `MapFieldOntoOutput` method with the following
+/// Subclasses may provide `DoMapField` method with the following
 /// signature:
 ///
 /// \code{cpp}
 ///
 /// template <typename DerivedPolicy>
-/// VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
+/// VTKM_CONT bool DoMapField(vtkm::cont::DataSet& result,
 ///                                   const vtkm::cont::Field& field,
 ///                                   const vtkm::filter::PolicyBase<DerivedPolicy>& policy);
 ///
@@ -183,7 +183,7 @@ public:
   virtual ~Filter();
 
   VTKM_CONT
-  virtual bool CanThread() const { return false; }
+  virtual bool CanThread() const { return true; }
 
   VTKM_CONT
   bool GetRunMultiThreadedFilter() const
@@ -202,12 +202,6 @@ public:
         "Multi threaded filter not supported for " + std::string(typeid(*this).name());
       VTKM_LOG_S(vtkm::cont::LogLevel::Info, msg);
     }
-  }
-
-  VTKM_CONT
-  virtual Filter* Clone() const
-  {
-    throw vtkm::cont::ErrorExecution("You must implement Clone in the derived class.");
   }
 
   /// \brief Specify which subset of types a filter supports.
@@ -340,15 +334,30 @@ protected:
 
   vtkm::filter::Filter& operator=(const vtkm::filter::Filter&) = default;
 
-  // TODO: make it protected? To be removed.
-  VTKM_CONT virtual bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                            const vtkm::cont::Field& field);
+  static void defaultMapper(vtkm::cont::DataSet& output, const vtkm::cont::Field& field)
+  {
+    output.AddField(field);
+  };
 
-  VTKM_CONT void CallMapFieldOntoOutput(const vtkm::cont::DataSet& input,
-                                        vtkm::cont::DataSet& output);
+  template <typename Mapper>
+  VTKM_CONT void MapFieldsOntoOutput(const vtkm::cont::DataSet& input,
+                                     vtkm::cont::DataSet& output,
+                                     Mapper&& mapper)
+  {
+    for (vtkm::IdComponent cc = 0; cc < input.GetNumberOfFields(); ++cc)
+    {
+      auto field = input.GetField(cc);
+      if (this->GetFieldsToPass().IsFieldSelected(field))
+      {
+        mapper(output, field);
+      }
+    }
+  }
 
-  VTKM_CONT
-  void CopyStateFrom(const Filter* filter) { *this = *filter; }
+  VTKM_CONT void MapFieldsOntoOutput(const vtkm::cont::DataSet& input, vtkm::cont::DataSet& output)
+  {
+    MapFieldsOntoOutput(input, output, defaultMapper);
+  }
 
 private:
   vtkm::filter::FieldSelection FieldsToPass;

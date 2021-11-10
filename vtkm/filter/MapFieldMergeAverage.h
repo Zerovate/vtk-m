@@ -31,7 +31,7 @@ namespace filter
 /// should be merged together. A group of elements merged together will be averaged. The result is
 /// placed in `outputField`.
 ///
-/// The intention of this method is to implement the `MapFieldOntoOutput` methods in filters (many
+/// The intention of this method is to implement the `DoMapField` methods in filters (many
 /// of which require this merge of a field), but can be used in other places as well.
 ///
 /// `outputField` is set to have the same metadata as the input. If the metadata needs to change
@@ -52,7 +52,7 @@ VTKM_FILTER_COMMON_EXPORT VTKM_CONT bool MapFieldMergeAverage(
 /// with groups of entities merged together. The input `keys` object encapsulates which elements
 /// should be merged together. A group of elements merged together will be averaged.
 ///
-/// The intention of this method is to implement the `MapFieldOntoOutput` methods in filters (many
+/// The intention of this method is to implement the `DoMapField` methods in filters (many
 /// of which require this merge of a field), but can be used in other places as well. The
 /// resulting field is put in the given `DataSet`.
 ///

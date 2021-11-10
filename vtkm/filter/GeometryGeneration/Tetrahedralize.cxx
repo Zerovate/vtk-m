@@ -32,23 +32,21 @@ namespace filter
 {
 
 //-----------------------------------------------------------------------------
-VTKM_CONT Tetrahedralize::Tetrahedralize()
-  : Worklet(std::make_unique<vtkm::worklet::Tetrahedralize>())
-{
-}
+VTKM_CONT Tetrahedralize::Tetrahedralize() {}
 
 VTKM_CONT Tetrahedralize::~Tetrahedralize() = default;
 
 //-----------------------------------------------------------------------------
 VTKM_CONT vtkm::cont::DataSet Tetrahedralize::DoExecute(const vtkm::cont::DataSet& input)
 {
+  vtkm::worklet::Tetrahedralize Worklet;
   const vtkm::cont::DynamicCellSet& cells = input.GetCellSet();
 
   vtkm::cont::CellSetSingleType<> outCellSet;
   vtkm::cont::CastAndCall(
     vtkm::filter::ApplyPolicyCellSet(cells, vtkm::filter::PolicyDefault{}, *this),
     DeduceCellSet{},
-    *(this->Worklet),
+    Worklet,
     outCellSet);
 
   // create the output dataset
@@ -56,13 +54,15 @@ VTKM_CONT vtkm::cont::DataSet Tetrahedralize::DoExecute(const vtkm::cont::DataSe
   output.SetCellSet(outCellSet);
   output.AddCoordinateSystem(input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex()));
 
-  CallMapFieldOntoOutput(input, output);
+  auto mapper = [&, this](auto& result, const auto& f) { DoMapField(result, f, Worklet); };
+  MapFieldsOntoOutput(input, output, mapper);
 
   return output;
 }
 
-VTKM_CONT bool Tetrahedralize::MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                                  const vtkm::cont::Field& field)
+VTKM_CONT bool Tetrahedralize::DoMapField(vtkm::cont::DataSet& result,
+                                          const vtkm::cont::Field& field,
+                                          vtkm::worklet::Tetrahedralize& worklet)
 {
   if (field.IsFieldPoint())
   {
@@ -74,7 +74,7 @@ VTKM_CONT bool Tetrahedralize::MapFieldOntoOutput(vtkm::cont::DataSet& result,
   {
     // cell data must be scattered to the cells created per input cell
     vtkm::cont::ArrayHandle<vtkm::Id> permutation =
-      this->Worklet->GetOutCellScatter().GetOutputToInputMap();
+      worklet.GetOutCellScatter().GetOutputToInputMap();
     return vtkm::filter::MapFieldPermutation(field, permutation, result);
   }
   else if (field.IsFieldGlobal())

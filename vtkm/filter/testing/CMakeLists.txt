@@ -45,7 +45,7 @@ set(unit_tests
 #  UnitTestMaskPointsFilter.cxx
 #  UnitTestMeshQualityFilter.cxx
 #  UnitTestMIRFilter.cxx
-#  UnitTestMultiBlockFilter.cxx
+  UnitTestMultiBlockFilter.cxx
 #  UnitTestNDEntropyFilter.cxx
 #  UnitTestNDHistogramFilter.cxx
 #  UnitTestParticleDensity.cxx

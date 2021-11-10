@@ -81,8 +81,6 @@ public:
 
 protected:
   vtkm::filter::FilterField& operator=(const vtkm::filter::FilterField&) = default;
-  VTKM_CONT
-  void CopyStateFrom(const FilterField* filter) { *this = *filter; }
 
 private:
   std::string OutputFieldName;

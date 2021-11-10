@@ -62,16 +62,7 @@ vtkm::cont::DataSet ExternalFaces::GenerateOutput(const vtkm::cont::DataSet& inp
   output.SetCellSet(outCellSet);
   output.AddCoordinateSystem(input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex()));
 
-  if (this->CompactPoints)
-  {
-    this->Compactor.SetCompactPointFields(true);
-    this->Compactor.SetMergePoints(false);
-    return this->Compactor.Execute(output);
-  }
-  else
-  {
-    return output;
-  }
+  return output;
 }
 
 //-----------------------------------------------------------------------------
@@ -97,26 +88,35 @@ vtkm::cont::DataSet ExternalFaces::DoExecute(const vtkm::cont::DataSet& input)
       outCellSet);
   }
 
+  // New Design: we generate new output and map the fields first.
   auto output = this->GenerateOutput(input, outCellSet);
+  auto mapper = [&, this](auto& result, const auto& f) {
+    // New Design: We are still using the old MapFieldOntoOutput to demonstrate the transition
+    this->MapFieldOntoOutput(result, f);
+  };
 
-  CallMapFieldOntoOutput(input, output);
+  MapFieldsOntoOutput(input, output, mapper);
 
-  return output;
+  // New Design: then we remove entities if requested.
+  if (this->CompactPoints)
+  {
+    this->Compactor.SetCompactPointFields(true);
+    this->Compactor.SetMergePoints(false);
+    return this->Compactor.Execute(output);
+  }
+  else
+  {
+    return output;
+  }
 }
 
+// TODO: Can we make this something like "trivialMapper" for FilterDataSet?
 bool ExternalFaces::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
 {
   if (field.IsFieldPoint())
   {
-    if (this->CompactPoints)
-    {
-      return this->Compactor.MapFieldOntoOutput(result, field);
-    }
-    else
-    {
-      result.AddField(field);
-      return true;
-    }
+    result.AddField(field);
+    return true;
   }
   else if (field.IsFieldCell())
   {

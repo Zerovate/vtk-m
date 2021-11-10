@@ -44,17 +44,6 @@ public:
   CleanGrid();
   ~CleanGrid() override;
 
-  VTKM_CONT
-  Filter* Clone() const override
-  {
-    CleanGrid* clone = new CleanGrid();
-    clone->CopyStateFrom(this);
-    return clone;
-  }
-
-  VTKM_CONT
-  bool CanThread() const override { return true; }
-
   /// When the CompactPointFields flag is true, the filter will identify any
   /// points that are not used by the topology. This is on by default.
   ///
@@ -95,36 +84,24 @@ public:
   VTKM_CONT bool GetFastMerge() const { return this->FastMerge; }
   VTKM_CONT void SetFastMerge(bool flag) { this->FastMerge = flag; }
 
-  VTKM_CONT bool MapFieldOntoOutput(vtkm::cont::DataSet& result,
-                                    const vtkm::cont::Field& field) override;
-
   vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) override;
 
-  VTKM_CONT
-  void CopyStateFrom(const CleanGrid* cleanGrid)
-  {
-    this->Filter::CopyStateFrom(cleanGrid);
-
-    this->CompactPointFields = cleanGrid->CompactPointFields;
-    this->MergePoints = cleanGrid->MergePoints;
-    this->Tolerance = cleanGrid->Tolerance;
-    this->ToleranceIsAbsolute = cleanGrid->ToleranceIsAbsolute;
-    this->RemoveDegenerateCells = cleanGrid->RemoveDegenerateCells;
-    this->FastMerge = cleanGrid->FastMerge;
-  }
-
 private:
+  VTKM_CONT vtkm::cont::DataSet GenerateOutput(const vtkm::cont::DataSet& inData,
+                                               vtkm::cont::CellSetExplicit<>& outputCellSet,
+                                               cleangrid::SharedStates& worklets);
+
+  VTKM_CONT static bool DoMapField(vtkm::cont::DataSet& result,
+                                   const vtkm::cont::Field& field,
+                                   const CleanGrid& self,
+                                   cleangrid::SharedStates& worklets);
+
   bool CompactPointFields;
   bool MergePoints;
   vtkm::Float64 Tolerance;
   bool ToleranceIsAbsolute;
   bool RemoveDegenerateCells;
   bool FastMerge;
-
-  vtkm::cont::DataSet GenerateOutput(const vtkm::cont::DataSet& inData,
-                                     vtkm::cont::CellSetExplicit<>& outputCellSet);
-
-  std::unique_ptr<cleangrid::SharedStates> Worklets;
 };
 
 }

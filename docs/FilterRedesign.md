@@ -63,9 +63,9 @@ Similar to `DoExecute`, current filter implementations can define a `DoMapField`
 will automatically discover the type of the field array to be mapped and pass that to
 the `DoMapField` template. This behavior should also continue to be supported.
 
-A filter should also be able to instead override the behavior of `MapFieldOntoOutput` to handle the
+A filter should also be able to instead override the behavior of `DoMapField` to handle the
 field mapping using unknown arrays. (This will be relatively common.) It should also be possible to
-do this override of `MapFieldOntoOutput` and then call the superclass to discover the type for some
+do this override of `DoMapField` and then call the superclass to discover the type for some
 arrays. For example, a filter might trivially pass point data but need to do some processing for
 cell data.
 

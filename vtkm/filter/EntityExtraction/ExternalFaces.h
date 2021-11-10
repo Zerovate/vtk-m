@@ -33,11 +33,16 @@ namespace filter
 /// @warning
 /// This filter is currently only supports propagation of point properties
 ///
+// FIXME: when did I make it a Filter rahter than FilterDataSet?
 class VTKM_FILTER_ENTITYEXTRACTION_EXPORT ExternalFaces : public vtkm::filter::Filter
 {
 public:
   ExternalFaces();
   ~ExternalFaces();
+
+  // New Design: I am too lazy to make this filter thread-safe. Let's use it as a example of
+  // thread un-safe filter.
+  bool CanThread() const override { return false; }
 
   // When CompactPoints is set, instead of copying the points and point fields
   // from the input, the filter will create new compact fields without the

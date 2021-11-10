@@ -37,7 +37,6 @@ CleanGrid::CleanGrid()
   , ToleranceIsAbsolute(false)
   , RemoveDegenerateCells(true)
   , FastMerge(true)
-  , Worklets(std::make_unique<cleangrid::SharedStates>())
 {
 }
 
@@ -47,7 +46,8 @@ CleanGrid::~CleanGrid() = default;
 
 //-----------------------------------------------------------------------------
 vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
-                                              vtkm::cont::CellSetExplicit<>& outputCellSet)
+                                              vtkm::cont::CellSetExplicit<>& outputCellSet,
+                                              cleangrid::SharedStates& Worklets)
 {
   using VecId = std::size_t;
   const auto activeCoordIndex = static_cast<VecId>(this->GetActiveCoordinateSystemIndex());
@@ -65,17 +65,17 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
   // Optionally adjust the cell set indices to remove all unused points
   if (this->GetCompactPointFields())
   {
-    this->Worklets->PointCompactor.FindPointsStart();
-    this->Worklets->PointCompactor.FindPoints(outputCellSet);
-    this->Worklets->PointCompactor.FindPointsEnd();
+    Worklets.PointCompactor.FindPointsStart();
+    Worklets.PointCompactor.FindPoints(outputCellSet);
+    Worklets.PointCompactor.FindPointsEnd();
 
-    outputCellSet = this->Worklets->PointCompactor.MapCellSet(outputCellSet);
+    outputCellSet = Worklets.PointCompactor.MapCellSet(outputCellSet);
 
     for (VecId coordSystemIndex = 0; coordSystemIndex < numCoordSystems; ++coordSystemIndex)
     {
       outputCoordinateSystems[coordSystemIndex] =
         vtkm::cont::CoordinateSystem(outputCoordinateSystems[coordSystemIndex].GetName(),
-                                     this->Worklets->PointCompactor.MapPointFieldDeep(
+                                     Worklets.PointCompactor.MapPointFieldDeep(
                                        outputCoordinateSystems[coordSystemIndex].GetData()));
     }
   }
@@ -94,7 +94,7 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
     }
 
     auto coordArray = activeCoordSystem.GetData();
-    this->Worklets->PointMerger.Run(delta, this->GetFastMerge(), bounds, coordArray);
+    Worklets.PointMerger.Run(delta, this->GetFastMerge(), bounds, coordArray);
     activeCoordSystem = vtkm::cont::CoordinateSystem(activeCoordSystem.GetName(), coordArray);
 
     for (VecId coordSystemIndex = 0; coordSystemIndex < numCoordSystems; ++coordSystemIndex)
@@ -105,20 +105,19 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
       }
       else
       {
-        outputCoordinateSystems[coordSystemIndex] =
-          vtkm::cont::CoordinateSystem(outputCoordinateSystems[coordSystemIndex].GetName(),
-                                       this->Worklets->PointMerger.MapPointField(
-                                         outputCoordinateSystems[coordSystemIndex].GetData()));
+        outputCoordinateSystems[coordSystemIndex] = vtkm::cont::CoordinateSystem(
+          outputCoordinateSystems[coordSystemIndex].GetName(),
+          Worklets.PointMerger.MapPointField(outputCoordinateSystems[coordSystemIndex].GetData()));
       }
     }
 
-    outputCellSet = this->Worklets->PointMerger.MapCellSet(outputCellSet);
+    outputCellSet = Worklets.PointMerger.MapCellSet(outputCellSet);
   }
 
   // Optionally remove degenerate cells
   if (this->GetRemoveDegenerateCells())
   {
-    outputCellSet = this->Worklets->CellCompactor.Run(outputCellSet);
+    outputCellSet = Worklets.CellCompactor.Run(outputCellSet);
   }
 
   // Construct resulting data set with new cell sets
@@ -136,6 +135,11 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
 
 vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
 {
+  // New Design: mutable states that was a data member of the filter is now a local variable.
+  // each invocation of DoExecute() in the std::async will have a copy of Worklets thus
+  // making it thread-safe.
+  cleangrid::SharedStates Worklets;
+
   using CellSetType = vtkm::cont::CellSetExplicit<>;
 
   CellSetType outputCellSet;
@@ -177,24 +181,45 @@ vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
     deducedCellSet.ReleaseResourcesExecution();
   }
 
-  auto outData = this->GenerateOutput(inData, outputCellSet);
+  // New Design: The share, mutable state is pass to other methods via parameter, not as a data member.
+  auto outData = this->GenerateOutput(inData, outputCellSet, Worklets);
 
-  CallMapFieldOntoOutput(inData, outData);
+  // New Design: We pass the actions need to be done as a lambda to the generic MapFieldsOntoOutput.
+  // MapFieldsOntoOutput now acts as thrust::transfrom_if on the Fields.
+  // Shared mutable state is captured by the lambda. We could also put all the logic of field
+  // mapping in the lambda. However, it is cleaner to out it in the filter specific implementation
+  // of DoMapField which takes mutable state as an extra parameter.
+  //
+  // For filters that do not need to do interpolation for mapping fields, we provide an overload
+  // that does not take the extra arguments and just AddField.
+  //
+  // TODO: what should we do for filters that does not have mutable state?
+  auto mapper = [&, this](auto& output, const auto& field) {
+    DoMapField(output, field, *this, Worklets);
+  };
+  MapFieldsOntoOutput(inData, outData, mapper);
 
   return outData;
 }
 
-bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field)
+// New Design: DoMapField is now a static method. This discourages the user to "pass" mutable
+// from DoExecute phase to DoMapField phase via data member. Even though we have made it statid,
+// there is nothing to prevent developer doing stupid thing to circumvent the protection. One
+// example here is that the developer can always pass a mutable reference/pointer to the filter
+// instance and thus pass mutable state across the DoExecute and DoMapField boundary. We need
+// to explicitly discourage developer trying to do such a thing in the manual.
+bool CleanGrid::DoMapField(vtkm::cont::DataSet& result,
+                           const vtkm::cont::Field& field,
+                           const CleanGrid& self,
+                           cleangrid::SharedStates& worklets)
 {
-  if (field.IsFieldPoint() && (this->GetCompactPointFields() || this->GetMergePoints()))
+  if (field.IsFieldPoint() && (self.GetCompactPointFields() || self.GetMergePoints()))
   {
     vtkm::cont::Field compactedField;
-    if (this->GetCompactPointFields())
+    if (self.GetCompactPointFields())
     {
       bool success = vtkm::filter::MapFieldPermutation(
-        field,
-        this->Worklets->PointCompactor.GetPointScatter().GetOutputToInputMap(),
-        compactedField);
+        field, worklets.PointCompactor.GetPointScatter().GetOutputToInputMap(), compactedField);
       if (!success)
       {
         return false;
@@ -204,10 +229,10 @@ bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont
     {
       compactedField = field;
     }
-    if (this->GetMergePoints())
+    if (self.GetMergePoints())
     {
       return vtkm::filter::MapFieldMergeAverage(
-        compactedField, this->Worklets->PointMerger.GetMergeKeys(), result);
+        compactedField, worklets.PointMerger.GetMergeKeys(), result);
     }
     else
     {
@@ -215,10 +240,10 @@ bool CleanGrid::MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont
       return true;
     }
   }
-  else if (field.IsFieldCell() && this->GetRemoveDegenerateCells())
+  else if (field.IsFieldCell() && self.GetRemoveDegenerateCells())
   {
     return vtkm::filter::MapFieldPermutation(
-      field, this->Worklets->CellCompactor.GetValidCellIds(), result);
+      field, worklets.CellCompactor.GetValidCellIds(), result);
   }
   else
   {

@@ -38,17 +38,6 @@ class VTKM_FILTER_CONTOUR_EXPORT Contour : public vtkm::filter::FilterDataSetWit
 public:
   using SupportedTypes = vtkm::List<vtkm::UInt8, vtkm::Int8, vtkm::Float32, vtkm::Float64>;
 
-  VTKM_CONT
-  Filter* Clone() const override
-  {
-    Contour* clone = new Contour();
-    clone->CopyStateFrom(this);
-    return clone;
-  }
-
-  VTKM_CONT
-  bool CanThread() const override { return true; }
-
   Contour();
   ~Contour();
 
@@ -134,34 +123,21 @@ public:
   const std::string& GetNormalArrayName() const { return this->NormalArrayName; }
 
   VTKM_CONT
-  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& concrete) override;
-  VTKM_CONT
-  bool MapFieldOntoOutput(vtkm::cont::DataSet& result, const vtkm::cont::Field& field) override;
-
-protected:
-  VTKM_CONT
-  void CopyStateFrom(const Contour* contour)
-  {
-    this->FilterDataSetWithField::CopyStateFrom(contour);
-
-    this->IsoValues = contour->IsoValues;
-    this->GenerateNormals = contour->GenerateNormals;
-    this->AddInterpolationEdgeIds = contour->AddInterpolationEdgeIds;
-    this->ComputeFastNormalsForStructured = contour->ComputeFastNormalsForStructured;
-    this->ComputeFastNormalsForUnstructured = contour->ComputeFastNormalsForUnstructured;
-    this->NormalArrayName = contour->NormalArrayName;
-    this->InterpolationEdgeIdsArrayName = contour->InterpolationEdgeIdsArrayName;
-  }
+  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& result) override;
 
 private:
+  static bool DoMapField(vtkm::cont::DataSet& result,
+                         const vtkm::cont::Field& field,
+                         vtkm::worklet::Contour&);
+
   std::vector<vtkm::Float64> IsoValues;
   bool GenerateNormals;
   bool AddInterpolationEdgeIds;
   bool ComputeFastNormalsForStructured;
   bool ComputeFastNormalsForUnstructured;
+  bool MergeDuplicatedPoints;
   std::string NormalArrayName;
   std::string InterpolationEdgeIdsArrayName;
-  std::unique_ptr<vtkm::worklet::Contour> Worklet;
 };
 
 }
