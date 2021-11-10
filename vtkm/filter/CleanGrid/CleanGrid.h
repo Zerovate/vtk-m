@@ -18,7 +18,7 @@ namespace vtkm
 namespace filter
 {
 
-// Forward declaration for PImpl of stateful Worklets
+// Forward declaration for stateful Worklets
 namespace cleangrid
 {
 struct SharedStates;
@@ -42,7 +42,7 @@ class VTKM_FILTER_CLEANGRID_EXPORT CleanGrid : public vtkm::filter::Filter
 {
 public:
   CleanGrid();
-  ~CleanGrid() override;
+  ~CleanGrid() override = default;
 
   /// When the CompactPointFields flag is true, the filter will identify any
   /// points that are not used by the topology. This is on by default.

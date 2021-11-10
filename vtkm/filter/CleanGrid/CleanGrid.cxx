@@ -40,10 +40,6 @@ CleanGrid::CleanGrid()
 {
 }
 
-// Note: this `default` destructor is needed in order for the compiler to
-// generate destructor for unique_ptr<SharedState>.
-CleanGrid::~CleanGrid() = default;
-
 //-----------------------------------------------------------------------------
 vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
                                               vtkm::cont::CellSetExplicit<>& outputCellSet,
