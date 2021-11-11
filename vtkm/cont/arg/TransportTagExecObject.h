@@ -51,6 +51,15 @@ struct Transport<vtkm::cont::arg::TransportTagExecObject, ContObjectType, Device
   {
     return vtkm::cont::internal::CallPrepareForExecution(object, Device{}, token);
   }
+  template <typename InputDomainType>
+  VTKM_CONT ExecObjectType operator()(const ContObjectType& object,
+                                      const InputDomainType&,
+                                      vtkm::Id,
+                                      vtkm::Id,
+                                      vtkm::cont::Token& token) const
+  {
+    return vtkm::cont::internal::CallPrepareForExecution(object, Device{}, token);
+  }
 };
 }
 }

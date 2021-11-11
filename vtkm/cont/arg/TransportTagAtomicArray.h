@@ -53,7 +53,7 @@ struct Transport<vtkm::cont::arg::TransportTagAtomicArray,
 
   template <typename InputDomainType>
   VTKM_CONT ExecObjectType
-  operator()(vtkm::cont::ArrayHandle<T, vtkm::cont::StorageTagBasic>& array,
+  operator()(const vtkm::cont::ArrayHandle<T, vtkm::cont::StorageTagBasic>& array,
              const InputDomainType&,
              vtkm::Id,
              vtkm::Id,
@@ -79,7 +79,7 @@ struct Transport<vtkm::cont::arg::TransportTagAtomicArray,
 
   template <typename InputDomainType>
   VTKM_CONT ExecObjectType
-  operator()(vtkm::cont::ArrayHandle<T, vtkm::cont::StorageTagVirtual>& array,
+  operator()(const vtkm::cont::ArrayHandle<T, vtkm::cont::StorageTagVirtual>& array,
              const InputDomainType&,
              vtkm::Id,
              vtkm::Id) const

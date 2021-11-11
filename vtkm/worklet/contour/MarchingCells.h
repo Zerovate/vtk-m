@@ -131,10 +131,10 @@ public:
 
     VTKM_CONT
     ExecObject(vtkm::Id size,
-               vtkm::cont::ArrayHandle<vtkm::FloatDefault>& interpWeights,
-               vtkm::cont::ArrayHandle<vtkm::Id2>& interpIds,
-               vtkm::cont::ArrayHandle<vtkm::Id>& interpCellIds,
-               vtkm::cont::ArrayHandle<vtkm::UInt8>& interpContourId,
+               const vtkm::cont::ArrayHandle<vtkm::FloatDefault>& interpWeights,
+               const vtkm::cont::ArrayHandle<vtkm::Id2>& interpIds,
+               const vtkm::cont::ArrayHandle<vtkm::Id>& interpCellIds,
+               const vtkm::cont::ArrayHandle<vtkm::UInt8>& interpContourId,
                vtkm::cont::DeviceAdapterId device,
                vtkm::cont::Token& token)
       : InterpWeightsPortal(interpWeights.PrepareForOutput(3 * size, device, token))
@@ -166,7 +166,7 @@ public:
   }
 
   VTKM_CONT ExecObject PrepareForExecution(vtkm::cont::DeviceAdapterId device,
-                                           vtkm::cont::Token& token)
+                                           vtkm::cont::Token& token) const
   {
     return ExecObject(this->Size,
                       this->InterpWeights,
