@@ -43,7 +43,16 @@ struct Transport<vtkm::cont::arg::TransportTagExecObject, ContObjectType, Device
 
   using ExecObjectType = vtkm::cont::internal::ExecutionObjectType<ContObjectType, Device>;
   template <typename InputDomainType>
-  VTKM_CONT ExecObjectType operator()(ContObjectType& object,
+  VTKM_CONT ExecObjectType operator()(std::remove_const_t<ContObjectType>& object,
+                                      const InputDomainType&,
+                                      vtkm::Id,
+                                      vtkm::Id,
+                                      vtkm::cont::Token& token) const
+  {
+    return vtkm::cont::internal::CallPrepareForExecution(object, Device{}, token);
+  }
+  template <typename InputDomainType>
+  VTKM_CONT ExecObjectType operator()(const ContObjectType& object,
                                       const InputDomainType&,
                                       vtkm::Id,
                                       vtkm::Id,

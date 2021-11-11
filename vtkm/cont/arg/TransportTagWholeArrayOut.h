@@ -61,7 +61,7 @@ struct Transport<vtkm::cont::arg::TransportTagWholeArrayOut, ContObjectType, Dev
   using ExecObjectType = vtkm::exec::ExecutionWholeArray<ValueType, StorageTag>;
 
   template <typename InputDomainType>
-  VTKM_CONT ExecObjectType operator()(ContObjectType& array,
+  VTKM_CONT ExecObjectType operator()(const ContObjectType& array,
                                       const InputDomainType&,
                                       vtkm::Id,
                                       vtkm::Id,

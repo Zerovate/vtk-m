@@ -14,6 +14,8 @@
 #include <vtkm/CellShape.h>
 #include <vtkm/Types.h>
 
+#include <vtkm/cont/ArrayHandle.h>
+
 namespace vtkm
 {
 namespace worklet
@@ -11424,7 +11426,7 @@ public:
   }
 
   template <typename DeviceAdapter>
-  MIRDevicePortal<DeviceAdapter> PrepareForExecution(DeviceAdapter, vtkm::cont::Token& token)
+  MIRDevicePortal<DeviceAdapter> PrepareForExecution(DeviceAdapter, vtkm::cont::Token& token) const
   {
     MIRDevicePortal<DeviceAdapter> portal;
     portal.MIRTablesDataPortal = this->MIRTablesDataArray.PrepareForInput(DeviceAdapter(), token);

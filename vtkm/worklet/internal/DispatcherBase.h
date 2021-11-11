@@ -84,6 +84,22 @@ inline auto SchedulingRange(const Domain* const inputDomain, SchedulingRangeType
 namespace detail
 {
 
+/// @{
+/// \brief Returns the given parameter in a parameter pack.
+///
+template <typename T0, typename... Ts>
+VTKM_NEVER_EXPORT auto GetArg(std::integral_constant<vtkm::IdComponent, 0>, T0&& a0, Ts&&...)
+{
+  return std::forward<T0>(a0);
+}
+template <vtkm::IdComponent I, typename T0, typename... Ts>
+VTKM_NEVER_EXPORT auto GetArg(std::integral_constant<vtkm::IdComponent, I>, T0&&, Ts&&... as)
+{
+  VTKM_STATIC_ASSERT(I > 0);
+  return GetArg(std::integral_constant<vtkm::IdComponent, I - 1>{}, std::forward<Ts>(as)...);
+}
+/// @}
+
 // This code is actually taking an error found at compile-time and not
 // reporting it until run-time. This seems strange at first, but this
 // behavior is actually important. With dynamic arrays and similar dynamic
@@ -100,32 +116,36 @@ inline void PrintFailureMessage(int index)
   throw vtkm::cont::ErrorBadType(message.str());
 }
 
-inline void PrintNullPtrMessage(int index, int mode)
-{
-  std::stringstream message;
-  if (mode == 0)
-  {
-    message << "Encountered nullptr for parameter " << index;
-  }
-  else
-  {
-    message << "Encountered nullptr for " << index << " from last parameter ";
-  }
-  message << " when calling Invoke on a dispatcher.";
-  throw vtkm::cont::ErrorBadValue(message.str());
-}
-
 template <typename T>
-inline void not_nullptr(T* ptr, int index, int mode = 0)
+inline void not_nullptr(T* ptr, int index = -1, int mode = 0)
 {
   if (!ptr)
   {
-    PrintNullPtrMessage(index, mode);
+    std::stringstream message;
+    message << "Encountered nullptr";
+    if (index >= 0)
+    {
+      if (mode == 0)
+      {
+        message << " for parameter " << index;
+      }
+      else
+      {
+        message << " for " << index << " from last parameter ";
+      }
+    }
+    else
+    {
+      message << " for parameter of type " << vtkm::cont::TypeToString(ptr);
+    }
+    message << " when calling Invoke on a dispatcher.";
+    throw vtkm::cont::ErrorBadValue(message.str());
   }
 }
 template <typename T>
-inline void not_nullptr(T&&, int, int mode = 0)
+inline void not_nullptr(T&&, int index = -1, int mode = 0)
 {
+  (void)index;
   (void)mode;
 }
 
@@ -246,31 +266,6 @@ struct DispatcherBaseExecutionSignatureTagCheck
   };
 };
 
-struct DispatcherBaseTryExecuteFunctor
-{
-  template <typename Device, typename DispatcherBaseType, typename Invocation, typename RangeType>
-  VTKM_CONT bool operator()(Device device,
-                            const DispatcherBaseType* self,
-                            Invocation& invocation,
-                            const RangeType& dimensions)
-  {
-    auto outputRange = self->Scatter.GetOutputRange(dimensions);
-    self->InvokeTransportParameters(
-      invocation, dimensions, outputRange, self->Mask.GetThreadRange(outputRange), device);
-    return true;
-  }
-};
-
-// A look up helper used by DispatcherBaseTransportFunctor to determine
-//the types independent of the device we are templated on.
-template <typename ControlInterface, vtkm::IdComponent Index>
-struct DispatcherBaseTransportInvokeTypes
-{
-  //Moved out of DispatcherBaseTransportFunctor to reduce code generation
-  using ControlSignatureTag = typename ControlInterface::template ParameterType<Index>::type;
-  using TransportTag = typename ControlSignatureTag::TransportTag;
-};
-
 VTKM_CONT
 inline vtkm::Id FlatRange(vtkm::Id range)
 {
@@ -283,73 +278,75 @@ inline vtkm::Id FlatRange(const vtkm::Id3& range)
   return range[0] * range[1] * range[2];
 }
 
-// A functor used in a StaticCast of a FunctionInterface to transport arguments
-// from the control environment to the execution environment.
-template <typename ControlInterface, typename InputDomainType, typename Device>
-struct DispatcherBaseTransportFunctor
+template <typename Device,
+          typename InputDomainType,
+          typename ControlSigTag,
+          typename ControlObjectType>
+VTKM_NEVER_EXPORT auto TransportObject(Device,
+                                       vtkm::cont::Token& token,
+                                       vtkm::Id inputSize,
+                                       vtkm::Id outputSize,
+                                       InputDomainType&& inputDomain,
+                                       ControlSigTag,
+                                       ControlObjectType&& controlObject)
 {
-  const InputDomainType& InputDomain; // Warning: this is a reference
-  vtkm::Id InputRange;
-  vtkm::Id OutputRange;
-  vtkm::cont::Token& Token; // Warning: this is a reference
+  using TransportTag = typename ControlSigTag::TransportTag;
+  vtkm::cont::arg::
+    Transport<TransportTag, vtkm::internal::remove_pointer_and_decay<ControlObjectType>, Device>
+      transport;
 
-  // TODO: We need to think harder about how scheduling on 3D arrays works.
-  // Chances are we need to allow the transport for each argument to manage
-  // 3D indices (for example, allocate a 3D array instead of a 1D array).
-  // But for now, just treat all transports as 1D arrays.
-  template <typename InputRangeType, typename OutputRangeType>
-  VTKM_CONT DispatcherBaseTransportFunctor(const InputDomainType& inputDomain,
-                                           const InputRangeType& inputRange,
-                                           const OutputRangeType& outputRange,
-                                           vtkm::cont::Token& token)
-    : InputDomain(inputDomain)
-    , InputRange(FlatRange(inputRange))
-    , OutputRange(FlatRange(outputRange))
-    , Token(token)
+  not_nullptr(std::forward<ControlObjectType>(controlObject));
+  auto execObject = transport(as_ref(std::forward<ControlObjectType>(controlObject)),
+                              as_ref(std::forward<InputDomainType>(inputDomain)),
+                              inputSize,
+                              outputSize,
+                              token);
+
+  // If you get a compile error here, it means that an execution object type is not
+  // trivially copyable. This is strictly disallowed. All execution objects must be
+  // trivially copyable so that they can be memcpy-ed between host and devices.
+  // Note that it is still legal for execution objects to have pointers or other
+  // references to resources on a particular device. It is up to the generating code
+  // to ensure that all referenced resources are valid on the target device.
+  VTKM_IS_TRIVIALLY_COPYABLE(decltype(execObject));
+
+  return execObject;
+}
+
+// Some template tricks to transport objects from the control environment to
+// the execution environment based on the associated transport tag in the
+// `ControlSignature`.
+template <typename ControlSignature>
+struct VTKM_NEVER_EXPORT TransportHelper;
+
+template <typename... ContSigTags>
+struct VTKM_NEVER_EXPORT TransportHelper<void(ContSigTags...)>
+{
+  template <typename Functor,
+            typename Device,
+            typename InputRangeType,
+            typename OutputRangeType,
+            typename InputDomainType,
+            typename... ControlObjectTypes>
+  static auto Go(Functor&& functor,
+                 Device device,
+                 vtkm::cont::Token& token,
+                 const InputRangeType& inputRange,
+                 const OutputRangeType& outputRange,
+                 InputDomainType&& inputDomain,
+                 ControlObjectTypes&&... controlObjects)
   {
+    vtkm::Id inputSize = FlatRange(inputRange);
+    vtkm::Id outputSize = FlatRange(outputRange);
+
+    return functor(TransportObject(device,
+                                   token,
+                                   inputSize,
+                                   outputSize,
+                                   std::forward<InputDomainType>(inputDomain),
+                                   ContSigTags{},
+                                   std::forward<ControlObjectTypes>(controlObjects))...);
   }
-
-
-  template <typename ControlParameter, vtkm::IdComponent Index>
-  struct ReturnType
-  {
-    using TransportTag =
-      typename DispatcherBaseTransportInvokeTypes<ControlInterface, Index>::TransportTag;
-    using T = vtkm::internal::remove_pointer_and_decay<ControlParameter>;
-    using TransportType = typename vtkm::cont::arg::Transport<TransportTag, T, Device>;
-    using type = typename std::decay<typename TransportType::ExecObjectType>::type;
-
-    // If you get a compile error here, it means that an execution object type is not
-    // trivially copyable. This is strictly disallowed. All execution objects must be
-    // trivially copyable so that the can be memcpy-ed between host and devices.
-    // Note that it is still legal for execution objects to have pointers or other
-    // references to resources on a particular device. It is up to the generating code
-    // to ensure that all referenced resources are valid on the target device.
-    VTKM_IS_TRIVIALLY_COPYABLE(type);
-  };
-
-  template <typename ControlParameter, vtkm::IdComponent Index>
-  VTKM_CONT typename ReturnType<ControlParameter, Index>::type operator()(
-    ControlParameter&& invokeData,
-    vtkm::internal::IndexTag<Index>) const
-  {
-    using TransportTag =
-      typename DispatcherBaseTransportInvokeTypes<ControlInterface, Index>::TransportTag;
-    using T = vtkm::internal::remove_pointer_and_decay<ControlParameter>;
-    vtkm::cont::arg::Transport<TransportTag, T, Device> transport;
-
-    not_nullptr(invokeData, Index);
-    return transport(as_ref(invokeData),
-                     as_ref(this->InputDomain),
-                     this->InputRange,
-                     this->OutputRange,
-                     this->Token);
-  }
-
-
-
-private:
-  void operator=(const DispatcherBaseTransportFunctor&) = delete;
 };
 
 //forward declares
@@ -670,42 +667,82 @@ protected:
   {
   }
 
-  friend struct internal::detail::DispatcherBaseTryExecuteFunctor;
+  /// Given the parameters provided to an Invoke, returns the parameter associated with the input
+  /// domain.
+  template <typename... Args>
+  VTKM_NEVER_EXPORT auto GetInputDomain(Args&&... args) const
+  {
+    // Note: InputDomain is indexed starting at 1 instead of 0.
+    return detail::GetArg(
+      std::integral_constant<vtkm::IdComponent, WorkletType::InputDomain::INDEX - 1>{},
+      std::forward<Args>(args)...);
+  }
 
+  template <typename InputRangeType, typename... ControlObjectTypes>
+  VTKM_NEVER_EXPORT void BasicInvoke(InputRangeType inputRange,
+                                     ControlObjectTypes&&... controlObjects) const
+  {
+    bool success = vtkm::cont::TryExecuteOnDevice(this->Device, [&](auto device) {
+      this->InvokeTransportSchedule(
+        inputRange, device, std::forward<ControlObjectTypes>(controlObjects)...);
+      return true;
+    });
+    if (!success)
+    {
+      throw vtkm::cont::ErrorExecution("Failed to execute worklet on any device.");
+    }
+  }
+
+  template <typename... ControlObjectTypes>
+  VTKM_NEVER_EXPORT void BasicInvoke(vtkm::Id2 inputRange,
+                                     ControlObjectTypes&&... controlObjects) const
+  {
+    this->BasicInvoke(vtkm::Id3{ inputRange[0], inputRange[1], 1 },
+                      std::forward<ControlObjectTypes>(controlObjects)...);
+  }
+
+  // TODO: Delete this!!!
+  template <typename Invocation, typename InputRangeType, vtkm::IdComponent... Indices>
+  VTKM_NEVER_EXPORT void ConvertBasicInvoke(
+    const Invocation& invocation,
+    const InputRangeType& inputRange,
+    std::integer_sequence<vtkm::IdComponent, Indices...>) const
+  {
+    this->BasicInvoke(inputRange,
+                      vtkm::internal::ParameterGet<Indices + 1>(invocation.Parameters)...);
+  }
+
+  // TODO: Delete this!!!
   template <typename Invocation>
   VTKM_CONT void BasicInvoke(Invocation& invocation, vtkm::Id numInstances) const
   {
-    bool success =
-      vtkm::cont::TryExecuteOnDevice(this->Device,
-                                     internal::detail::DispatcherBaseTryExecuteFunctor(),
-                                     this,
-                                     invocation,
-                                     numInstances);
-    if (!success)
-    {
-      throw vtkm::cont::ErrorExecution("Failed to execute worklet on any device.");
-    }
+    this->ConvertBasicInvoke(
+      invocation,
+      numInstances,
+      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
+                                              Invocation::ParameterInterface::ARITY>{});
   }
 
+  // TODO: Delete this!!!
   template <typename Invocation>
   VTKM_CONT void BasicInvoke(Invocation& invocation, vtkm::Id2 dimensions) const
   {
-    this->BasicInvoke(invocation, vtkm::Id3(dimensions[0], dimensions[1], 1));
+    this->ConvertBasicInvoke(
+      invocation,
+      dimensions,
+      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
+                                              Invocation::ParameterInterface::ARITY>{});
   }
 
+  // TODO: Delete this!!!
   template <typename Invocation>
   VTKM_CONT void BasicInvoke(Invocation& invocation, vtkm::Id3 dimensions) const
   {
-    bool success =
-      vtkm::cont::TryExecuteOnDevice(this->Device,
-                                     internal::detail::DispatcherBaseTryExecuteFunctor(),
-                                     this,
-                                     invocation,
-                                     dimensions);
-    if (!success)
-    {
-      throw vtkm::cont::ErrorExecution("Failed to execute worklet on any device.");
-    }
+    this->ConvertBasicInvoke(
+      invocation,
+      dimensions,
+      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
+                                              Invocation::ParameterInterface::ARITY>{});
   }
 
   WorkletType Worklet;
@@ -719,85 +756,45 @@ private:
 
   vtkm::cont::DeviceAdapterId Device;
 
-  template <typename Invocation,
-            typename InputRangeType,
-            typename OutputRangeType,
-            typename ThreadRangeType,
-            typename DeviceAdapter>
-  VTKM_CONT void InvokeTransportParameters(Invocation& invocation,
-                                           const InputRangeType& inputRange,
-                                           OutputRangeType&& outputRange,
-                                           ThreadRangeType&& threadRange,
-                                           DeviceAdapter device) const
+  template <typename InputRangeType, typename Device, typename... ControlObjectTypes>
+  VTKM_NEVER_EXPORT void InvokeTransportSchedule(const InputRangeType& inputRange,
+                                                 Device device,
+                                                 ControlObjectTypes&&... controlObjects) const
   {
     // This token represents the scope of the execution objects. It should
     // exist as long as things run on the device.
     vtkm::cont::Token token;
 
-    // The first step in invoking a worklet is to transport the arguments to
-    // the execution environment. The invocation object passed to this function
-    // contains the parameters passed to Invoke in the control environment. We
-    // will use the template magic in the FunctionInterface class to invoke the
-    // appropriate Transport class on each parameter and get a list of
-    // execution objects (corresponding to the arguments of the Invoke in the
-    // control environment) in a FunctionInterface. Specifically, we use a
-    // static transform of the FunctionInterface to call the transport on each
-    // argument and return the corresponding execution environment object.
-    using ParameterInterfaceType = typename Invocation::ParameterInterface;
-    ParameterInterfaceType& parameters = invocation.Parameters;
-
-    using TransportFunctorType =
-      detail::DispatcherBaseTransportFunctor<typename Invocation::ControlInterface,
-                                             typename Invocation::InputDomainType,
-                                             DeviceAdapter>;
-    using ExecObjectParameters =
-      typename ParameterInterfaceType::template StaticTransformType<TransportFunctorType>::type;
-
-    ExecObjectParameters execObjectParameters = parameters.StaticTransformCont(
-      TransportFunctorType(invocation.GetInputDomain(), inputRange, outputRange, token));
-
     // Get the arrays used for scattering input to output.
-    typename ScatterType::OutputToInputMapType outputToInputMap =
-      this->Scatter.GetOutputToInputMap(inputRange);
-    typename ScatterType::VisitArrayType visitArray = this->Scatter.GetVisitArray(inputRange);
+    auto outputToInputMap = this->Scatter.GetOutputToInputMap(inputRange);
+    auto visitArray = this->Scatter.GetVisitArray(inputRange);
+    auto outputRange = this->Scatter.GetOutputRange(inputRange);
 
     // Get the arrays used for masking output elements.
-    typename MaskType::ThreadToOutputMapType threadToOutputMap =
-      this->Mask.GetThreadToOutputMap(inputRange);
+    auto threadToOutputMap = this->Mask.GetThreadToOutputMap(inputRange);
+    auto threadRange = this->Mask.GetThreadRange(outputRange);
 
-    // Replace the parameters in the invocation with the execution object and
-    // pass to next step of Invoke. Also add the scatter information.
-    vtkm::internal::Invocation<ExecObjectParameters,
-                               typename Invocation::ControlInterface,
-                               typename Invocation::ExecutionInterface,
-                               Invocation::InputDomainIndex,
-                               decltype(outputToInputMap.PrepareForInput(device, token)),
-                               decltype(visitArray.PrepareForInput(device, token)),
-                               decltype(threadToOutputMap.PrepareForInput(device, token)),
-                               DeviceAdapter>
-      changedInvocation(execObjectParameters,
-                        outputToInputMap.PrepareForInput(device, token),
-                        visitArray.PrepareForInput(device, token),
-                        threadToOutputMap.PrepareForInput(device, token));
+    // Before the worklet is scheduled, the invoke parameters, which are defined in
+    // the control environment, have to be transported to the execution environment
+    // associated with the given device.
+    auto task = detail::TransportHelper<typename WorkletType::ControlSignature>::Go(
+      [&](auto&&... execObjects) {
+        return vtkm::cont::DeviceTaskTypes<Device>::MakeTask(
+          this->Worklet,
+          outputToInputMap.PrepareForInput(device, token),
+          visitArray.PrepareForInput(device, token),
+          threadToOutputMap.PrepareForInput(device, token),
+          threadRange,
+          execObjects...);
+      },
+      device,
+      token,
+      inputRange,
+      outputRange,
+      this->GetInputDomain(std::forward<ControlObjectTypes>(controlObjects)...),
+      std::forward<ControlObjectTypes>(controlObjects)...);
 
-    this->InvokeSchedule(changedInvocation, threadRange, device);
-  }
-
-  template <typename Invocation, typename RangeType, typename DeviceAdapter>
-  VTKM_CONT void InvokeSchedule(const Invocation& invocation, RangeType range, DeviceAdapter) const
-  {
-    using Algorithm = vtkm::cont::DeviceAdapterAlgorithm<DeviceAdapter>;
-    using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-
-    // The TaskType class handles the magic of fetching values
-    // for each instance and calling the worklet's function.
-    // The TaskType will evaluate to one of the following classes:
-    //
-    // vtkm::exec::internal::TaskSingular
-    // vtkm::exec::internal::TaskTiling1D
-    // vtkm::exec::internal::TaskTiling3D
-    auto task = TaskTypes::MakeTask(this->Worklet, invocation, range);
-    Algorithm::ScheduleTask(task, range);
+    vtkm::cont::DeviceAdapterAlgorithm<Device>::ScheduleTask(task, threadRange);
   }
 };
 }

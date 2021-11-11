@@ -51,7 +51,7 @@ public:
                        const OutToInPortalType& outToInPortal,
                        const VisitPortalType& visitPortal,
                        const ThreadToOutPortalType& threadToOutPortal,
-                       const ExecutionObjectTypes&&... executionObjects)
+                       ExecutionObjectTypes&&... executionObjects)
     : Worklet(worklet)
     , OutToInPortal(outToInPortal)
     , VisitPortal(visitPortal)
