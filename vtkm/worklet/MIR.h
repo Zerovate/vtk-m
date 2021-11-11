@@ -384,7 +384,7 @@ public:
   };
 
   VTKM_CONT MIRParentPortal PrepareForExecution(vtkm::cont::DeviceAdapterId device,
-                                                vtkm::cont::Token& token)
+                                                vtkm::cont::Token& token) const
   {
     MIRParentPortal dev;
     dev.CellLookback = this->cellLookback.PrepareForInput(device, token);
@@ -1849,7 +1849,7 @@ public:
     vtkm::cont::ArrayCopy(floats, pointVFs);
   }
 
-  MIRObjectPortal PrepareForExecution(vtkm::cont::DeviceAdapterId device, vtkm::cont::Token& token)
+  MIRObjectPortal PrepareForExecution(vtkm::cont::DeviceAdapterId device, vtkm::cont::Token& token) const
   {
     MIRObjectPortal portal;
     portal.PLens = this->pointLen.PrepareForInput(device, token);

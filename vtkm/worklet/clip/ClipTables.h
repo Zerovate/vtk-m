@@ -2529,7 +2529,7 @@ public:
   }
 
   template <typename DeviceAdapter>
-  DevicePortal<DeviceAdapter> PrepareForExecution(DeviceAdapter, vtkm::cont::Token& token)
+  DevicePortal<DeviceAdapter> PrepareForExecution(DeviceAdapter, vtkm::cont::Token& token) const
   {
     DevicePortal<DeviceAdapter> portal;
     portal.ClipTablesDataPortal = this->ClipTablesDataArray.PrepareForInput(DeviceAdapter(), token);
