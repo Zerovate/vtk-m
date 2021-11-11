@@ -1,4 +1,3 @@
-
 //============================================================================
 //  Copyright (c) Kitware, Inc.
 //  All rights reserved.
@@ -129,6 +128,61 @@ vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
   return outData;
 }
 
+// New Design: DoMapField is now a free function in an anonymous namespace. It should be
+// considered as a convenience/extension to the lambda passed to the MapFieldsOntoOutput.
+// Being a free function discourages the developer to "pass" mutable from DoExecute phase
+// to DoMapField phase via data member. However, there is nothing to prevent developer doing
+// stupid thing to circumvent the protection. One example here is that the developer could
+// always pass a mutable reference/pointer to the filter instance and thus pass mutable state
+// across the DoExecute and DoMapField boundary. We need to explicitly discourage developer
+// trying to do such a thing in the manual.
+namespace
+{
+bool DoMapField(vtkm::cont::DataSet& result,
+                const vtkm::cont::Field& field,
+                const CleanGrid& self,
+                cleangrid::SharedStates& worklets)
+{
+  if (field.IsFieldPoint() && (self.GetCompactPointFields() || self.GetMergePoints()))
+  {
+    vtkm::cont::Field compactedField;
+    if (self.GetCompactPointFields())
+    {
+      bool success = vtkm::filter::MapFieldPermutation(
+        field, worklets.PointCompactor.GetPointScatter().GetOutputToInputMap(), compactedField);
+      if (!success)
+      {
+        return false;
+      }
+    }
+    else
+    {
+      compactedField = field;
+    }
+    if (self.GetMergePoints())
+    {
+      return vtkm::filter::MapFieldMergeAverage(
+        compactedField, worklets.PointMerger.GetMergeKeys(), result);
+    }
+    else
+    {
+      result.AddField(compactedField);
+      return true;
+    }
+  }
+  else if (field.IsFieldCell() && self.GetRemoveDegenerateCells())
+  {
+    return vtkm::filter::MapFieldPermutation(
+      field, worklets.CellCompactor.GetValidCellIds(), result);
+  }
+  else
+  {
+    result.AddField(field);
+    return true;
+  }
+}
+} // anonymous namespace
+
 vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
 {
   // New Design: mutable states that was a data member of the filter is now a local variable.
@@ -181,9 +235,9 @@ vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
   auto outData = this->GenerateOutput(inData, outputCellSet, Worklets);
 
   // New Design: We pass the actions need to be done as a lambda to the generic MapFieldsOntoOutput.
-  // MapFieldsOntoOutput now acts as thrust::transfrom_if on the Fields.
+  // MapFieldsOntoOutput now acts as thrust::transform_if on the Fields.
   // Shared mutable state is captured by the lambda. We could also put all the logic of field
-  // mapping in the lambda. However, it is cleaner to out it in the filter specific implementation
+  // mapping in the lambda. However, it is cleaner to put it in the filter specific implementation
   // of DoMapField which takes mutable state as an extra parameter.
   //
   // For filters that do not need to do interpolation for mapping fields, we provide an overload
@@ -198,54 +252,5 @@ vtkm::cont::DataSet CleanGrid::DoExecute(const vtkm::cont::DataSet& inData)
   return outData;
 }
 
-// New Design: DoMapField is now a static method. This discourages the user to "pass" mutable
-// from DoExecute phase to DoMapField phase via data member. Even though we have made it statid,
-// there is nothing to prevent developer doing stupid thing to circumvent the protection. One
-// example here is that the developer can always pass a mutable reference/pointer to the filter
-// instance and thus pass mutable state across the DoExecute and DoMapField boundary. We need
-// to explicitly discourage developer trying to do such a thing in the manual.
-bool CleanGrid::DoMapField(vtkm::cont::DataSet& result,
-                           const vtkm::cont::Field& field,
-                           const CleanGrid& self,
-                           cleangrid::SharedStates& worklets)
-{
-  if (field.IsFieldPoint() && (self.GetCompactPointFields() || self.GetMergePoints()))
-  {
-    vtkm::cont::Field compactedField;
-    if (self.GetCompactPointFields())
-    {
-      bool success = vtkm::filter::MapFieldPermutation(
-        field, worklets.PointCompactor.GetPointScatter().GetOutputToInputMap(), compactedField);
-      if (!success)
-      {
-        return false;
-      }
-    }
-    else
-    {
-      compactedField = field;
-    }
-    if (self.GetMergePoints())
-    {
-      return vtkm::filter::MapFieldMergeAverage(
-        compactedField, worklets.PointMerger.GetMergeKeys(), result);
-    }
-    else
-    {
-      result.AddField(compactedField);
-      return true;
-    }
-  }
-  else if (field.IsFieldCell() && self.GetRemoveDegenerateCells())
-  {
-    return vtkm::filter::MapFieldPermutation(
-      field, worklets.CellCompactor.GetValidCellIds(), result);
-  }
-  else
-  {
-    result.AddField(field);
-    return true;
-  }
-}
 }
 }

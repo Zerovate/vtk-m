@@ -325,6 +325,7 @@ public:
   /// which device adapters a filter uses.
   void SetInvoker(vtkm::cont::Invoker inv) { this->Invoke = inv; }
 
+  // TODO: de-virtual, move to protected.
   VTKM_CONT
   virtual vtkm::Id DetermineNumberOfThreads(const vtkm::cont::PartitionedDataSet& input);
 
@@ -344,6 +345,7 @@ protected:
                                      vtkm::cont::DataSet& output,
                                      Mapper&& mapper)
   {
+    // TODO: in the future of C++20, we can make it a "filtered_view".
     for (vtkm::IdComponent cc = 0; cc < input.GetNumberOfFields(); ++cc)
     {
       auto field = input.GetField(cc);

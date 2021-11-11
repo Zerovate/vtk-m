@@ -91,10 +91,6 @@ private:
                                                vtkm::cont::CellSetExplicit<>& outputCellSet,
                                                cleangrid::SharedStates& worklets);
 
-  VTKM_CONT static bool DoMapField(vtkm::cont::DataSet& result,
-                                   const vtkm::cont::Field& field,
-                                   const CleanGrid& self,
-                                   cleangrid::SharedStates& worklets);
 
   bool CompactPointFields;
   bool MergePoints;
