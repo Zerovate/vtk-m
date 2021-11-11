@@ -11,6 +11,7 @@
 #define vtk_m_MarchingCellTables_h
 
 #include <vtkm/CellShape.h>
+#include <vtkm/Pair.h>
 #include <vtkm/Types.h>
 
 #include <vtkm/cont/ArrayHandle.h>
@@ -518,7 +519,7 @@ public:
   }
 
   template <typename DeviceAdapter>
-  ExecObject<DeviceAdapter> PrepareForExecution(DeviceAdapter, vtkm::cont::Token& token)
+  ExecObject<DeviceAdapter> PrepareForExecution(DeviceAdapter, vtkm::cont::Token& token) const
   {
     ExecObject<DeviceAdapter> execObject;
     execObject.NumVerticesPerCellPortal =
@@ -586,7 +587,7 @@ public:
   };
 
   template <typename DeviceAdapter>
-  ExecObject<DeviceAdapter> PrepareForExecution(DeviceAdapter, vtkm::cont::Token& token)
+  ExecObject<DeviceAdapter> PrepareForExecution(DeviceAdapter, vtkm::cont::Token& token) const
   {
     ExecObject<DeviceAdapter> execObject;
     execObject.EdgeTablePortal = this->EdgeTableArray.PrepareForInput(DeviceAdapter(), token);

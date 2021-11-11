@@ -433,36 +433,6 @@ public:
       vtkm::cont::DeviceAdapterTagOpenMP{},
       std::forward<ExecutionObjectTypes>(executionObjects)...);
   }
-
-  // TODO: Delete this!!!
-  template <typename WorkletType,
-            typename InvocationType,
-            typename RangeType,
-            vtkm::IdComponent... Indices>
-  static auto MakeTask(WorkletType& worklet,
-                       InvocationType& invocation,
-                       RangeType range,
-                       std::integer_sequence<vtkm::IdComponent, Indices...>)
-  {
-    return MakeTask(worklet,
-                    invocation.OutputToInputMap,
-                    invocation.VisitArray,
-                    invocation.ThreadToOutputMap,
-                    range,
-                    vtkm::internal::ParameterGet<Indices + 1>(invocation.Parameters)...);
-  }
-
-  // TODO: Delete this!!!
-  template <typename WorkletType, typename InvocationType, typename RangeType>
-  static auto MakeTask(WorkletType& worklet, InvocationType& invocation, RangeType range)
-  {
-    return MakeTask(
-      worklet,
-      invocation,
-      range,
-      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
-                                              InvocationType::ParameterInterface::ARITY>{});
-  }
 };
 }
 } // namespace vtkm::cont

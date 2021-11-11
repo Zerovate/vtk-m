@@ -18,9 +18,6 @@
 #include <vtkm/exec/arg/Fetch.h>
 #include <vtkm/exec/arg/ThreadIndicesBasic.h>
 
-#include <vtkm/internal/FunctionInterface.h>
-#include <vtkm/internal/Invocation.h>
-
 #include <algorithm>
 #include <vector>
 
@@ -156,32 +153,10 @@ namespace testing
 {
 
 using TestControlSignature = void(TestControlSignatureTagInput, TestControlSignatureTagOutput);
-using TestControlInterface = vtkm::internal::FunctionInterface<TestControlSignature>;
 
 using TestExecutionSignature1 = void(vtkm::exec::arg::BasicArg<1>, vtkm::exec::arg::BasicArg<2>);
-using TestExecutionInterface1 = vtkm::internal::FunctionInterface<TestExecutionSignature1>;
 
 using TestExecutionSignature2 = vtkm::exec::arg::BasicArg<2>(vtkm::exec::arg::BasicArg<1>);
-using TestExecutionInterface2 = vtkm::internal::FunctionInterface<TestExecutionSignature2>;
-
-using ExecutionParameterInterface =
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)>;
-
-using InvocationType1 = vtkm::internal::Invocation<ExecutionParameterInterface,
-                                                   TestControlInterface,
-                                                   TestExecutionInterface1,
-                                                   1,
-                                                   MyOutputToInputMapPortal,
-                                                   MyVisitArrayPortal,
-                                                   MyThreadToOutputMapPortal>;
-
-using InvocationType2 = vtkm::internal::Invocation<ExecutionParameterInterface,
-                                                   TestControlInterface,
-                                                   TestExecutionInterface2,
-                                                   1,
-                                                   MyOutputToInputMapPortal,
-                                                   MyVisitArrayPortal,
-                                                   MyThreadToOutputMapPortal>;
 
 // Not a full worklet, but provides operators that we expect in a worklet.
 struct TestWorkletProxy : vtkm::exec::FunctorBase
@@ -297,16 +272,18 @@ void Test1DNormalTaskTilingInvoke()
 
   std::vector<vtkm::Id> inputTestValues(100, 5);
   std::vector<vtkm::Id> outputTestValues(100, static_cast<vtkm::Id>(0xDEADDEAD));
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)> execObjects =
-    vtkm::internal::make_FunctionInterface<void>(TestExecObject(inputTestValues),
-                                                 TestExecObject(outputTestValues));
 
   std::cout << "  Try void return." << std::endl;
   TestWorkletProxy1 worklet1;
-  InvocationType1 invocation1(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task1 = TaskTypes::MakeTask(worklet1, invocation1, vtkm::Id());
+  auto task1 = TaskTypes::MakeTask(worklet1,
+                                   MyOutputToInputMapPortal{},
+                                   MyVisitArrayPortal{},
+                                   MyThreadToOutputMapPortal{},
+                                   vtkm::Id{},
+                                   TestExecObject(inputTestValues),
+                                   TestExecObject(outputTestValues));
 
   vtkm::exec::internal::ErrorMessageBuffer errorMessage(nullptr, 0);
   task1.SetErrorMessageBuffer(errorMessage);
@@ -327,11 +304,16 @@ void Test1DNormalTaskTilingInvoke()
   std::fill(inputTestValues.begin(), inputTestValues.end(), 6);
   std::fill(outputTestValues.begin(), outputTestValues.end(), static_cast<vtkm::Id>(0xDEADDEAD));
 
-  InvocationType2 invocation2(execObjects);
   TestWorkletProxy2 worklet2;
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task2 = TaskTypes::MakeTask(worklet2, invocation2, vtkm::Id());
+  auto task2 = TaskTypes::MakeTask(worklet2,
+                                   MyOutputToInputMapPortal{},
+                                   MyVisitArrayPortal{},
+                                   MyThreadToOutputMapPortal{},
+                                   vtkm::Id{},
+                                   TestExecObject(inputTestValues),
+                                   TestExecObject(outputTestValues));
 
   task2.SetErrorMessageBuffer(errorMessage);
 
@@ -362,14 +344,16 @@ void Test1DErrorTaskTilingInvoke()
   TestExecObject arg1(inputTestValues);
   TestExecObject arg2(outputTestValues);
 
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)> execObjects =
-    vtkm::internal::make_FunctionInterface<void>(arg1, arg2);
-
   TestWorkletErrorProxy worklet;
-  InvocationType1 invocation(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task = TaskTypes::MakeTask(worklet, invocation, vtkm::Id());
+  auto task = TaskTypes::MakeTask(worklet,
+                                  MyOutputToInputMapPortal{},
+                                  MyVisitArrayPortal{},
+                                  MyThreadToOutputMapPortal{},
+                                  vtkm::Id{},
+                                  arg1,
+                                  arg2);
 
   char message[1024];
   message[0] = '\0';
@@ -389,17 +373,19 @@ void Test3DNormalTaskTilingInvoke()
 
   std::vector<vtkm::Id> inputTestValues((8 * 8 * 8), 5);
   std::vector<vtkm::Id> outputTestValues((8 * 8 * 8), static_cast<vtkm::Id>(0xDEADDEAD));
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)> execObjects =
-    vtkm::internal::make_FunctionInterface<void>(TestExecObject(inputTestValues),
-                                                 TestExecObject(outputTestValues));
 
   std::cout << "  Try void return." << std::endl;
 
   TestWorkletProxy1 worklet1;
-  InvocationType1 invocation1(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task1 = TaskTypes::MakeTask(worklet1, invocation1, vtkm::Id3());
+  auto task1 = TaskTypes::MakeTask(worklet1,
+                                   MyOutputToInputMapPortal{},
+                                   MyVisitArrayPortal{},
+                                   MyThreadToOutputMapPortal{},
+                                   vtkm::Id3{},
+                                   TestExecObject(inputTestValues),
+                                   TestExecObject(outputTestValues));
   for (vtkm::Id k = 0; k < 8; ++k)
   {
     for (vtkm::Id j = 0; j < 8; j += 2)
@@ -423,9 +409,14 @@ void Test3DNormalTaskTilingInvoke()
   std::fill(outputTestValues.begin(), outputTestValues.end(), static_cast<vtkm::Id>(0xDEADDEAD));
 
   TestWorkletProxy2 worklet2;
-  InvocationType2 invocation2(execObjects);
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task2 = TaskTypes::MakeTask(worklet2, invocation2, vtkm::Id3());
+  auto task2 = TaskTypes::MakeTask(worklet2,
+                                   MyOutputToInputMapPortal{},
+                                   MyVisitArrayPortal{},
+                                   MyThreadToOutputMapPortal{},
+                                   vtkm::Id3{},
+                                   TestExecObject(inputTestValues),
+                                   TestExecObject(outputTestValues));
 
   //verify that linear order of values being processed is not presumed
   for (vtkm::Id i = 0; i < 8; ++i)
@@ -455,15 +446,17 @@ void Test3DErrorTaskTilingInvoke()
 
   std::vector<vtkm::Id> inputTestValues((8 * 8 * 8), 5);
   std::vector<vtkm::Id> outputTestValues((8 * 8 * 8), static_cast<vtkm::Id>(0xDEADDEAD));
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)> execObjects =
-    vtkm::internal::make_FunctionInterface<void>(TestExecObject(inputTestValues),
-                                                 TestExecObject(outputTestValues));
 
   TestWorkletErrorProxy worklet;
-  InvocationType1 invocation(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task1 = TaskTypes::MakeTask(worklet, invocation, vtkm::Id3());
+  auto task1 = TaskTypes::MakeTask(worklet,
+                                   MyOutputToInputMapPortal{},
+                                   MyVisitArrayPortal{},
+                                   MyThreadToOutputMapPortal{},
+                                   vtkm::Id3{},
+                                   TestExecObject(inputTestValues),
+                                   TestExecObject(outputTestValues));
 
   char message[1024];
   message[0] = '\0';

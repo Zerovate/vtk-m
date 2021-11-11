@@ -38,7 +38,7 @@ struct Transport<vtkm::cont::arg::TransportTagBitFieldIn, vtkm::cont::BitField, 
     typename vtkm::cont::BitField::template ExecutionTypes<Device>::PortalConst;
 
   template <typename InputDomainType>
-  VTKM_CONT ExecObjectType operator()(vtkm::cont::BitField& field,
+  VTKM_CONT ExecObjectType operator()(const vtkm::cont::BitField& field,
                                       const InputDomainType&,
                                       vtkm::Id,
                                       vtkm::Id,
@@ -54,7 +54,7 @@ struct Transport<vtkm::cont::arg::TransportTagBitFieldOut, vtkm::cont::BitField,
   using ExecObjectType = typename vtkm::cont::BitField::template ExecutionTypes<Device>::Portal;
 
   template <typename InputDomainType>
-  VTKM_CONT ExecObjectType operator()(vtkm::cont::BitField& field,
+  VTKM_CONT ExecObjectType operator()(const vtkm::cont::BitField& field,
                                       const InputDomainType&,
                                       vtkm::Id,
                                       vtkm::Id,
@@ -72,7 +72,7 @@ struct Transport<vtkm::cont::arg::TransportTagBitFieldInOut, vtkm::cont::BitFiel
   using ExecObjectType = typename vtkm::cont::BitField::template ExecutionTypes<Device>::Portal;
 
   template <typename InputDomainType>
-  VTKM_CONT ExecObjectType operator()(vtkm::cont::BitField& field,
+  VTKM_CONT ExecObjectType operator()(const vtkm::cont::BitField& field,
                                       const InputDomainType&,
                                       vtkm::Id,
                                       vtkm::Id,

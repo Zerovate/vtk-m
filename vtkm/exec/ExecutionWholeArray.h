@@ -47,7 +47,7 @@ public:
   }
 
   VTKM_CONT
-  ExecutionWholeArray(HandleType& handle,
+  ExecutionWholeArray(const HandleType& handle,
                       vtkm::cont::DeviceAdapterId device,
                       vtkm::cont::Token& token)
     : Portal(handle.PrepareForInPlace(device, token))
@@ -55,7 +55,7 @@ public:
   }
 
   VTKM_CONT
-  ExecutionWholeArray(HandleType& handle,
+  ExecutionWholeArray(const HandleType& handle,
                       vtkm::Id length,
                       vtkm::cont::DeviceAdapterId device,
                       vtkm::cont::Token& token)
@@ -92,25 +92,25 @@ class VTKM_DEPRECATED(1.6, "ExecutionWholeArray no longer uses Device template p
 public:
   using Superclass::Superclass;
 
-  VTKM_CONT ExecutionWholeArray(HandleType& handle)
+  VTKM_CONT ExecutionWholeArray(const HandleType& handle)
     : Superclass(handle, Device{}, vtkm::cont::Token{})
   {
   }
 
   VTKM_CONT
-  ExecutionWholeArray(HandleType& handle, vtkm::Id length)
+  ExecutionWholeArray(const HandleType& handle, vtkm::Id length)
     : Superclass(handle, length, Device{}, vtkm::cont::Token{})
   {
   }
 
   VTKM_CONT
-  ExecutionWholeArray(HandleType& handle, vtkm::cont::Token& token)
+  ExecutionWholeArray(const HandleType& handle, vtkm::cont::Token& token)
     : Superclass(handle, Device{}, token)
   {
   }
 
   VTKM_CONT
-  ExecutionWholeArray(HandleType& handle, vtkm::Id length, vtkm::cont::Token& token)
+  ExecutionWholeArray(const HandleType& handle, vtkm::Id length, vtkm::cont::Token& token)
     : Superclass(handle, length, Device{}, token)
   {
   }
@@ -172,13 +172,13 @@ class VTKM_DEPRECATED(1.6, "ExecutionWholeArray no longer uses Device template p
 public:
   using Superclass::Superclass;
 
-  VTKM_CONT ExecutionWholeArrayConst(HandleType& handle)
+  VTKM_CONT ExecutionWholeArrayConst(const HandleType& handle)
     : Superclass(handle, Device{}, vtkm::cont::Token{})
   {
   }
 
   VTKM_CONT
-  ExecutionWholeArrayConst(HandleType& handle, vtkm::cont::Token& token)
+  ExecutionWholeArrayConst(const HandleType& handle, vtkm::cont::Token& token)
     : Superclass(handle, Device{}, token)
   {
   }
