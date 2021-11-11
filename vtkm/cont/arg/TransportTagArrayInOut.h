@@ -53,7 +53,7 @@ struct Transport<vtkm::cont::arg::TransportTagArrayInOut, ContObjectType, Device
     std::declval<ContObjectType>().PrepareForInPlace(Device(), std::declval<vtkm::cont::Token&>()));
 
   template <typename InputDomainType>
-  VTKM_CONT ExecObjectType operator()(ContObjectType& object,
+  VTKM_CONT ExecObjectType operator()(const ContObjectType& object,
                                       const InputDomainType& vtkmNotUsed(inputDomain),
                                       vtkm::Id vtkmNotUsed(inputRange),
                                       vtkm::Id outputRange,

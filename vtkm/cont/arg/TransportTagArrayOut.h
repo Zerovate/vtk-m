@@ -54,13 +54,16 @@ struct Transport<vtkm::cont::arg::TransportTagArrayOut, ContObjectType, Device>
                                                              std::declval<vtkm::cont::Token&>()));
 
   template <typename InputDomainType>
-  VTKM_CONT ExecObjectType operator()(ContObjectType& object,
+  VTKM_CONT ExecObjectType operator()(const ContObjectType& object,
                                       const InputDomainType& vtkmNotUsed(inputDomain),
                                       vtkm::Id vtkmNotUsed(inputRange),
                                       vtkm::Id outputRange,
                                       vtkm::cont::Token& token) const
   {
-    return object.PrepareForOutput(outputRange, Device(), token);
+    // `ArrayHandleDeprecated` does not allow calling `PrepareForOutput` on a const object
+    // (like the newer `ArrayHandle` does). Once `ArrayHandleDeprecated` is fully deleted
+    // (probably in VTK-m 2.0), then this const_cast should be removed.
+    return const_cast<ContObjectType&>(object).PrepareForOutput(outputRange, Device(), token);
   }
 
 #ifdef VTKM_MSVC

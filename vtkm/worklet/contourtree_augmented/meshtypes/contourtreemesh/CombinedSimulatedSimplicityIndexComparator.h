@@ -208,7 +208,7 @@ public:
 
   VTKM_CONT CombinedSimulatedSimplicityIndexComparatorImpl<FieldType> PrepareForExecution(
     vtkm::cont::DeviceAdapterId device,
-    vtkm::cont::Token& token)
+    vtkm::cont::Token& token) const
   {
     return CombinedSimulatedSimplicityIndexComparatorImpl<FieldType>(this->ThisGlobalMeshIndex,
                                                                      this->OtherGlobalMeshIndex,

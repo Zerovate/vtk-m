@@ -18,9 +18,6 @@
 
 #include <vtkm/StaticAssert.h>
 
-#include <vtkm/internal/FunctionInterface.h>
-#include <vtkm/internal/Invocation.h>
-
 #if defined(VTKM_MSVC)
 #pragma warning(push)
 #pragma warning(disable : 4068) //unknown pragma
@@ -145,32 +142,10 @@ namespace
 {
 
 using TestControlSignature = void(TestControlSignatureTagInput, TestControlSignatureTagOutput);
-using TestControlInterface = vtkm::internal::FunctionInterface<TestControlSignature>;
 
 using TestExecutionSignature1 = void(vtkm::exec::arg::BasicArg<1>, vtkm::exec::arg::BasicArg<2>);
-using TestExecutionInterface1 = vtkm::internal::FunctionInterface<TestExecutionSignature1>;
 
 using TestExecutionSignature2 = vtkm::exec::arg::BasicArg<2>(vtkm::exec::arg::BasicArg<1>);
-using TestExecutionInterface2 = vtkm::internal::FunctionInterface<TestExecutionSignature2>;
-
-using ExecutionParameterInterface =
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)>;
-
-using InvocationType1 = vtkm::internal::Invocation<ExecutionParameterInterface,
-                                                   TestControlInterface,
-                                                   TestExecutionInterface1,
-                                                   1,
-                                                   MyOutputToInputMapPortal,
-                                                   MyVisitArrayPortal,
-                                                   MyThreadToOutputMapPortal>;
-
-using InvocationType2 = vtkm::internal::Invocation<ExecutionParameterInterface,
-                                                   TestControlInterface,
-                                                   TestExecutionInterface2,
-                                                   1,
-                                                   MyOutputToInputMapPortal,
-                                                   MyVisitArrayPortal,
-                                                   MyThreadToOutputMapPortal>;
 
 template <typename TaskType>
 static __global__ void ScheduleTaskStrided(TaskType task, vtkm::Id start, vtkm::Id end)
@@ -268,17 +243,18 @@ void TestNormalFunctorInvoke()
   vtkm::cont::ArrayHandle<vtkm::Id> input = vtkm::cont::make_ArrayHandle(inputTestValues, 3);
   vtkm::cont::ArrayHandle<vtkm::Id> output;
 
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)> execObjects =
-    vtkm::internal::make_FunctionInterface<void>(
-      TestExecObject(input.PrepareForInPlace(DeviceAdapter(), token)),
-      TestExecObject(output.PrepareForOutput(3, DeviceAdapter(), token)));
-
   std::cout << "  Try void return." << std::endl;
   TestWorkletProxy1 worklet1;
-  InvocationType1 invocation1(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task1 = TaskTypes::MakeTask(worklet1, invocation1, vtkm::Id());
+  auto task1 =
+    TaskTypes::MakeTask(worklet1,
+                        MyOutputToInputMapPortal{},
+                        MyVisitArrayPortal{},
+                        MyThreadToOutputMapPortal{},
+                        vtkm::Id{},
+                        TestExecObject(input.PrepareForInPlace(DeviceAdapter(), token)),
+                        TestExecObject(output.PrepareForOutput(3, DeviceAdapter(), token)));
 
   ScheduleTaskStrided<decltype(task1)><<<32, 256>>>(task1, 1, 2);
   cudaDeviceSynchronize();
@@ -297,10 +273,16 @@ void TestNormalFunctorInvoke()
     TestExecObject(output.PrepareForOutput(3, DeviceAdapter(), token)));
 
   TestWorkletProxy2 worklet2;
-  InvocationType2 invocation2(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
-  auto task2 = TaskTypes::MakeTask(worklet2, invocation2, vtkm::Id());
+  auto task2 =
+    TaskTypes::MakeTask(worklet2,
+                        MyOutputToInputMapPortal{},
+                        MyVisitArrayPortal{},
+                        MyThreadToOutputMapPortal{},
+                        vtkm::Id{},
+                        TestExecObject(input.PrepareForInPlace(DeviceAdapter(), token)),
+                        TestExecObject(output.PrepareForOutput(3, DeviceAdapter(), token)));
 
   ScheduleTaskStrided<decltype(task2)><<<32, 256>>>(task2, 2, 3);
   cudaDeviceSynchronize();
@@ -326,18 +308,18 @@ void TestErrorFunctorInvoke()
   vtkm::cont::ArrayHandle<vtkm::Id> input = vtkm::cont::make_ArrayHandle(&inputTestValue, 1);
   vtkm::cont::ArrayHandle<vtkm::Id> output = vtkm::cont::make_ArrayHandle(&outputTestValue, 1);
 
-  vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)> execObjects =
-    vtkm::internal::make_FunctionInterface<void>(
-      TestExecObject(input.PrepareForInPlace(DeviceAdapter(), token)),
-      TestExecObject(output.PrepareForInPlace(DeviceAdapter(), token)));
-
   TestWorkletErrorProxy worklet;
-  InvocationType1 invocation(execObjects);
 
   using TaskTypes = typename vtkm::cont::DeviceTaskTypes<DeviceAdapter>;
   using Algorithm = vtkm::cont::DeviceAdapterAlgorithm<DeviceAdapter>;
 
-  auto task = TaskTypes::MakeTask(worklet, invocation, vtkm::Id());
+  auto task = TaskTypes::MakeTask(worklet,
+                                  MyOutputToInputMapPortal{},
+                                  MyVisitArrayPortal{},
+                                  MyThreadToOutputMapPortal{},
+                                  vtkm::Id{},
+                                  TestExecObject(input.PrepareForInPlace(DeviceAdapter(), token)),
+                                  TestExecObject(output.PrepareForInPlace(DeviceAdapter(), token)));
 
   auto errorArray = Algorithm::GetPinnedErrorArray();
   vtkm::exec::internal::ErrorMessageBuffer errorMessage(errorArray.DevicePtr, errorArray.Size);
