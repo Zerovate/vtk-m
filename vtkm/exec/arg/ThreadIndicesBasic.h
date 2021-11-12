@@ -10,7 +10,7 @@
 #ifndef vtk_m_exec_arg_ThreadIndicesBasic_h
 #define vtk_m_exec_arg_ThreadIndicesBasic_h
 
-#include <vtkm/internal/Invocation.h>
+#include <vtkm/Types.h>
 
 namespace vtkm
 {

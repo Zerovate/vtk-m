@@ -46,27 +46,24 @@ public:
   {
   }
 
-  template <typename Invocation>
-  VTKM_CONT void DoInvoke(Invocation& invocation) const
+  template <typename... Args>
+  VTKM_CONT void DoInvoke(Args&&... args) const
   {
-    using namespace vtkm::worklet::internal;
+    using namespace vtkm::worklet::internal; // For SchedulingRange
 
-    // This is the type for the input domain
-    using InputDomainType = typename Invocation::InputDomainType;
-    using SchedulingRangeType = typename WorkletType::VisitTopologyType;
+    // We can pull the input domain parameter (the data specifying the input
+    // domain) from the args using the superclass.
+    const auto& inputDomain = this->GetInputDomain(std::forward<Args>(args)...);
 
     // If you get a compile error on this line, then you have tried to use
     // something that is not a vtkm::cont::CellSet as the input domain to a
     // topology operation (that operates on a cell set connection domain).
-    VTKM_IS_CELL_SET(InputDomainType);
-
-    // We can pull the input domain parameter (the data specifying the input
-    // domain) from the invocation object.
-    const auto& inputDomain = invocation.GetInputDomain();
+    VTKM_IS_CELL_SET(vtkm::internal::remove_pointer_and_decay<decltype(inputDomain)>);
 
     // Now that we have the input domain, we can extract the range of the
     // scheduling and call BadicInvoke.
-    this->BasicInvoke(invocation, SchedulingRange(inputDomain, SchedulingRangeType{}));
+    this->BasicInvoke(SchedulingRange(inputDomain, typename WorkletType::VisitTopologyType{}),
+                      std::forward<Args>(args)...);
   }
 };
 }
