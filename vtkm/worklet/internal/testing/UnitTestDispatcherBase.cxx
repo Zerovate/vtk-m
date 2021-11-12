@@ -311,19 +311,16 @@ public:
   }
 
   VTKM_CONT
-  template <typename Invocation>
-  void DoInvoke(Invocation& invocation) const
+  template <typename... Args>
+  void DoInvoke(Args&&... args) const
   {
     std::cout << "In TestDispatcher::DoInvoke()" << std::endl;
 
     using namespace vtkm::worklet::internal;
 
-    // This is the type for the input domain
-    using InputDomainType = typename Invocation::InputDomainType;
-
     // We can pull the input domain parameter (the data specifying the input
-    // domain) from the invocation object.
-    const InputDomainType& inputDomain = invocation.GetInputDomain();
+    // domain) from the args using the superclass.
+    const auto& inputDomain = this->GetInputDomain(std::forward<Args>(args)...);
 
     // For a DispatcherMapField, the inputDomain must be an ArrayHandle (or
     // an UncertainArrayHandle or an UnknownArrayHandle that gets cast to one).
@@ -334,7 +331,7 @@ public:
 
     // A MapField is a pretty straightforward dispatch. Once we know the number
     // of invocations, the superclass can take care of the rest.
-    this->BasicInvoke(invocation, numInstances);
+    this->BasicInvoke(numInstances, std::forward<Args>(args)...);
   }
 
 private:

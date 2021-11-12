@@ -41,13 +41,17 @@ public:
   {
   }
 
-  template <typename Invocation>
-  void DoInvoke(Invocation& invocation) const
+  template <typename... Args>
+  void DoInvoke(Args&&... args) const
   {
-    using namespace vtkm::worklet::internal;
+    using namespace vtkm::worklet::internal;  // For SchedulingRange
+
+    // We can pull the input domain parameter (the data specifying the input
+    // domain) from the args using the superclass.
+    const auto& inputDomain = this->GetInputDomain(std::forward<Args>(args)...);
 
     // This is the type for the input domain
-    using InputDomainType = typename Invocation::InputDomainType;
+    using InputDomainType = vtkm::internal::remove_pointer_and_decay<decltype(inputDomain)>;
 
     // If you get a compile error on this line, then you have tried to use
     // something other than vtkm::worklet::Keys as the input domain, which
@@ -56,13 +60,9 @@ public:
       (vtkm::cont::arg::TypeCheck<vtkm::cont::arg::TypeCheckTagKeys, InputDomainType>::value),
       "Invalid input domain for WorkletReduceByKey.");
 
-    // We can pull the input domain parameter (the data specifying the input
-    // domain) from the invocation object.
-    const InputDomainType& inputDomain = invocation.GetInputDomain();
-
     // Now that we have the input domain, we can extract the range of the
     // scheduling and call BasicInvoke.
-    this->BasicInvoke(invocation, SchedulingRange(inputDomain));
+    this->BasicInvoke(SchedulingRange(inputDomain), std::forward<Args>(args)...);
   }
 };
 }

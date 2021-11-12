@@ -13,7 +13,6 @@
 #include <vtkm/StaticAssert.h>
 
 #include <vtkm/internal/FunctionInterface.h>
-#include <vtkm/internal/Invocation.h>
 
 #include <vtkm/cont/CastAndCall.h>
 #include <vtkm/cont/ErrorBadType.h>
@@ -574,16 +573,7 @@ private:
     static_assert(isAllValid::value == expectedLen::value,
                   "All arguments failed the TypeCheck pass");
 
-    auto fi =
-      vtkm::internal::make_FunctionInterface<void, vtkm::internal::remove_cvref<Args>...>(args...);
-    auto ivc = vtkm::internal::Invocation<ParameterInterface,
-                                          ControlInterface,
-                                          ExecutionInterface,
-                                          WorkletType::InputDomain::INDEX,
-                                          vtkm::internal::NullType,
-                                          vtkm::internal::NullType>(
-      fi, vtkm::internal::NullType{}, vtkm::internal::NullType{});
-    static_cast<const DerivedClass*>(this)->DoInvoke(ivc);
+    static_cast<const DerivedClass*>(this)->DoInvoke(std::forward<Args>(args)...);
   }
 
 public:
@@ -699,50 +689,6 @@ protected:
   {
     this->BasicInvoke(vtkm::Id3{ inputRange[0], inputRange[1], 1 },
                       std::forward<ControlObjectTypes>(controlObjects)...);
-  }
-
-  // TODO: Delete this!!!
-  template <typename Invocation, typename InputRangeType, vtkm::IdComponent... Indices>
-  VTKM_NEVER_EXPORT void ConvertBasicInvoke(
-    const Invocation& invocation,
-    const InputRangeType& inputRange,
-    std::integer_sequence<vtkm::IdComponent, Indices...>) const
-  {
-    this->BasicInvoke(inputRange,
-                      vtkm::internal::ParameterGet<Indices + 1>(invocation.Parameters)...);
-  }
-
-  // TODO: Delete this!!!
-  template <typename Invocation>
-  VTKM_CONT void BasicInvoke(Invocation& invocation, vtkm::Id numInstances) const
-  {
-    this->ConvertBasicInvoke(
-      invocation,
-      numInstances,
-      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
-                                              Invocation::ParameterInterface::ARITY>{});
-  }
-
-  // TODO: Delete this!!!
-  template <typename Invocation>
-  VTKM_CONT void BasicInvoke(Invocation& invocation, vtkm::Id2 dimensions) const
-  {
-    this->ConvertBasicInvoke(
-      invocation,
-      dimensions,
-      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
-                                              Invocation::ParameterInterface::ARITY>{});
-  }
-
-  // TODO: Delete this!!!
-  template <typename Invocation>
-  VTKM_CONT void BasicInvoke(Invocation& invocation, vtkm::Id3 dimensions) const
-  {
-    this->ConvertBasicInvoke(
-      invocation,
-      dimensions,
-      typename vtkmstd::make_integer_sequence<vtkm::IdComponent,
-                                              Invocation::ParameterInterface::ARITY>{});
   }
 
   WorkletType Worklet;
