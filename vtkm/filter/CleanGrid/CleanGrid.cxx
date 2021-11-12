@@ -29,17 +29,6 @@ struct SharedStates
 }
 
 //-----------------------------------------------------------------------------
-CleanGrid::CleanGrid()
-  : CompactPointFields(true)
-  , MergePoints(true)
-  , Tolerance(1.0e-6)
-  , ToleranceIsAbsolute(false)
-  , RemoveDegenerateCells(true)
-  , FastMerge(true)
-{
-}
-
-//-----------------------------------------------------------------------------
 vtkm::cont::DataSet CleanGrid::GenerateOutput(const vtkm::cont::DataSet& inData,
                                               vtkm::cont::CellSetExplicit<>& outputCellSet,
                                               cleangrid::SharedStates& Worklets)

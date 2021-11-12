@@ -11,23 +11,20 @@
 #ifndef vtk_m_filter_ClipWithField_hxx
 #define vtk_m_filter_ClipWithField_hxx
 
-#include <vtkm/filter/Contour/ClipWithField.h>
-
 #include <vtkm/cont/ArrayHandlePermutation.h>
 #include <vtkm/cont/CoordinateSystem.h>
 #include <vtkm/cont/DynamicCellSet.h>
 #include <vtkm/cont/ErrorFilterExecution.h>
 
+#include <vtkm/filter/Contour/ClipWithField.h>
 #include <vtkm/filter/Contour/worklet/Clip.h>
 
 namespace vtkm
 {
 namespace filter
 {
-
-namespace detail
+namespace
 {
-
 struct ClipWithFieldProcessCoords
 {
   template <typename T, typename Storage>
@@ -42,7 +39,41 @@ struct ClipWithFieldProcessCoords
   }
 };
 
-} // namespace detail
+bool DoMapField(vtkm::cont::DataSet& result,
+                const vtkm::cont::Field& field,
+                vtkm::worklet::Clip& worklet)
+{
+  if (field.IsFieldPoint())
+  {
+    auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
+
+    auto functor = [&](auto concrete) {
+      using T = typename decltype(concrete)::ValueType;
+      vtkm::cont::ArrayHandle<T> output;
+      output = worklet.ProcessPointField(concrete);
+      result.template AddPointField(field.GetName(), output);
+    };
+
+    array.CastAndCallWithFloatFallback(functor);
+    return true;
+  }
+  else if (field.IsFieldCell())
+  {
+    // Use the precompiled field permutation function.
+    vtkm::cont::ArrayHandle<vtkm::Id> permutation = worklet.GetCellMapOutputToInput();
+    return vtkm::filter::MapFieldPermutation(field, permutation, result);
+  }
+  else if (field.IsFieldGlobal())
+  {
+    result.AddField(field);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+} // anonymous
 
 //-----------------------------------------------------------------------------
 vtkm::cont::DataSet ClipWithField::DoExecute(const vtkm::cont::DataSet& input)
@@ -76,8 +107,7 @@ vtkm::cont::DataSet ClipWithField::DoExecute(const vtkm::cont::DataSet& input)
          ++coordSystemId)
     {
       vtkm::cont::CoordinateSystem coords = input.GetCoordinateSystem(coordSystemId);
-      coords.GetData().CastAndCall(
-        detail::ClipWithFieldProcessCoords{}, coords.GetName(), Worklet, output);
+      coords.GetData().CastAndCall(ClipWithFieldProcessCoords{}, coords.GetName(), Worklet, output);
     }
   };
 
@@ -89,40 +119,6 @@ vtkm::cont::DataSet ClipWithField::DoExecute(const vtkm::cont::DataSet& input)
   return output;
 }
 
-bool ClipWithField::DoMapField(vtkm::cont::DataSet& result,
-                               const vtkm::cont::Field& field,
-                               vtkm::worklet::Clip& worklet)
-{
-  if (field.IsFieldPoint())
-  {
-    auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
-
-    auto functor = [&](auto concrete) {
-      using T = typename decltype(concrete)::ValueType;
-      vtkm::cont::ArrayHandle<T> output;
-      output = worklet.ProcessPointField(concrete);
-      result.template AddPointField(field.GetName(), output);
-    };
-
-    array.CastAndCallWithFloatFallback(functor);
-    return true;
-  }
-  else if (field.IsFieldCell())
-  {
-    // Use the precompiled field permutation function.
-    vtkm::cont::ArrayHandle<vtkm::Id> permutation = worklet.GetCellMapOutputToInput();
-    return vtkm::filter::MapFieldPermutation(field, permutation, result);
-  }
-  else if (field.IsFieldGlobal())
-  {
-    result.AddField(field);
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
 }
 } // end namespace vtkm::filter
 

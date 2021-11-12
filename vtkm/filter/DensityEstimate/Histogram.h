@@ -72,8 +72,8 @@ public:
   //@}
 
 private:
-  vtkm::Id NumberOfBins;
-  vtkm::Float64 BinDelta;
+  vtkm::Id NumberOfBins = 10;
+  vtkm::Float64 BinDelta = 0;
   vtkm::Range ComputedRange;
   vtkm::Range Range;
 };

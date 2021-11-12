@@ -123,9 +123,9 @@ public:
 
 private:
   std::string SecondaryFieldName;
-  vtkm::cont::Field::Association SecondaryFieldAssociation;
-  bool UseCoordinateSystemAsSecondaryField;
-  vtkm::Id SecondaryCoordinateSystemIndex;
+  vtkm::cont::Field::Association SecondaryFieldAssociation = vtkm::cont::Field::Association::ANY;
+  bool UseCoordinateSystemAsSecondaryField = false;
+  vtkm::Id SecondaryCoordinateSystemIndex = 0;
 };
 }
 } // namespace vtkm::filter

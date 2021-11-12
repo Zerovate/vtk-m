@@ -38,15 +38,6 @@ struct GreaterThanThreshold
 } // namespace detail
 
 VTKM_CONT ImageDifference::ImageDifference()
-  : vtkm::filter::FilterField() // FIXME: is this even necessary?
-  , AverageRadius(0)
-  , PixelShiftRadius(0)
-  , AllowedPixelErrorRatio(0.00025f)
-  , PixelDiffThreshold(0.05f)
-  , ImageDiffWithinThreshold(true)
-  , SecondaryFieldName("image-2")
-  , SecondaryFieldAssociation(vtkm::cont::Field::Association::ANY)
-  , ThresholdFieldName("threshold-output")
 {
   this->SetPrimaryField("image-1");
   this->SetOutputFieldName("image-diff");

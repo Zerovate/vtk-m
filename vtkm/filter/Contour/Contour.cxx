@@ -50,6 +50,41 @@ bool Contour::GetMergeDuplicatePoints() const
   return MergeDuplicatedPoints;
 }
 
+namespace
+{
+VTKM_CONT bool DoMapField(vtkm::cont::DataSet& result,
+                          const vtkm::cont::Field& field,
+                          vtkm::worklet::Contour& Worklet)
+{
+  if (field.IsFieldPoint())
+  {
+    auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
+
+    auto functor = [&](auto concrete) {
+      auto fieldArray = Worklet.ProcessPointField(concrete);
+      result.AddPointField(field.GetName(), fieldArray);
+    };
+    array.CastAndCallWithFloatFallback(functor);
+    return true;
+  }
+  else if (field.IsFieldCell())
+  {
+    // Use the precompiled field permutation function.
+    vtkm::cont::ArrayHandle<vtkm::Id> permutation = Worklet.GetCellIdMap();
+    return vtkm::filter::MapFieldPermutation(field, permutation, result);
+  }
+  else if (field.IsFieldGlobal())
+  {
+    result.AddField(field);
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+} // anonymous namespace
+
 //-----------------------------------------------------------------------------
 vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
 {
@@ -176,36 +211,5 @@ vtkm::cont::DataSet Contour::DoExecute(const vtkm::cont::DataSet& inDataSet)
   return output;
 }
 
-VTKM_CONT bool Contour::DoMapField(vtkm::cont::DataSet& result,
-                                   const vtkm::cont::Field& field,
-                                   vtkm::worklet::Contour& Worklet)
-{
-  if (field.IsFieldPoint())
-  {
-    auto array = vtkm::filter::ApplyPolicyFieldNotActive(field, vtkm::filter::PolicyDefault{});
-
-    auto functor = [&](auto concrete) {
-      auto fieldArray = Worklet.ProcessPointField(concrete);
-      result.AddPointField(field.GetName(), fieldArray);
-    };
-    array.CastAndCallWithFloatFallback(functor);
-    return true;
-  }
-  else if (field.IsFieldCell())
-  {
-    // Use the precompiled field permutation function.
-    vtkm::cont::ArrayHandle<vtkm::Id> permutation = Worklet.GetCellIdMap();
-    return vtkm::filter::MapFieldPermutation(field, permutation, result);
-  }
-  else if (field.IsFieldGlobal())
-  {
-    result.AddField(field);
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-}
 }
 }

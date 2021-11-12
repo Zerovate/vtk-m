@@ -18,10 +18,6 @@
 
 namespace vtkm
 {
-namespace worklet
-{
-class Clip;
-}
 namespace filter
 {
 /// \brief Clip a dataset using a field
@@ -44,16 +40,12 @@ public:
   VTKM_CONT
   vtkm::Float64 GetClipValue() const { return this->ClipValue; }
 
-  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input);
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
 private:
-  VTKM_CONT static bool DoMapField(vtkm::cont::DataSet& result,
-                                   const vtkm::cont::Field& field,
-                                   vtkm::worklet::Clip& worklet);
   vtkm::Float64 ClipValue = 0;
   bool Invert = false;
 };
-
 }
 } // namespace vtkm::filter
 

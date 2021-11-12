@@ -16,29 +16,13 @@
 
 namespace vtkm
 {
-namespace worklet
-{
-class Tetrahedralize;
-}
 namespace filter
 {
 
 class VTKM_FILTER_GEOMETRYGENERATION_EXPORT Tetrahedralize : public vtkm::filter::Filter
 {
 public:
-  VTKM_CONT
-  Tetrahedralize();
-
-  VTKM_CONT
-  ~Tetrahedralize();
-
   VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
-
-private:
-  // Map new field onto the resulting dataset after running the filter
-  VTKM_CONT static bool DoMapField(vtkm::cont::DataSet& result,
-                                   const vtkm::cont::Field& field,
-                                   vtkm::worklet::Tetrahedralize& worklet);
 };
 }
 } // namespace vtkm::filter

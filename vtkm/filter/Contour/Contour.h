@@ -19,11 +19,6 @@
 
 namespace vtkm
 {
-namespace worklet
-{
-class Contour;
-}
-
 namespace filter
 {
 /// \brief generate isosurface(s) from a Volume
@@ -37,9 +32,6 @@ class VTKM_FILTER_CONTOUR_EXPORT Contour : public vtkm::filter::FilterField
 {
 public:
   using SupportedTypes = vtkm::List<vtkm::UInt8, vtkm::Int8, vtkm::Float32, vtkm::Float64>;
-
-  Contour() = default;
-  ~Contour() override = default;
 
   void SetNumberOfIsoValues(vtkm::Id num)
   {
@@ -126,10 +118,6 @@ public:
   vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& result) override;
 
 private:
-  static bool DoMapField(vtkm::cont::DataSet& result,
-                         const vtkm::cont::Field& field,
-                         vtkm::worklet::Contour&);
-
   std::vector<vtkm::Float64> IsoValues;
   bool GenerateNormals = false;
   bool AddInterpolationEdgeIds = false;

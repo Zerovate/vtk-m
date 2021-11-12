@@ -103,14 +103,14 @@ public:
   VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 
 private:
-  vtkm::IdComponent AverageRadius;
-  vtkm::IdComponent PixelShiftRadius;
-  vtkm::FloatDefault AllowedPixelErrorRatio;
-  vtkm::FloatDefault PixelDiffThreshold;
-  bool ImageDiffWithinThreshold;
-  std::string SecondaryFieldName;
-  vtkm::cont::Field::Association SecondaryFieldAssociation;
-  std::string ThresholdFieldName;
+  vtkm::IdComponent AverageRadius = 0;
+  vtkm::IdComponent PixelShiftRadius = 0;
+  vtkm::FloatDefault AllowedPixelErrorRatio = 0.00025f;
+  vtkm::FloatDefault PixelDiffThreshold = 0.05f;
+  bool ImageDiffWithinThreshold = true;
+  std::string SecondaryFieldName = "image-2";
+  vtkm::cont::Field::Association SecondaryFieldAssociation = vtkm::cont::Field::Association::ANY;
+  std::string ThresholdFieldName = "threshold-output";
 };
 
 } // namespace filter

@@ -37,9 +37,6 @@ class VTKM_FILTER_FIELDTRANSFORM_EXPORT GenerateIds : public vtkm::filter::Filte
   bool UseFloat = false;
 
 public:
-  GenerateIds() = default;
-  ~GenerateIds() = default;
-
   /// \{
   /// \brief The name given to the generated point field.
   ///

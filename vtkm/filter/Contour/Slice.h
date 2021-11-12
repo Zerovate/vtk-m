@@ -10,10 +10,8 @@
 #ifndef vtk_m_filter_Slice_h
 #define vtk_m_filter_Slice_h
 
-#include <vtkm/filter/Contour/vtkm_filter_contour_export.h>
-
 #include <vtkm/filter/Contour/Contour.h>
-#include <vtkm/filter/Filter.h>
+#include <vtkm/filter/Contour/vtkm_filter_contour_export.h>
 
 #include <vtkm/ImplicitFunction.h>
 

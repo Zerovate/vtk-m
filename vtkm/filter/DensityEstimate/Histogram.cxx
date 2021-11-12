@@ -14,7 +14,6 @@
 #include <vtkm/filter/DensityEstimate/worklet/FieldHistogram.h>
 
 #include <vtkm/cont/Algorithm.h>
-#include <vtkm/cont/ArrayCopy.h>
 #include <vtkm/cont/AssignerPartitionedDataSet.h>
 #include <vtkm/cont/EnvironmentTracker.h>
 #include <vtkm/cont/ErrorFilterExecution.h>
@@ -166,10 +165,6 @@ private:
 
 //-----------------------------------------------------------------------------
 VTKM_CONT Histogram::Histogram()
-  : NumberOfBins(10)
-  , BinDelta(0)
-  , ComputedRange()
-  , Range()
 {
   this->SetOutputFieldName("histogram");
 }

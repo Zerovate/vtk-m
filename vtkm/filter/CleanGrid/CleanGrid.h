@@ -41,9 +41,6 @@ struct SharedStates;
 class VTKM_FILTER_CLEANGRID_EXPORT CleanGrid : public vtkm::filter::Filter
 {
 public:
-  CleanGrid();
-  ~CleanGrid() override = default;
-
   /// When the CompactPointFields flag is true, the filter will identify any
   /// points that are not used by the topology. This is on by default.
   ///
@@ -92,12 +89,12 @@ private:
                                                cleangrid::SharedStates& worklets);
 
 
-  bool CompactPointFields;
-  bool MergePoints;
-  vtkm::Float64 Tolerance;
-  bool ToleranceIsAbsolute;
-  bool RemoveDegenerateCells;
-  bool FastMerge;
+  bool CompactPointFields = true;
+  bool MergePoints = true;
+  vtkm::Float64 Tolerance = 1.0e-6;
+  bool ToleranceIsAbsolute = false;
+  bool RemoveDegenerateCells = true;
+  bool FastMerge = true;
 };
 
 }
