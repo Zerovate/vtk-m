@@ -37,27 +37,16 @@ public:
   {
   }
 
-  template <typename Invocation>
-  VTKM_CONT void DoInvoke(Invocation& invocation) const
+  template <typename... Args>
+  VTKM_CONT void DoInvoke(Args&&... args) const
   {
+    // Get the number of instances by querying the scheduling range of the input domain
     using namespace vtkm::worklet::internal;
-
-    // This is the type for the input domain
-    using InputDomainType = typename Invocation::InputDomainType;
-
-    // We can pull the input domain parameter (the data specifying the input
-    // domain) from the invocation object.
-    const InputDomainType& inputDomain = invocation.GetInputDomain();
-
-    // For a DispatcherMapField, the inputDomain must be an ArrayHandle (or
-    // an UnknownArrayHandle that gets cast to one). The size of the domain
-    // (number of threads/worklet instances) is equal to the size of the
-    // array.
-    auto numInstances = SchedulingRange(inputDomain);
+    auto numInstances = SchedulingRange(this->GetInputDomain(args...));
 
     // A MapField is a pretty straightforward dispatch. Once we know the number
-    // of invocations, the superclass can take care of the rest.
-    this->BasicInvoke(invocation, numInstances);
+    // of instances, the superclass can take care of the rest.
+    this->BasicInvoke(numInstances, std::forward<Args>(args)...);
   }
 };
 }

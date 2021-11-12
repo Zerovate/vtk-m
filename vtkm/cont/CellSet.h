@@ -14,6 +14,8 @@
 
 #include <vtkm/StaticAssert.h>
 
+#include <vtkm/internal/DecayHelpers.h>
+
 #include <vtkm/cont/ArrayHandle.h>
 
 namespace vtkm
@@ -64,7 +66,7 @@ namespace internal
 template <typename T>
 struct CellSetCheck
 {
-  using U = typename std::remove_pointer<T>::type;
+  using U = vtkm::internal::remove_cvref<T>;
   using type = typename std::is_base_of<vtkm::cont::CellSet, U>;
 };
 
