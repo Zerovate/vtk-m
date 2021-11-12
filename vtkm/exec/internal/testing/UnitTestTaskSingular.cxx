@@ -17,7 +17,6 @@
 #include <vtkm/StaticAssert.h>
 
 #include <vtkm/internal/FunctionInterface.h>
-#include <vtkm/internal/Invocation.h>
 
 #include <vtkm/testing/Testing.h>
 namespace
@@ -143,22 +142,6 @@ using TestExecutionInterface2 = vtkm::internal::FunctionInterface<TestExecutionS
 
 using ExecutionParameterInterface =
   vtkm::internal::FunctionInterface<void(TestExecObject, TestExecObject)>;
-
-using InvocationType1 = vtkm::internal::Invocation<ExecutionParameterInterface,
-                                                   TestControlInterface,
-                                                   TestExecutionInterface1,
-                                                   1,
-                                                   MyOutputToInputMapPortal,
-                                                   MyVisitArrayPortal,
-                                                   MyThreadToOutputMapPortal>;
-
-using InvocationType2 = vtkm::internal::Invocation<ExecutionParameterInterface,
-                                                   TestControlInterface,
-                                                   TestExecutionInterface2,
-                                                   1,
-                                                   MyOutputToInputMapPortal,
-                                                   MyVisitArrayPortal,
-                                                   MyThreadToOutputMapPortal>;
 
 // Not a full worklet, but provides operators that we expect in a worklet.
 struct TestWorkletProxy : vtkm::exec::FunctorBase
