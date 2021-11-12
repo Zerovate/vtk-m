@@ -28,8 +28,6 @@ set(common_headers
   ExtractStructured.h
   FieldMetadata.h
   FilterCell.h
-  FilterDataSet.h
-  FilterDataSetWithField.h
   FilterField.h
   Filter.h
   FilterParticleAdvection.h

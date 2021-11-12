@@ -23,7 +23,7 @@ namespace vtkm
 namespace filter
 {
 
-class FilterField : public virtual vtkm::filter::Filter
+class FilterField : public vtkm::filter::Filter
 {
 public:
   VTKM_CONT

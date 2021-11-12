@@ -12,7 +12,7 @@
 #define vtk_m_filter_Contour_h
 
 #include <vtkm/filter/Contour/vtkm_filter_contour_export.h>
-#include <vtkm/filter/FilterDataSetWithField.h>
+#include <vtkm/filter/FilterField.h>
 #include <vtkm/filter/MapFieldPermutation.h>
 
 #include <vtkm/filter/Instantiations.h>
@@ -33,13 +33,13 @@ namespace filter
 /// Multiple contour values must be specified to generate the isosurfaces.
 /// @warning
 /// This filter is currently only supports 3D volumes.
-class VTKM_FILTER_CONTOUR_EXPORT Contour : public vtkm::filter::FilterDataSetWithField
+class VTKM_FILTER_CONTOUR_EXPORT Contour : public vtkm::filter::FilterField
 {
 public:
   using SupportedTypes = vtkm::List<vtkm::UInt8, vtkm::Int8, vtkm::Float32, vtkm::Float64>;
 
   Contour() = default;
-  ~Contour() = default;
+  ~Contour() override = default;
 
   void SetNumberOfIsoValues(vtkm::Id num)
   {

@@ -13,7 +13,7 @@
 
 #include <vtkm/filter/Contour/vtkm_filter_contour_export.h>
 
-#include <vtkm/filter/FilterDataSetWithField.h>
+#include <vtkm/filter/FilterField.h>
 #include <vtkm/filter/MapFieldPermutation.h>
 
 namespace vtkm
@@ -30,7 +30,7 @@ namespace filter
 /// value are considered outside, and will be discarded. All points that are greater
 /// are kept.
 /// The resulting geometry will not be water tight.
-class VTKM_FILTER_CONTOUR_EXPORT ClipWithField : public vtkm::filter::FilterDataSetWithField
+class VTKM_FILTER_CONTOUR_EXPORT ClipWithField : public vtkm::filter::FilterField
 {
 public:
   using SupportedTypes = vtkm::TypeListScalarAll;
