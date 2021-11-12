@@ -52,7 +52,7 @@ void TryInvocation()
   // This should be a no-op.
   fetch.Store(indices, execObjectStore, execObject);
 
-  // Data in Invocation should not have changed.
+  // Data in execution object should not have changed.
   VTKM_TEST_ASSERT(execObjectStore.Number == EXPECTED_NUMBER,
                    "Fetch changed read-only execution object.");
 }

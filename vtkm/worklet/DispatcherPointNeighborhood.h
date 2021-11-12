@@ -41,27 +41,25 @@ public:
   {
   }
 
-  template <typename Invocation>
-  void DoInvoke(Invocation& invocation) const
+  template <typename... Args>
+  void DoInvoke(Args&&... args) const
   {
-    using namespace vtkm::worklet::internal;
+    using namespace vtkm::worklet::internal; // For SchedulingRange
 
-    // This is the type for the input domain
-    using InputDomainType = typename Invocation::InputDomainType;
+    // We can pull the input domain parameter (the data specifying the input
+    // domain) from the args using the superclass.
+    const auto& inputDomain = this->GetInputDomain(args...);
 
     // If you get a compile error on this line, then you have tried to use
     // something that is not a vtkm::cont::CellSet as the input domain to a
     // topology operation (that operates on a cell set connection domain).
-    VTKM_IS_CELL_SET(InputDomainType);
+    VTKM_IS_CELL_SET(vtkm::internal::remove_pointer_and_decay<decltype(inputDomain)>);
 
-    // We can pull the input domain parameter (the data specifying the input
-    // domain) from the invocation object.
-    const InputDomainType& inputDomain = invocation.GetInputDomain();
     auto inputRange = SchedulingRange(inputDomain, vtkm::TopologyElementTagPoint{});
 
     // This is pretty straightforward dispatch. Once we know the number
     // of invocations, the superclass can take care of the rest.
-    this->BasicInvoke(invocation, inputRange);
+    this->BasicInvoke(inputRange, std::forward<Args>(args)...);
   }
 };
 }
