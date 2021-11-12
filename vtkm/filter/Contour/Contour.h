@@ -38,8 +38,8 @@ class VTKM_FILTER_CONTOUR_EXPORT Contour : public vtkm::filter::FilterDataSetWit
 public:
   using SupportedTypes = vtkm::List<vtkm::UInt8, vtkm::Int8, vtkm::Float32, vtkm::Float64>;
 
-  Contour();
-  ~Contour();
+  Contour() = default;
+  ~Contour() = default;
 
   void SetNumberOfIsoValues(vtkm::Id num)
   {
@@ -131,13 +131,13 @@ private:
                          vtkm::worklet::Contour&);
 
   std::vector<vtkm::Float64> IsoValues;
-  bool GenerateNormals;
-  bool AddInterpolationEdgeIds;
-  bool ComputeFastNormalsForStructured;
-  bool ComputeFastNormalsForUnstructured;
-  bool MergeDuplicatedPoints;
-  std::string NormalArrayName;
-  std::string InterpolationEdgeIdsArrayName;
+  bool GenerateNormals = false;
+  bool AddInterpolationEdgeIds = false;
+  bool ComputeFastNormalsForStructured = false;
+  bool ComputeFastNormalsForUnstructured = true;
+  bool MergeDuplicatedPoints = true;
+  std::string NormalArrayName = "normals";
+  std::string InterpolationEdgeIdsArrayName = "edgeIds";
 };
 
 }

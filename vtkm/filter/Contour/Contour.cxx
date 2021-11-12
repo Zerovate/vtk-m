@@ -39,20 +39,6 @@ inline bool IsCellSetStructured(const vtkm::cont::DynamicCellSetBase<CellSetList
 } // anonymous namespace
 
 //-----------------------------------------------------------------------------
-Contour::Contour()
-  : vtkm::filter::FilterDataSetWithField() // FIXME: is this even necessary?
-  , IsoValues()
-  , GenerateNormals(false)
-  , AddInterpolationEdgeIds(false)
-  , ComputeFastNormalsForStructured(false)
-  , ComputeFastNormalsForUnstructured(true)
-  , NormalArrayName("normals")
-  , InterpolationEdgeIdsArrayName("edgeIds")
-{
-}
-
-Contour::~Contour() = default;
-
 void Contour::SetMergeDuplicatePoints(bool on)
 {
   this->MergeDuplicatedPoints = on;
