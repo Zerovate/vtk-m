@@ -73,7 +73,7 @@ namespace vtkm
 /// and `ForEach` that are helpful for several VTK-m operations.
 ///
 template <typename... Ts>
-class Tuple;
+class VTKM_NEVER_EXPORT Tuple;
 
 /// \brief Get the size of a tuple.
 ///
@@ -91,7 +91,7 @@ namespace detail
 {
 
 template <vtkm::IdComponent Index, typename TupleType>
-struct TupleElementImpl
+struct VTKM_NEVER_EXPORT TupleElementImpl
 {
   using type = decltype(TupleType::ElementTypeI(vtkm::internal::IndexTag<Index>{}));
 };
@@ -106,7 +106,7 @@ using TupleElement = typename detail::TupleElementImpl<Index, TupleType>::type;
 /// \brief Compatible with `std::tuple_element` for `vtkm::Tuple`.
 ///
 template <std::size_t Index, typename TupleType>
-struct tuple_element
+struct VTKM_NEVER_EXPORT tuple_element
 {
   using type = TupleElement<static_cast<vtkm::IdComponent>(Index), TupleType>;
 };
@@ -121,14 +121,14 @@ using tuple_element_t = typename tuple_element<Index, TupleType>::type;
 ///
 VTKM_SUPPRESS_EXEC_WARNINGS
 template <vtkm::IdComponent Index, typename... Ts>
-VTKM_EXEC_CONT auto Get(const vtkm::Tuple<Ts...>& tuple) -> decltype(tuple.template Get<Index>())
+VTKM_NEVER_EXPORT VTKM_EXEC_CONT auto Get(const vtkm::Tuple<Ts...>& tuple)
 {
   return tuple.template Get<Index>();
 }
 
 VTKM_SUPPRESS_EXEC_WARNINGS
 template <vtkm::IdComponent Index, typename... Ts>
-VTKM_EXEC_CONT auto Get(vtkm::Tuple<Ts...>& tuple) -> decltype(tuple.template Get<Index>())
+VTKM_NEVER_EXPORT VTKM_EXEC_CONT auto Get(vtkm::Tuple<Ts...>& tuple)
 {
   return tuple.template Get<Index>();
 }
@@ -139,16 +139,14 @@ VTKM_EXEC_CONT auto Get(vtkm::Tuple<Ts...>& tuple) -> decltype(tuple.template Ge
 ///
 VTKM_SUPPRESS_EXEC_WARNINGS
 template <std::size_t Index, typename... Ts>
-VTKM_EXEC_CONT auto get(const vtkm::Tuple<Ts...>& tuple)
-  -> decltype(vtkm::Get<static_cast<vtkm::IdComponent>(Index)>(tuple))
+VTKM_NEVER_EXPORT VTKM_EXEC_CONT auto get(const vtkm::Tuple<Ts...>& tuple)
 {
   return vtkm::Get<static_cast<vtkm::IdComponent>(Index)>(tuple);
 }
 
 VTKM_SUPPRESS_EXEC_WARNINGS
 template <std::size_t Index, typename... Ts>
-VTKM_EXEC_CONT auto get(vtkm::Tuple<Ts...>& tuple)
-  -> decltype(vtkm::Get<static_cast<vtkm::IdComponent>(Index)>(tuple))
+VTKM_NEVER_EXPORT VTKM_EXEC_CONT auto get(vtkm::Tuple<Ts...>& tuple)
 {
   return vtkm::Get<static_cast<vtkm::IdComponent>(Index)>(tuple);
 }
@@ -158,7 +156,8 @@ VTKM_EXEC_CONT auto get(vtkm::Tuple<Ts...>& tuple)
 ///
 VTKM_SUPPRESS_EXEC_WARNINGS
 template <typename... Ts>
-VTKM_EXEC_CONT auto MakeTuple(Ts&&... args) -> vtkm::Tuple<typename std::decay<Ts>::type...>
+VTKM_NEVER_EXPORT VTKM_EXEC_CONT auto MakeTuple(Ts&&... args)
+  -> vtkm::Tuple<typename std::decay<Ts>::type...>
 {
   return vtkm::Tuple<typename std::decay<Ts>::type...>(std::forward<Ts>(args)...);
 }
@@ -167,7 +166,8 @@ VTKM_EXEC_CONT auto MakeTuple(Ts&&... args) -> vtkm::Tuple<typename std::decay<T
 ///
 VTKM_SUPPRESS_EXEC_WARNINGS
 template <typename... Ts>
-VTKM_EXEC_CONT auto make_tuple(Ts&&... args) -> decltype(vtkm::MakeTuple(std::forward<Ts>(args)...))
+VTKM_NEVER_EXPORT VTKM_EXEC_CONT auto make_tuple(Ts&&... args)
+  -> decltype(vtkm::MakeTuple(std::forward<Ts>(args)...))
 {
   return vtkm::MakeTuple(std::forward<Ts>(args)...);
 }
@@ -175,12 +175,11 @@ VTKM_EXEC_CONT auto make_tuple(Ts&&... args) -> decltype(vtkm::MakeTuple(std::fo
 /// @cond NONE
 namespace detail
 {
-struct TupleTransformFunctor
+struct VTKM_NEVER_EXPORT TupleTransformFunctor
 {
   VTKM_SUPPRESS_EXEC_WARNINGS
   template <typename Function, typename... Ts>
   VTKM_EXEC_CONT auto operator()(Function&& f, Ts&&... args)
-    -> decltype(vtkm::MakeTuple(f(std::forward<Ts>(args))...))
   {
     return vtkm::MakeTuple(f(std::forward<Ts>(args))...);
   }
@@ -188,13 +187,12 @@ struct TupleTransformFunctor
 
 VTKM_SUPPRESS_EXEC_WARNINGS
 template <typename TupleType, typename Function>
-VTKM_EXEC_CONT auto TupleTransform(TupleType&& tuple, Function&& f)
-  -> decltype(tuple.Apply(TupleTransformFunctor{}, std::forward<Function>(f)))
+VTKM_NEVER_EXPORT VTKM_EXEC_CONT auto TupleTransform(TupleType&& tuple, Function&& f)
 {
   return tuple.Apply(TupleTransformFunctor{}, std::forward<Function>(f));
 }
 
-struct TupleForEachFunctor
+struct VTKM_NEVER_EXPORT TupleForEachFunctor
 {
   VTKM_SUPPRESS_EXEC_WARNINGS
   template <typename Function, typename... Ts>
@@ -206,8 +204,7 @@ struct TupleForEachFunctor
 
 VTKM_SUPPRESS_EXEC_WARNINGS
 template <typename TupleType, typename Function>
-VTKM_EXEC_CONT auto TupleForEach(TupleType&& tuple, Function&& f)
-  -> decltype(tuple.Apply(TupleForEachFunctor{}, std::forward<Function>(f)))
+VTKM_NEVER_EXPORT VTKM_EXEC_CONT auto TupleForEach(TupleType&& tuple, Function&& f)
 {
   return tuple.Apply(TupleForEachFunctor{}, std::forward<Function>(f));
 }
@@ -216,7 +213,7 @@ VTKM_EXEC_CONT auto TupleForEach(TupleType&& tuple, Function&& f)
 /// @endcond
 
 template <>
-class Tuple<>
+class VTKM_NEVER_EXPORT Tuple<>
 {
 public:
   static constexpr vtkm::IdComponent Size = 0;
@@ -224,14 +221,12 @@ public:
   VTKM_SUPPRESS_EXEC_WARNINGS
   template <typename Function, typename... Args>
   VTKM_EXEC_CONT auto Apply(Function&& f, Args&&... args)
-    -> decltype(f(std::forward<Args>(args)...))
   {
     return f(std::forward<Args>(args)...);
   }
   VTKM_SUPPRESS_EXEC_WARNINGS
   template <typename Function, typename... Args>
   VTKM_EXEC_CONT auto Apply(Function&& f, Args&&... args) const
-    -> decltype(f(std::forward<Args>(args)...))
   {
     return f(std::forward<Args>(args)...);
   }
@@ -254,7 +249,7 @@ public:
 
 $for(num_params in range(1, max_expanded + 1))\
 template<$typename_list(num_params)>
-class Tuple<$type_list(num_params)>
+class VTKM_NEVER_EXPORT Tuple<$type_list(num_params)>
 {
 $for(index in range(0, num_params))\
   T$(index) Value$(index);
@@ -300,13 +295,13 @@ $endfor\
   }
 
   template <vtkm::IdComponent Index>
-  VTKM_EXEC_CONT auto Get() -> decltype(this->GetImpl(vtkm::internal::IndexTag<Index>{}))
+  VTKM_EXEC_CONT auto Get()
   {
     return this->GetImpl(vtkm::internal::IndexTag<Index>{});
   }
 
   template <vtkm::IdComponent Index>
-  VTKM_EXEC_CONT auto Get() const -> decltype(this->GetImpl(vtkm::internal::IndexTag<Index>{}))
+  VTKM_EXEC_CONT auto Get() const
   {
     return this->GetImpl(vtkm::internal::IndexTag<Index>{});
   }
@@ -315,7 +310,6 @@ $endfor\
   template <typename Function, typename... Args>
   VTKM_EXEC_CONT
   auto Apply(Function&& f, Args&&... args)
-    -> decltype(f(std::forward<Args>(args)..., $type_list(num_params, "Value")))
   {
     return f(std::forward<Args>(args)..., $type_list(num_params, "Value"));
   }
@@ -323,7 +317,6 @@ $endfor\
   template <typename Function, typename... Args>
   VTKM_EXEC_CONT
   auto Apply(Function&& f, Args&&... args) const
-    -> decltype(f(std::forward<Args>(args)..., $type_list(num_params, "Value")))
   {
     return f(std::forward<Args>(args)..., $type_list(num_params, "Value"));
   }
@@ -344,14 +337,12 @@ $endfor\
   VTKM_SUPPRESS_EXEC_WARNINGS
   template <typename Function>
   VTKM_EXEC_CONT auto Transform(Function&& f)
-    -> decltype(detail::TupleTransform(*this, std::forward<Function>(f)))
   {
     return detail::TupleTransform(*this, std::forward<Function>(f));
   }
   VTKM_SUPPRESS_EXEC_WARNINGS
   template <typename Function>
   VTKM_EXEC_CONT auto Transform(Function&& f) const
-    -> decltype(detail::TupleTransform(*this, std::forward<Function>(f)))
   {
     return detail::TupleTransform(*this, std::forward<Function>(f));
   }
@@ -361,7 +352,7 @@ $endfor\
 
 // Fallback case for tuples with > $(max_expanded) items.
 template<$typename_list(max_expanded + 1), typename... Ts>
-class Tuple<$type_list(max_expanded + 1), Ts...>
+class VTKM_NEVER_EXPORT Tuple<$type_list(max_expanded + 1), Ts...>
 {
 $for(index in range(0, max_expanded))\
   T$(index) Value$(index);
@@ -386,11 +377,15 @@ $endfor\
   ElementTypeI(vtkm::internal::IndexTag<Index>);
 
   template <typename vtkm::IdComponent Index>
-  VTKM_EXEC_CONT const vtkm::internal::remove_cvref<vtkm::TupleElement<Index - $(max_expanded), RemainingValuesType>>&
-  GetImpl(vtkm::internal::IndexTag<Index>) { return vtkm::Get<Index - $(max_expanded)>(this->RemainingValues); }
+  VTKM_EXEC_CONT auto GetImpl(vtkm::internal::IndexTag<Index>)
+  {
+    return vtkm::Get<Index - $(max_expanded)>(this->RemainingValues);
+  }
   template <typename vtkm::IdComponent Index>
-  VTKM_EXEC_CONT const vtkm::internal::remove_cvref<vtkm::TupleElement<Index - $(max_expanded), RemainingValuesType>>&
-  GetImpl(vtkm::internal::IndexTag<Index>) const { return vtkm::Get<Index - $(max_expanded)>(this->RemainingValues); }
+  VTKM_EXEC_CONT auto GetImpl(vtkm::internal::IndexTag<Index>) const
+  {
+    return vtkm::Get<Index - $(max_expanded)>(this->RemainingValues);
+  }
 
   template <vtkm::IdComponent, typename>
   friend struct detail::TupleElementImpl;
@@ -420,13 +415,13 @@ $endfor\
   }
 
   template <vtkm::IdComponent Index>
-  VTKM_EXEC_CONT auto Get() -> decltype(this->GetImpl(vtkm::internal::IndexTag<Index>{}))
+  VTKM_EXEC_CONT auto Get()
   {
     return this->GetImpl(vtkm::internal::IndexTag<Index>{});
   }
 
   template <vtkm::IdComponent Index>
-  VTKM_EXEC_CONT auto Get() const -> decltype(this->GetImpl(vtkm::internal::IndexTag<Index>{}))
+  VTKM_EXEC_CONT auto Get() const
   {
     return this->GetImpl(vtkm::internal::IndexTag<Index>{});
   }
@@ -435,12 +430,6 @@ $endfor\
   template <typename Function, typename... Args>
   VTKM_EXEC_CONT
   auto Apply(Function&& f, Args&&... args)
-    -> decltype(this->RemainingValues.Apply(std::forward<Function>(f),
-                                            std::forward<Args>(args)...,
-$for(index in range(0, max_expanded - 1))\
-                                            this->Value$(index),
-$endfor\
-                                            this->Value$(max_expanded - 1)))
   {
     return this->RemainingValues.Apply(std::forward<Function>(f),
                                        std::forward<Args>(args)...,
@@ -453,12 +442,6 @@ $endfor\
   template <typename Function, typename... Args>
   VTKM_EXEC_CONT
   auto Apply(Function&& f, Args&&... args) const
-    -> decltype(this->RemainingValues.Apply(std::forward<Function>(f),
-                                            std::forward<Args>(args)...,
-$for(index in range(0, max_expanded - 1))\
-                                            this->Value$(index),
-$endfor\
-                                            this->Value$(max_expanded - 1)))
   {
     return this->RemainingValues.Apply(std::forward<Function>(f),
                                        std::forward<Args>(args)...,
@@ -484,14 +467,12 @@ $endfor\
   VTKM_SUPPRESS_EXEC_WARNINGS
   template <typename Function>
   VTKM_EXEC_CONT auto Transform(Function&& f)
-    -> decltype(detail::TupleTransform(*this, std::forward<Function>(f)))
   {
     return detail::TupleTransform(*this, std::forward<Function>(f));
   }
   VTKM_SUPPRESS_EXEC_WARNINGS
   template <typename Function>
   VTKM_EXEC_CONT auto Transform(Function&& f) const
-    -> decltype(detail::TupleTransform(*this, std::forward<Function>(f)))
   {
     return detail::TupleTransform(*this, std::forward<Function>(f));
   }
