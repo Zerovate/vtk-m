@@ -131,22 +131,16 @@ namespace
 {
 
 using TestControlSignature = void(TestControlSignatureTagInput, TestControlSignatureTagOutput);
-using TestControlInterface = vtkm::internal::FunctionInterface<TestControlSignature>;
 
 using TestExecutionSignature1 = void(vtkm::exec::arg::BasicArg<1>, vtkm::exec::arg::BasicArg<2>);
-using TestExecutionInterface1 = vtkm::internal::FunctionInterface<TestExecutionSignature1>;
 
 using TestExecutionSignature2 = vtkm::exec::arg::BasicArg<2>(vtkm::exec::arg::BasicArg<1>);
-using TestExecutionInterface2 = vtkm::internal::FunctionInterface<TestExecutionSignature2>;
 
 using TestControlSignatureReverse = void(TestControlSignatureTagOutput,
                                          TestControlSignatureTagInput);
-using TestControlInterfaceReverse = vtkm::internal::FunctionInterface<TestControlSignatureReverse>;
 
 using TestExecutionSignatureReverse = void(vtkm::exec::arg::BasicArg<2>,
                                            vtkm::exec::arg::BasicArg<1>);
-using TestExecutionInterfaceReverse =
-  vtkm::internal::FunctionInterface<TestExecutionSignatureReverse>;
 
 // Not a full worklet, but provides operators that we expect in a worklet.
 template <typename ControlSig, typename ExecSig, vtkm::IdComponent InDomain>
