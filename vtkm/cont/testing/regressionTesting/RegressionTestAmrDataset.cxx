@@ -37,6 +37,30 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
     printf("Current working directory : %s\n", buffer);
   }
 
+  std::cout << "Hier list of files in ./../../../../../vtk-m/data/baseline/cont/" << std::endl;
+  DIR* dir;
+  struct dirent* ent;
+  if ((dir = opendir("./../../../../../vtk-m/data/baseline/cont/")) != NULL)
+  {
+    /* print all the files and directories within directory */
+    while ((ent = readdir(dir)) != NULL)
+    {
+      printf("%s\n", ent->d_name);
+    }
+    closedir(dir);
+  }
+
+  std::cout << "Hier list of files in ./../../../../../build/cont/" << std::endl;
+  if ((dir = opendir("./../../../../../build/cont/")) != NULL)
+  {
+    /* print all the files and directories within directory */
+    while ((ent = readdir(dir)) != NULL)
+    {
+      printf("%s\n", ent->d_name);
+    }
+    closedir(dir);
+  }
+
   using M = vtkm::rendering::MapperRayTracer;
   using C = vtkm::rendering::CanvasRayTracer;
   using V3 = vtkm::rendering::View3D;
