@@ -8,10 +8,10 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <filesystem>
 #include <fstream>
-#include <iostream>
-namespace fs = std::filesystem;
+#include <limits.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include <vtkm/cont/MergePartitionedDataSet.h>
 #include <vtkm/filter/ExternalFaces.h>
@@ -31,9 +31,11 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
 {
   std::cout << "Generate Image for AMR" << std::endl;
 
-  std::cout << "Current path is " << fs::current_path() << '\n'; // (1)
-  fs::current_path(fs::temp_directory_path());                   // (3)
-  std::cout << "Current path is " << fs::current_path() << '\n';
+  char buffer[PATH_MAX];
+  if (getcwd(buffer, sizeof(buffer)) != NULL)
+  {
+    printf("Current working directory : %s\n", buffer);
+  }
 
   using M = vtkm::rendering::MapperRayTracer;
   using C = vtkm::rendering::CanvasRayTracer;
