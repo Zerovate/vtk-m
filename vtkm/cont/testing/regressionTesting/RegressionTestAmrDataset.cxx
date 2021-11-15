@@ -86,8 +86,7 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
   vtkm::cont::DataSet result = vtkm::cont::MergePartitionedDataSet(derivedDataSet);
   result.PrintSummary(std::cout);
 
-  std::ifstream in1("./../../../../../vtk-m/data/baseline/cont/amr2D.png",
-                    std::ifstream::ate | std::ifstream::binary);
+  std::ifstream in1(baselinePath + "/amr2D.png", std::ifstream::ate | std::ifstream::binary);
   std::cout << "Hier baseline " << in1.tellg() << std::endl;
   std::ifstream in2("./../../../../../build/cont/test-amr2D.png",
                     std::ifstream::ate | std::ifstream::binary);
@@ -96,8 +95,7 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
                     std::ifstream::ate | std::ifstream::binary);
   std::cout << "Hier diff " << in3.tellg() << std::endl;
 
-  std::ifstream in4("./../../../../../vtk-m/data/baseline/cont/amr3D.png",
-                    std::ifstream::ate | std::ifstream::binary);
+  std::ifstream in4(baselinePath + "/amr3D.png", std::ifstream::ate | std::ifstream::binary);
   std::cout << "Hier baseline " << in4.tellg() << std::endl;
   std::ifstream in5("./../../../../../build/cont/test-amr3D.png",
                     std::ifstream::ate | std::ifstream::binary);
