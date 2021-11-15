@@ -37,10 +37,12 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
     printf("Current working directory : %s\n", buffer);
   }
 
-  std::cout << "Hier list of files in ./../../../../../vtk-m/data/baseline/cont/" << std::endl;
+  using vtkm::cont::testing::Testing;
+  std::string baselinePath = Testing::RegressionImagePath("cont");
+  std::cout << "Hier list of files in baseline path " << baselinePath << std::endl;
   DIR* dir;
   struct dirent* ent;
-  if ((dir = opendir("./../../../../../vtk-m/data/baseline/cont/")) != NULL)
+  if ((dir = opendir(baselinePath.c_str())) != NULL)
   {
     /* print all the files and directories within directory */
     while ((ent = readdir(dir)) != NULL)
