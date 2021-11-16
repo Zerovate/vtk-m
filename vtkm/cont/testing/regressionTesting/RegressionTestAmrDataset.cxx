@@ -41,14 +41,14 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
   std::cout << "Hier amr " << std::endl;
   amrDataSet.PrintSummary(std::cout);
 
-  //  // Remove blanked cells
-  //  vtkm::filter::Threshold threshold;
-  //  threshold.SetLowerThreshold(0);
-  //  threshold.SetUpperThreshold(1);
-  //  threshold.SetActiveField("vtkGhostType");
-  //  vtkm::cont::PartitionedDataSet derivedDataSet = threshold.Execute(amrDataSet);
-  //  std::cout << "Hier derived " << std::endl;
-  //  derivedDataSet.PrintSummary(std::cout);
+  // Remove blanked cells
+  vtkm::filter::Threshold threshold;
+  threshold.SetLowerThreshold(0);
+  threshold.SetUpperThreshold(1);
+  threshold.SetActiveField("vtkGhostType");
+  vtkm::cont::PartitionedDataSet derivedDataSet = threshold.Execute(amrDataSet);
+  std::cout << "Hier derived " << std::endl;
+  derivedDataSet.PrintSummary(std::cout);
 
   //  // Extract surface for efficient 3D pipeline
   //  vtkm::filter::ExternalFaces surface;
