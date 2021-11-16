@@ -41,28 +41,46 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
   std::cout << "Hier amr " << std::endl;
   amrDataSet.PrintSummary(std::cout);
 
-  //  // Remove blanked cells
-  //  vtkm::filter::Threshold threshold;
-  //  threshold.SetLowerThreshold(0);
-  //  threshold.SetUpperThreshold(1);
-  //  threshold.SetActiveField("vtkGhostType");
-  //  vtkm::cont::PartitionedDataSet derivedDataSet = threshold.Execute(amrDataSet);
-  //  std::cout << "Hier derived " << std::endl;
-  //  derivedDataSet.PrintSummary(std::cout);
+  // Remove blanked cells
+  vtkm::filter::Threshold threshold;
+  threshold.SetLowerThreshold(0);
+  threshold.SetUpperThreshold(1);
+  threshold.SetActiveField("vtkGhostType");
+  vtkm::cont::PartitionedDataSet derivedDataSet = threshold.Execute(amrDataSet);
+  std::cout << "Hier derived " << std::endl;
+  derivedDataSet.PrintSummary(std::cout);
 
-  //  // Extract surface for efficient 3D pipeline
+  // Extract surface for efficient 3D pipeline
   //  vtkm::filter::ExternalFaces surface;
   //  //  surface.SetPassPolyData(1);
   //  //  surface.SetFieldsToPass("RTDataCells");
   //  derivedDataSet = surface.Execute(derivedDataSet);
 
-  //  // Merge dataset
-  //  vtkm::cont::DataSet result = vtkm::cont::MergePartitionedDataSet(derivedDataSet);
-  //  result.PrintSummary(std::cout);
-  //  std::cout << "Hier merged " << std::endl;
-  //  result.PrintSummary(std::cout);
+  // Merge dataset
+  vtkm::cont::DataSet result = vtkm::cont::MergePartitionedDataSet(derivedDataSet);
+  result.PrintSummary(std::cout);
+  std::cout << "Hier merged " << std::endl;
+  result.PrintSummary(std::cout);
 
-  vtkm::rendering::testing::RenderAndRegressionTest<M, C, V3>(amrDataSet.GetPartition(0),
+  std::ifstream in1(baselinePath + "/amr2D.png", std::ifstream::ate | std::ifstream::binary);
+  std::cout << "Hier baseline " << in1.tellg() << std::endl;
+  std::ifstream in2("./../../../../../build/cont/test-amr2D.png",
+                    std::ifstream::ate | std::ifstream::binary);
+  std::cout << "Hier temp " << in2.tellg() << std::endl;
+  std::ifstream in3("./../../../../../build/cont/diff-amr2D.png",
+                    std::ifstream::ate | std::ifstream::binary);
+  std::cout << "Hier diff " << in3.tellg() << std::endl;
+
+  std::ifstream in4(baselinePath + "/amr3D.png", std::ifstream::ate | std::ifstream::binary);
+  std::cout << "Hier baseline " << in4.tellg() << std::endl;
+  std::ifstream in5("./../../../../../build/cont/test-amr3D.png",
+                    std::ifstream::ate | std::ifstream::binary);
+  std::cout << "Hier temp " << in5.tellg() << std::endl;
+  std::ifstream in6("./../../../../../build/cont/diff-amr3D.png",
+                    std::ifstream::ate | std::ifstream::binary);
+  std::cout << "Hier diff " << in6.tellg() << std::endl;
+
+  vtkm::rendering::testing::RenderAndRegressionTest<M, C, V3>(result,
                                                               "RTDataCells",
                                                               vtkm::cont::ColorTable("inferno"),
                                                               "cont/amr" + std::to_string(dim) +
