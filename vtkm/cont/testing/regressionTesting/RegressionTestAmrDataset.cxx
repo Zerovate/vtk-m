@@ -120,7 +120,7 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
 
 void TestAmrDataset()
 {
-  int numberOfLevels = 3;
+  int numberOfLevels = 5;
   int cellsPerDimension = 4;
   TestAmrDatasetExecute(2, numberOfLevels, cellsPerDimension);
   TestAmrDatasetExecute(3, numberOfLevels, cellsPerDimension);
