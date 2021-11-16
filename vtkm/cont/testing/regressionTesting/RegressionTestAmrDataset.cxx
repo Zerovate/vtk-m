@@ -70,6 +70,8 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
   // Generate AMR
   vtkm::source::Amr source(dim, cellsPerDimension, numberOfLevels);
   vtkm::cont::AmrDataSet amrDataSet = source.Execute();
+  std::cout << "Hier amr " << std::endl;
+  amrDataSet.PrintSummary(std::cout);
 
   // Remove blanked cells
   vtkm::filter::Threshold threshold;
@@ -77,13 +79,17 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
   threshold.SetUpperThreshold(1);
   threshold.SetActiveField("vtkGhostType");
   vtkm::cont::PartitionedDataSet derivedDataSet = threshold.Execute(amrDataSet);
+  std::cout << "Hier derived " << std::endl;
+  derivedDataSet.PrintSummary(std::cout);
 
-  // Extract surface for efficient 3D pipeline
-  vtkm::filter::ExternalFaces surface;
-  derivedDataSet = surface.Execute(derivedDataSet);
+  //  // Extract surface for efficient 3D pipeline
+  //  vtkm::filter::ExternalFaces surface;
+  //  derivedDataSet = surface.Execute(derivedDataSet);
 
   // Merge dataset
   vtkm::cont::DataSet result = vtkm::cont::MergePartitionedDataSet(derivedDataSet);
+  result.PrintSummary(std::cout);
+  std::cout << "Hier merged " << std::endl;
   result.PrintSummary(std::cout);
 
   std::ifstream in1(baselinePath + "/amr2D.png", std::ifstream::ate | std::ifstream::binary);
@@ -114,8 +120,8 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
 
 void TestAmrDataset()
 {
-  int numberOfLevels = 5;
-  int cellsPerDimension = 6;
+  int numberOfLevels = 2;
+  int cellsPerDimension = 2;
   TestAmrDatasetExecute(2, numberOfLevels, cellsPerDimension);
   TestAmrDatasetExecute(3, numberOfLevels, cellsPerDimension);
 }
