@@ -82,9 +82,9 @@ void TestAmrDatasetExecute(int dim, int numberOfLevels, int cellsPerDimension)
   std::cout << "Hier derived " << std::endl;
   derivedDataSet.PrintSummary(std::cout);
 
-  //  // Extract surface for efficient 3D pipeline
-  //  vtkm::filter::ExternalFaces surface;
-  //  derivedDataSet = surface.Execute(derivedDataSet);
+  // Extract surface for efficient 3D pipeline
+  vtkm::filter::ExternalFaces surface;
+  derivedDataSet = surface.Execute(derivedDataSet);
 
   // Merge dataset
   vtkm::cont::DataSet result = vtkm::cont::MergePartitionedDataSet(derivedDataSet);
