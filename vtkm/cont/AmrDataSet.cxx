@@ -318,7 +318,7 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
           childrenIdsVector.at(this->GetPartitionId(l, bParent)).push_back(bChild);
           std::cout << " overlaps with level " << l + 1 << " block  " << bChild << " "
                     << boundsParent << " " << boundsChild << " " << boundsIntersection << " "
-                    << boundsIntersection.Area() << std::endl;
+                    << boundsIntersection.Area() << " " << boundsIntersection.Volume() << std::endl;
         }
         else
         {
