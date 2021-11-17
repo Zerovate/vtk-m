@@ -290,7 +290,7 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
   {
     for (vtkm::Id bParent = 0; bParent < this->GetNumberOfPartitions(l); bParent++)
     {
-      //      std::cout<<std::endl<<"level  "<<l<<" block  "<<bParent<<std::endl;
+      std::cout << std::endl << "level  " << l << " block  " << bParent << std::endl;
       vtkm::Bounds boundsParent = this->GetPartition(l, bParent).GetCoordinateSystem().GetBounds();
 
       // compute size of a cell to compare overlap against
@@ -316,12 +316,16 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
         {
           parentsIdsVector.at(this->GetPartitionId(l + 1, bChild)).push_back(bParent);
           childrenIdsVector.at(this->GetPartitionId(l, bParent)).push_back(bChild);
-          //          std::cout<<" overlaps with level "<<l + 1<<" block  "<<bChild<<" "<<boundsParent<<" "<<boundsChild<<" "<<boundsIntersection<<" "<<boundsIntersection.Area()<<std::endl;
+          std::cout << " overlaps with level " << l + 1 << " block  " << bChild << " "
+                    << boundsParent << " " << boundsChild << " " << boundsIntersection << " "
+                    << boundsIntersection.Area() << std::endl;
         }
-        //        else
-        //        {
-        //          std::cout<<" does not overlap with level "<<l + 1<<" block  "<<bChild<<" "<<boundsParent<<" "<<boundsChild<<" "<<boundsIntersection<<" "<<boundsIntersection.Area()<<std::endl;
-        //        }
+        else
+        {
+          std::cout << " does not overlap with level " << l + 1 << " block  " << bChild << " "
+                    << boundsParent << " " << boundsChild << " " << boundsIntersection << " "
+                    << boundsIntersection.Area() << " " << boundsIntersection.Volume() << std::endl;
+        }
       }
     }
   }
