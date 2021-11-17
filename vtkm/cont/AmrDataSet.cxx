@@ -20,7 +20,6 @@
 #include <vtkm/worklet/WorkletMapField.h>
 #include <vtkm/worklet/WorkletMapTopology.h>
 
-
 namespace vtkm
 {
 namespace worklet
@@ -293,13 +292,27 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
     {
       //      std::cout<<std::endl<<"level  "<<l<<" block  "<<bParent<<std::endl;
       vtkm::Bounds boundsParent = this->GetPartition(l, bParent).GetCoordinateSystem().GetBounds();
+
+      // compute size of a cell to compare overlap against
+      auto coords = this->GetPartition(l, bParent).GetCoordinateSystem().GetDataAsMultiplexer();
+      vtkm::cont::CellSetStructured<Dim> cellset;
+      vtkm::Id ptids[cellset.GetNumberOfPointsInCell(0)];
+      this->GetPartition(l, bParent).GetCellSet().CopyTo(cellset);
+      cellset.GetCellPointIds(0, ptids);
+      vtkm::Bounds boundsCell = vtkm::Bounds();
+      for (vtkm::IdComponent pointId = 0; pointId < cellset.GetNumberOfPointsInCell(0); pointId++)
+      {
+        boundsCell.Include(coords.ReadPortal().Get(ptids[pointId]));
+      }
+
+      // see if there is overlap of at least one cell
       for (vtkm::Id bChild = 0; bChild < this->GetNumberOfPartitions(l + 1); bChild++)
       {
         vtkm::Bounds boundsChild =
           this->GetPartition(l + 1, bChild).GetCoordinateSystem().GetBounds();
         vtkm::Bounds boundsIntersection = boundsParent.Intersection(boundsChild);
-        if ((Dim == 2 && boundsIntersection.Area() > 0) ||
-            (Dim == 3 && boundsIntersection.Volume() > 0))
+        if ((Dim == 2 && boundsIntersection.Area() >= boundsCell.Area()) ||
+            (Dim == 3 && boundsIntersection.Volume() >= boundsCell.Volume()))
         {
           parentsIdsVector.at(this->GetPartitionId(l + 1, bChild)).push_back(bParent);
           childrenIdsVector.at(this->GetPartitionId(l, bParent)).push_back(bChild);
