@@ -447,21 +447,19 @@ void AmrDataSet::GenerateIndexArrays()
     {
       vtkm::cont::DataSet partition = this->GetPartition(l, b);
 
-      vtkm::cont::ArrayHandle<vtkm::UInt8> fieldAmrLevel;
+      vtkm::cont::ArrayHandle<vtkm::Id> fieldAmrLevel;
       vtkm::cont::ArrayCopy(
-        vtkm::cont::ArrayHandleConstant<vtkm::UInt8>(l, partition.GetNumberOfCells()),
-        fieldAmrLevel);
+        vtkm::cont::ArrayHandleConstant<vtkm::Id>(l, partition.GetNumberOfCells()), fieldAmrLevel);
       partition.AddCellField("vtkAmrLevel", fieldAmrLevel);
 
-      vtkm::cont::ArrayHandle<vtkm::UInt8> fieldBlockId;
+      vtkm::cont::ArrayHandle<vtkm::Id> fieldBlockId;
       vtkm::cont::ArrayCopy(
-        vtkm::cont::ArrayHandleConstant<vtkm::UInt8>(b, partition.GetNumberOfCells()),
-        fieldBlockId);
+        vtkm::cont::ArrayHandleConstant<vtkm::Id>(b, partition.GetNumberOfCells()), fieldBlockId);
       partition.AddCellField("vtkAmrIndex", fieldBlockId);
 
-      vtkm::cont::ArrayHandle<vtkm::UInt8> fieldPartitionIndex;
-      vtkm::cont::ArrayCopy(vtkm::cont::ArrayHandleConstant<vtkm::UInt8>(
-                              this->GetPartitionId(l, b), partition.GetNumberOfCells()),
+      vtkm::cont::ArrayHandle<vtkm::Id> fieldPartitionIndex;
+      vtkm::cont::ArrayCopy(vtkm::cont::ArrayHandleConstant<vtkm::Id>(this->GetPartitionId(l, b),
+                                                                      partition.GetNumberOfCells()),
                             fieldPartitionIndex);
       partition.AddCellField("vtkCompositeIndex", fieldPartitionIndex);
 
