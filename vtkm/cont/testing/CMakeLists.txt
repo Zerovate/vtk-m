@@ -125,3 +125,8 @@ if(VTKm_ENABLE_TESTING)
     )
   vtkm_unit_tests(MPI SOURCES ${mpi_unit_tests} DEFINES VTKM_NO_ERROR_ON_MIXED_CUDA_CXX_TAG)
 endif()
+
+#-----------------------------------------------------------------------------
+if(VTKm_ENABLE_RENDERING)
+  add_subdirectory(regressionTesting)
+endif()

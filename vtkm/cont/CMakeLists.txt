@@ -10,6 +10,7 @@
 
 set(headers
   Algorithm.h
+  AmrDataSet.h
   ArrayCopy.h
   ArrayExtractComponent.h
   ArrayGetValues.h
@@ -162,6 +163,7 @@ set(sources
 # This list of sources has code that uses devices and so might need to be
 # compiled with a device-specific compiler (like CUDA).
 set(device_sources
+  AmrDataSet.cxx
   ArrayCopy.cxx
   ArrayGetValues.cxx
   ArrayRangeCompute.cxx
