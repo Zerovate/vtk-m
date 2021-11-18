@@ -296,7 +296,7 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
       // compute size of a cell to compare overlap against
       auto coords = this->GetPartition(l, bParent).GetCoordinateSystem().GetDataAsMultiplexer();
       vtkm::cont::CellSetStructured<Dim> cellset;
-      vtkm::Id ptids[cellset.GetNumberOfPointsInCell(0)];
+      vtkm::Id ptids[8];
       this->GetPartition(l, bParent).GetCellSet().CopyTo(cellset);
       cellset.GetCellPointIds(0, ptids);
       vtkm::Bounds boundsCell = vtkm::Bounds();
