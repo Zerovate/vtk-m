@@ -49,8 +49,8 @@ struct GenerateGhostTypeWorklet : vtkm::worklet::WorkletVisitCellsWithPoints
       boundsCell.Include(pointArray[pointId]);
     }
     vtkm::Bounds boundsIntersection = boundsCell.Intersection(BoundsChild);
-    if ((Dim == 2 && boundsIntersection.Area() > 0) ||
-        (Dim == 3 && boundsIntersection.Volume() > 0))
+    if ((Dim == 2 && boundsIntersection.Area() > 0.5 * boundsCell.Area()) ||
+        (Dim == 3 && boundsIntersection.Volume() > 0.5 * boundsCell.Volume()))
     {
       ////            std::cout<<cellId<<" is (partly) contained in level "<<l + 1<<" block  "<<this->GetChildrenIds(l, b).at(childId)<<" "<<boundsCell<<" "<<boundsChild<<" "<<boundsIntersection<<" "<<boundsIntersection.Area()<<std::endl;
       ghostArray = 8;
@@ -311,8 +311,8 @@ void AmrDataSet::ComputeGenerateParentChildInformation()
         vtkm::Bounds boundsChild =
           this->GetPartition(l + 1, bChild).GetCoordinateSystem().GetBounds();
         vtkm::Bounds boundsIntersection = boundsParent.Intersection(boundsChild);
-        if ((Dim == 2 && boundsIntersection.Area() >= boundsCell.Area()) ||
-            (Dim == 3 && boundsIntersection.Volume() >= boundsCell.Volume()))
+        if ((Dim == 2 && boundsIntersection.Area() > 0.5 * boundsCell.Area()) ||
+            (Dim == 3 && boundsIntersection.Volume() >= 0.5 * boundsCell.Volume()))
         {
           parentsIdsVector.at(this->GetPartitionId(l + 1, bChild)).push_back(bParent);
           childrenIdsVector.at(this->GetPartitionId(l, bParent)).push_back(bChild);
