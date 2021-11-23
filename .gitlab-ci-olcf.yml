@@ -1,0 +1,121 @@
+stages:
+  - build
+  - test
+  - cleanup
+
+################################################################################
+# Job templates
+################################################################################
+
+.base:
+  variables:
+    CCACHE_BASEDIR: /gpfs/wolf/
+    CCACHE_DIR: /gpfs/wolf/proj-shared/csc331/vtk-m/ci/ccache/
+    CCACHE_IGNOREOPTIONS: "-isystem=*"
+    CCACHE_LOG_FILE: /gpfs/wolf/proj-shared/csc331/vtk-m/ci/ccache/.ccache.log
+    CCACHE_NOHASHDIR: "true"
+
+    CMAKE_BUILD_TYPE: RelWithDebInfo
+    CMAKE_GENERATOR: Unix Makefiles
+    EXTERNAL_WORKDIR: /gpfs/wolf/proj-shared/csc331/vtk-m/ci/${CI_PIPELINE_ID}_${BUILD_NAME}
+    GITLAB_SITE: OLCF GitLab
+
+.build-steps:
+  extends:
+    - .base
+  stage: build
+  tags: [nobatch]
+  before_script:
+    # Prep the environment
+    - module purge
+    - echo ${JOB_MODULES}
+    - module load git git-lfs cmake zstd ${JOB_MODULES}
+    - export PATH="/ccsopen/home/vbolea/bin:$PATH"
+    - ccache -p
+
+    # Use a work directory on the shared filesystem accessible to compute nodes
+    # instead of the work directory gitlab-ci sets up
+    - cd ${CI_PROJECT_DIR}
+    - rm -fv .git/shallow
+    - git clone ${CI_PROJECT_DIR} ${EXTERNAL_WORKDIR}/source
+    - cd ${EXTERNAL_WORKDIR}/source
+    - export CI_PROJECT_DIR=${EXTERNAL_WORKDIR}/source
+    - git remote add lfs https://gitlab.kitware.com/vtk/vtk-m.git
+    - git fetch lfs
+    - git-lfs install
+    - git-lfs pull lfs
+
+    # Start running the builds scripts
+    - cmake --version
+    - "cmake -V -P .gitlab/ci/config/gitlab_ci_setup.cmake"
+    - "test -e .gitlab/ci/CMakeCache.txt.${BUILD_NAME} ] && cp -v .gitlab/ci/CMakeCache.txt.${BUILD_NAME} build/CMakeCache.txt"
+    - "ctest -VV -S .gitlab/ci/ctest_configure.cmake"
+
+  script:
+    - "ctest -VV -S .gitlab/ci/ctest_build.cmake"
+    - ccache -s
+
+.test-step:
+  extends:
+    - .base
+  stage: test
+  variables:
+    GITLAB_CI_EMULATION: "true"
+    CTEST_MAX_PARALLELISM: 1
+  before_script:
+    # Prep the environment
+    - module purge
+    - module load git cmake ${JOB_MODULES}
+    - export CI_PROJECT_DIR=${EXTERNAL_WORKDIR}/source
+    - cd ${EXTERNAL_WORKDIR}/source
+
+  script:
+    - "jsrun -n1 -r1 -a1 -g1 -c4 ctest -VV -S .gitlab/ci/ctest_test.cmake || test_output=$?"
+    - ctest -VV -S .gitlab/ci/ctest_test_submit.cmake
+    - $(exit $test_output)
+
+.cleanup-step:
+  stage: cleanup
+  extends:
+    - .base
+  tags: [nobatch]
+  when: always
+  script:
+    - rm -rf ${EXTERNAL_WORKDIR}
+
+################################################################################
+# Build jobs
+################################################################################
+
+########################################
+# GCC + Spectrum MPI + Cuda
+########################################
+
+.ascent-gcc-smpi-cuda:
+  variables:
+    BUILD_NAME: ascent-gcc-smpi-cuda
+    CC: gcc
+    CXX: g++
+    CUDAHOSTCXX: g++
+    JOB_MODULES: gcc/8.1.1 spectrum-mpi lsf-tools cuda/11.2.0
+    VTKM_SETTINGS: cuda+smpi
+    CTEST_MAX_PARALLELISM: 4
+
+build:ascent-gcc-cuda-smpi:
+  extends:
+    - .ascent-gcc-smpi-cuda
+    - .build-steps
+
+test:ascent-gcc-cuda-smpi:
+  tags: [batch]
+  variables:
+    SCHEDULER_PARAMETERS: -P CSC331 -W 1:00 -nnodes 1
+    CTEST_MAX_PARALLELISM: 1
+  extends:
+    - .ascent-gcc-smpi-cuda
+    - .test-step
+
+cleanup:ascent-gcc-cuda-smpi:
+  extends:
+    - .ascent-gcc-smpi-cuda
+    - .cleanup-step
