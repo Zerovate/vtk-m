@@ -1,7 +1,6 @@
 stages:
   - build
   - test
-  - cleanup
 
 ################################################################################
 # Job templates
@@ -38,10 +37,6 @@ stages:
     # Use a work directory on the shared filesystem accessible to compute nodes
     # instead of the work directory gitlab-ci sets up
     - cd ${CI_PROJECT_DIR}
-    - rm -fv .git/shallow
-    - git clone ${CI_PROJECT_DIR} ${EXTERNAL_WORKDIR}/source
-    - cd ${EXTERNAL_WORKDIR}/source
-    - export CI_PROJECT_DIR=${EXTERNAL_WORKDIR}/source
     - git remote add lfs https://gitlab.kitware.com/vtk/vtk-m.git
     - git fetch lfs
     - git-lfs install
@@ -68,22 +63,11 @@ stages:
     # Prep the environment
     - module purge
     - module load git cmake ${JOB_MODULES}
-    - export CI_PROJECT_DIR=${EXTERNAL_WORKDIR}/source
-    - cd ${EXTERNAL_WORKDIR}/source
 
   script:
     - "jsrun -n1 -r1 -a1 -g1 -c4 ctest -VV -S .gitlab/ci/ctest_test.cmake || test_output=$?"
     - ctest -VV -S .gitlab/ci/ctest_test_submit.cmake
     - $(exit $test_output)
-
-.cleanup-step:
-  stage: cleanup
-  extends:
-    - .base
-  tags: [nobatch]
-  when: always
-  script:
-    - rm -rf ${EXTERNAL_WORKDIR}
 
 ################################################################################
 # Build jobs
@@ -116,8 +100,3 @@ test:ascent-gcc-cuda-smpi:
   extends:
     - .ascent-gcc-smpi-cuda
     - .test-step
-
-cleanup:ascent-gcc-cuda-smpi:
-  extends:
-    - .ascent-gcc-smpi-cuda
-    - .cleanup-step
