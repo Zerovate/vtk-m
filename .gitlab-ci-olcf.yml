@@ -93,7 +93,7 @@ stages:
     - module load git cmake ${JOB_MODULES}
 
   script:
-    - "jsrun -n1 -r1 -a1 -g1 -c4 ctest -VV -S .gitlab/ci/ctest_test.cmake || test_output=$?"
+    - "ctest -VV -S .gitlab/ci/ctest_test.cmake || test_output=$?"
     - ctest -VV -S .gitlab/ci/ctest_test_submit.cmake
     - $(exit $test_output)
 
