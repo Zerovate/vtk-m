@@ -1,7 +1,6 @@
 stages:
   - build
   - test
-  - cleanup
 
 ################################################################################
 # Job templates
@@ -19,6 +18,7 @@ stages:
     CMAKE_GENERATOR: Unix Makefiles
     EXTERNAL_WORKDIR: /gpfs/wolf/proj-shared/csc331/vtk-m/ci/${CI_PIPELINE_ID}_${BUILD_NAME}
     CUSTOM_CI_BUILDS_DIR: /gpfs/wolf/proj-shared/csc331/vtk-m/ci/runtime
+    FF_ENABLE_JOB_CLEANUP: "true"
     GITLAB_SITE: OLCF GitLab
 
 .build-steps:
@@ -37,11 +37,6 @@ stages:
 
     # Use a work directory on the shared filesystem accessible to compute nodes
     # instead of the work directory gitlab-ci sets up
-    - cd ${CI_PROJECT_DIR}
-    - rm -fv .git/shallow
-    - git clone ${CI_PROJECT_DIR} ${EXTERNAL_WORKDIR}/source
-    - cd ${EXTERNAL_WORKDIR}/source
-    - export CI_PROJECT_DIR=${EXTERNAL_WORKDIR}/source
     - git remote add lfs https://gitlab.kitware.com/vtk/vtk-m.git
     - git fetch lfs
     - git-lfs install
@@ -57,6 +52,34 @@ stages:
     - "ctest -VV -S .gitlab/ci/ctest_build.cmake"
     - ccache -s
 
+  artifacts:
+    expire_in: 24 hours
+    when: always
+    paths:
+      # The artifacts of the build.
+      - build/bin/
+      - build/include/
+      - build/vtkm/thirdparty/diy/vtkmdiy/
+      - build/lib/
+      - build/config/
+
+      # CTest and CMake install files.
+      # XXX(globbing): Can be simplified with support from
+      # https://gitlab.com/gitlab-org/gitlab-runner/issues/4840
+      #
+      # Note: this also captures our CIState.cmake file
+      - build/CMakeCache.txt
+      - build/*.cmake
+      - build/*/*.cmake
+      - build/*/*/*.cmake
+      - build/*/*/*/*.cmake
+      - build/*/*/*/*/*.cmake
+      - build/*/*/*/*/*/*.cmake
+      - build/Testing/
+
+      # CDash files.
+      - build/DartConfiguration.tcl
+
 .test-step:
   extends:
     - .base
@@ -68,22 +91,32 @@ stages:
     # Prep the environment
     - module purge
     - module load git cmake ${JOB_MODULES}
-    - export CI_PROJECT_DIR=${EXTERNAL_WORKDIR}/source
-    - cd ${EXTERNAL_WORKDIR}/source
 
   script:
     - "jsrun -n1 -r1 -a1 -g1 -c4 ctest -VV -S .gitlab/ci/ctest_test.cmake || test_output=$?"
     - ctest -VV -S .gitlab/ci/ctest_test_submit.cmake
     - $(exit $test_output)
 
-.cleanup-step:
-  stage: cleanup
-  extends:
-    - .base
-  tags: [nobatch]
-  when: always
-  script:
-    - rm -rf ${EXTERNAL_WORKDIR}
+  artifacts:
+    expire_in: 24 hours
+    when: always
+    paths:
+      # The generated regression testing images
+      - build/*.png
+      - build/*.pnm
+      - build/*.pmm
+      - build/*/*.png
+      - build/*/*.pnm
+      - build/*/*.pmm
+      - build/*/*/*.png
+      - build/*/*/*.pnm
+      - build/*/*/*.pmm
+      - build/*/*/*/*.png
+      - build/*/*/*/*.pnm
+      - build/*/*/*/*.pmm
+    reports:
+      junit:
+        - build/junit.xml
 
 ################################################################################
 # Build jobs
@@ -100,7 +133,7 @@ stages:
     CXX: g++
     CUDAHOSTCXX: g++
     JOB_MODULES: gcc/8.1.1 spectrum-mpi lsf-tools cuda/11.2.0
-    VTKM_SETTINGS: cuda+smpi
+    VTKM_SETTINGS: cuda+mpi
     CTEST_MAX_PARALLELISM: 4
 
 build:ascent-gcc-cuda-smpi:
@@ -116,8 +149,3 @@ test:ascent-gcc-cuda-smpi:
   extends:
     - .ascent-gcc-smpi-cuda
     - .test-step
-
-cleanup:ascent-gcc-cuda-smpi:
-  extends:
-    - .ascent-gcc-smpi-cuda
-    - .cleanup-step
