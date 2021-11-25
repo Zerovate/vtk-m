@@ -57,7 +57,7 @@ foreach(option IN LISTS options)
     set(VTKm_NO_DEPRECATED_VIRTUAL "OFF" CACHE STRING "")
 
   elseif(no_testing STREQUAL option)
-    set(VTKm_ENABLE_TESTING OFF CACHE BOOL "")
+    set(VTKm_ENABLE_TESTING "OFF" CACHE STRING "")
 
   elseif(examples STREQUAL option)
     set(VTKm_ENABLE_EXAMPLES "ON" CACHE STRING "")

@@ -17,8 +17,8 @@ Gitlab CI
     - How to add a new tester
     - How to update an existing docker image
 
-4. ECP OSTI CI
-    - Issues
+4. ECP CI
+   - ORNL GitLab CI
 
 # Kitware Gitlab CI
 
@@ -258,3 +258,13 @@ sudo docker login --username=<docker_hub_name>
 cd .gitlab/ci/docker
 sudo ./update_all.sh 20201230
 ```
+
+# ECP CI
+
+## ORNL GitLab CI
+
+VTK-m contains nightly builds that runs at the ECP OLCF Ascent testing cluster.
+Ascent it is a staging/testing cluster composed by a very scaled down OLCF
+Summit hardware.
+
+:TODO:
