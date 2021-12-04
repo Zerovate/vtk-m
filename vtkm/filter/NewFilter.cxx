@@ -12,7 +12,6 @@
 #include <vtkm/cont/RuntimeDeviceTracker.h>
 
 #include <vtkm/filter/NewFilter.h>
-#include <vtkm/filter/PolicyDefault.h>
 #include <vtkm/filter/TaskQueue.h>
 
 #include <future>
@@ -84,13 +83,10 @@ vtkm::cont::PartitionedDataSet NewFilter::Execute(const vtkm::cont::PartitionedD
                  (int)input.GetNumberOfPartitions(),
                  vtkm::cont::TypeToString<decltype(*this)>().c_str());
 
-  // Call `void Derived::PreExecute<DerivedPolicy>(input, policy)`, if defined.
   this->PreExecute(input);
 
-  // Call `PrepareForExecution` (which should probably be renamed at some point)
   vtkm::cont::PartitionedDataSet output = this->DoExecute(input);
 
-  // Call `Derived::PostExecute<DerivedPolicy>(input, output, policy)` if defined.
   this->PostExecute(input, output);
 
   return output;

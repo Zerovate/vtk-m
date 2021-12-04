@@ -10,19 +10,13 @@
 #ifndef vtk_m_filter_NewFilter_h
 #define vtk_m_filter_NewFilter_h
 
-#include <vtkm/cont/CoordinateSystem.h>
 #include <vtkm/cont/DataSet.h>
-#include <vtkm/cont/ErrorExecution.h>
 #include <vtkm/cont/Field.h>
 #include <vtkm/cont/Invoker.h>
 #include <vtkm/cont/Logging.h>
 #include <vtkm/cont/PartitionedDataSet.h>
 
-#include <vtkm/filter/CreateResult.h>
 #include <vtkm/filter/FieldSelection.h>
-#include <vtkm/filter/FilterTraits.h>
-#include <vtkm/filter/PolicyBase.h>
-#include <vtkm/filter/PolicyDefault.h>
 #include <vtkm/filter/vtkm_filter_core_export.h>
 
 namespace vtkm
@@ -63,7 +57,7 @@ namespace filter
 /// type, thus `Execute(DataSet&)` returns a DataSet while
 /// `Execute(PartitionedDataSet&)` returns a PartitionedDataSet.
 ///
-/// The pure virtual function `Execute(DataSet)` is the main extension point of the
+/// The pure virtual function `Execute(DataSet&)` is the main extension point of the
 /// Filter interface. Filter developer needs to override `Execute(DataSet)` to implement
 /// the business logic of filtering operations on a single DataSet.
 ///
@@ -93,10 +87,8 @@ namespace filter
 ///
 /// \code{cpp}
 ///
-/// template <typename DerivedPolicy>
 /// void PreExecute(const vtkm::cont::PartitionedDataSet& input);
 ///
-/// template <typename DerivedPolicy>
 /// void PostExecute(const vtkm::cont::PartitionedDataSet& input,
 ///           vtkm::cont::PartitionedDataSet& output);
 ///
@@ -154,7 +146,7 @@ namespace filter
 /// given full control over the execution, including any mapping of fields to
 /// output (described in next sub-section).
 ///
-/// \subsection FilterMapFieldOntoOutput MapFieldsOntoOutput
+/// \subsection FilterMappingFields MapFieldsOntoOutput
 ///
 /// For subclasses that map input fields into output fields, the implementation of its
 /// `Execute(DataSet&)` should call `Filter::MapFieldsOntoOutput` with a properly defined
@@ -198,12 +190,12 @@ namespace filter
 /// filter class (either in terms of ArrayHandle or some kind of Worket). The new filter interface,
 /// by combining the two phases into a single call to `Execute(DataSet&)`, we have eliminated most
 /// of the cases that require such shared mutable states. New implementations of filters that
-/// require passing information from these two phases can now use local variables within the
+/// require passing information between these two phases can now use local variables within the
 /// `Execute(DataSet&)`. For example:
 ///
 /// \code{cpp}
 /// struct SharedState; // shared states between mesh generation and field mapping.
-/// VTKM_CONT DataSet ThreadSaveFilter::Execute(const vtkm::cont::DataSet& input)
+/// VTKM_CONT DataSet ThreadSafeFilter::Execute(const vtkm::cont::DataSet& input)
 /// {
 ///   // Mutable states that was a data member of the filter is now a local variable.
 ///   // Each invocation of Execute(DataSet) in the multi-threaded execution of
@@ -231,11 +223,27 @@ namespace filter
 ///
 /// \subsection FilterThreadScheduling DoExecute
 /// The default multi-threaded execution of `Execute(PartitionedDataSet&)` uses a simple FIFO queue
-/// of DataSet. Implementation of Filter subclass can override the `DoExecute(PartitionedDataSet)`
-/// virtual method to provide implementation specific scheduling policy. The default number of
-/// *worker* threads are determined by the `DetermineNumberOfThreads()` virtual method using
-/// several backend specific heuristic. Implementations of Filter subclass can also override
+/// of DataSet and pool of *worker* threads. Implementation of Filter subclass can override the
+/// `DoExecute(PartitionedDataSet)` virtual method to provide implementation specific scheduling
+/// policy. The default number of *worker* threads in the pool are determined by the
+/// `DetermineNumberOfThreads()` virtual method using several backend dependent heuristic.
+/// Implementations of Filter subclass can also override
 /// `DetermineNumberOfThreads()` to provide implementation specific heuristic.
+///
+/// \subsection FilterNameLookup Using Declaration
+/// In some cases, the compiler is unable to find the overloads of `Execute` and tries to call
+/// `Execute(DataSet&)` while passing a `PartitionedDataSet` or vice versa. The solution
+/// is to use a using-declaration in the subclass definition. For example:
+///
+/// \code{cpp}
+/// class FooFilter : public NewFilter
+/// {
+///   ...
+///   using vtkm::filter::NewFilter::Execute; // bring overloads of Execute into name lookup
+///   vtkm::cont::DataSet Execute(const vtkm::cont::DataSet& input) override;
+///   ...
+/// }
+/// \endcode
 class VTKM_FILTER_CORE_EXPORT NewFilter
 {
 public:
@@ -374,7 +382,6 @@ protected:
   vtkm::cont::Invoker Invoke;
   vtkm::Id CoordinateSystemIndex = 0;
 
-  // TODO: de-virtual, move to protected.
   VTKM_CONT
   virtual vtkm::Id DetermineNumberOfThreads(const vtkm::cont::PartitionedDataSet& input);
 
