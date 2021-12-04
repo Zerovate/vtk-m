@@ -225,8 +225,8 @@ namespace filter
 /// }
 /// \endcode
 ///
-/// In the rare cases that filter implementation can not be made thread, the implentation needs to
-/// override the `CanThread()` virtual method to return `false`. The default
+/// In the rare cases that filter implementation can not be made thread-safe, the implementation
+/// needs to override the `CanThread()` virtual method to return `false`. The default
 /// `Execute(PartitionedDataSet&)` implementation will fallback to a serial for loop execution.
 ///
 /// \subsection FilterThreadScheduling DoExecute
