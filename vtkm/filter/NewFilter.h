@@ -230,10 +230,27 @@ namespace filter
 /// Implementations of Filter subclass can also override
 /// `DetermineNumberOfThreads()` to provide implementation specific heuristic.
 ///
-/// \subsection FilterNameLookup Using Declaration
-/// In some cases, the compiler is unable to find the overloads of `Execute` and tries to call
-/// `Execute(DataSet&)` while passing a `PartitionedDataSet` or vice versa. The solution
-/// is to use a using-declaration in the subclass definition. For example:
+/// \subsection FilterNameLookup Overriding Overloaded Functions
+/// The rule of name lookup for inherited, overloaded functions dictates us to either override
+/// none of the overloads or all of them. Since we have two overloads of `Execute`, implementation
+/// of a NewFilter subclass needs to override both of them. In most uses cases, we intend to only
+/// override the `Execute(DataSet&)` overload, such as
+///
+/// \code{cpp}
+/// class FooFilter : public NewFilter
+/// {
+///   ...
+///   vtkm::cont::DataSet Execute(const vtkm::cont::DataSet& input) override;
+///   ...
+/// }
+/// \endcode
+///
+/// However, the compiler will stop the name lookup process once it sees the
+/// `FooFilter::Execute(DataSet)`. When a user calls `FooFilter::Execute(PartitionedDataSet&)`,
+/// the compiler will not find the overload from the base class `NewFilter`, resulting in failed
+/// overload resolution. The solution to such a problem is to use a using-declaration in the
+/// subclass definition to bring the `NewFilter::Execute(PartitionedDataSet&)` into scope for
+/// name lookup. For example:
 ///
 /// \code{cpp}
 /// class FooFilter : public NewFilter
