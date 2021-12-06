@@ -231,10 +231,9 @@ namespace filter
 /// `DetermineNumberOfThreads()` to provide implementation specific heuristic.
 ///
 /// \subsection FilterNameLookup Overriding Overloaded Functions
-/// The rule of name lookup for inherited, overloaded functions dictates us to either override
-/// none of the overloads or all of them. Since we have two overloads of `Execute`, implementation
-/// of a NewFilter subclass needs to override both of them. In most uses cases, we intend to only
-/// override the `Execute(DataSet&)` overload, such as
+/// Since we have two overloads of `Execute`, we need to work with C++'s rule for name lookup for
+/// inherited, overloaded functions when overriding them. In most uses cases, we intend to only
+/// override the `Execute(DataSet&)` overload in an implementation of a NewFilter subclass, such as
 ///
 /// \code{cpp}
 /// class FooFilter : public NewFilter
