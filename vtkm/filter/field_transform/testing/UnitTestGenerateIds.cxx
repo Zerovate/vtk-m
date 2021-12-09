@@ -9,7 +9,7 @@
 //============================================================================
 #include <vtkm/cont/ArrayHandleIndex.h>
 #include <vtkm/cont/testing/Testing.h>
-#include <vtkm/filter/FieldTransform/GenerateIds.h>
+#include <vtkm/filter/field_transform/GenerateIds.h>
 #include <vtkm/source/Tangle.h>
 
 namespace

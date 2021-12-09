@@ -9,7 +9,7 @@
 //============================================================================
 #include <vtkm/cont/ArrayCopy.h>
 #include <vtkm/cont/ArrayHandleIndex.h>
-#include <vtkm/filter/FieldTransform/GenerateIds.h>
+#include <vtkm/filter/field_transform/GenerateIds.h>
 
 namespace
 {
