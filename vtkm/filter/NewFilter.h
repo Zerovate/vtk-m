@@ -264,10 +264,10 @@ class VTKM_FILTER_CORE_EXPORT NewFilter
 {
 public:
   VTKM_CONT
-  virtual ~NewFilter() = default;
+  virtual ~NewFilter();
 
   VTKM_CONT
-  virtual bool CanThread() const { return true; }
+  virtual bool CanThread() const;
 
   VTKM_CONT
   bool GetRunMultiThreadedFilter() const
@@ -292,36 +292,6 @@ public:
   ///
   /// A filter is able to state what subset of types it supports.
   using SupportedTypes = VTKM_DEFAULT_TYPE_LIST;
-
-  /// \brief Specify which additional field storage to support.
-  ///
-  /// When a filter gets a field value from a DataSet, it has to determine what type
-  /// of storage the array has. Typically this is taken from the default storage
-  /// types defined in DefaultTypes.h. In some cases it is useful to support additional
-  /// types. For example, the filter might make sense to support ArrayHandleIndex or
-  /// ArrayHandleConstant. If so, the storage of those additional types should be
-  /// listed here.
-  using AdditionalFieldStorage = vtkm::ListEmpty;
-
-  /// \brief Specify which structured cell sets to support.
-  ///
-  /// When a filter gets a cell set from a DataSet, it has to determine what type
-  /// of concrete cell set it is. This provides a list of supported structured
-  /// cell sets.
-  using SupportedStructuredCellSets = VTKM_DEFAULT_CELL_SET_LIST_STRUCTURED;
-
-  /// \brief Specify which unstructured cell sets to support.
-  ///
-  /// When a filter gets a cell set from a DataSet, it has to determine what type
-  /// of concrete cell set it is. This provides a list of supported unstructured
-  /// cell sets.
-  using SupportedUnstructuredCellSets = VTKM_DEFAULT_CELL_SET_LIST_UNSTRUCTURED;
-
-  /// \brief Specify which unstructured cell sets to support.
-  ///
-  /// When a filter gets a cell set from a DataSet, it has to determine what type
-  /// of concrete cell set it is. This provides a list of supported cell sets.
-  using SupportedCellSets = VTKM_DEFAULT_CELL_SET_LIST;
 
   //@{
   /// \brief Specify which fields get passed from input to output.
@@ -377,15 +347,14 @@ public:
   /// Executes the filter on the input and produces a result dataset.
   ///
   /// On success, this the dataset produced. On error, vtkm::cont::ErrorExecution will be thrown.
-  VTKM_CONT virtual vtkm::cont::DataSet Execute(const vtkm::cont::DataSet& input) = 0;
+  VTKM_CONT vtkm::cont::DataSet Execute(const vtkm::cont::DataSet& input);
   //@}
 
   //@{
   /// Executes the filter on the input PartitionedDataSet and produces a result PartitionedDataSet.
   ///
   /// On success, this the dataset produced. On error, vtkm::cont::ErrorExecution will be thrown.
-  VTKM_CONT virtual vtkm::cont::PartitionedDataSet Execute(
-    const vtkm::cont::PartitionedDataSet& input);
+  VTKM_CONT vtkm::cont::PartitionedDataSet Execute(const vtkm::cont::PartitionedDataSet& input);
   //@}
 
   // FIXME: Is this actually materialize? Are there different kinds of Invoker?
@@ -397,29 +366,6 @@ public:
 protected:
   vtkm::cont::Invoker Invoke;
   vtkm::Id CoordinateSystemIndex = 0;
-
-  VTKM_CONT
-  virtual vtkm::Id DetermineNumberOfThreads(const vtkm::cont::PartitionedDataSet& input);
-
-  //@{
-  /// when operating on vtkm::cont::PartitionedDataSet, we
-  /// want to do processing across ranks as well. Just adding pre/post handles
-  /// for the same does the trick.
-  VTKM_CONT virtual void PreExecute(const vtkm::cont::PartitionedDataSet&) {}
-
-  VTKM_CONT virtual void PostExecute(const vtkm::cont::PartitionedDataSet&,
-                                     vtkm::cont::PartitionedDataSet&)
-  {
-  }
-  //@}
-
-  VTKM_CONT virtual vtkm::cont::PartitionedDataSet DoExecute(
-    const vtkm::cont::PartitionedDataSet& inData);
-
-  static void defaultMapper(vtkm::cont::DataSet& output, const vtkm::cont::Field& field)
-  {
-    output.AddField(field);
-  };
 
   template <typename Mapper>
   VTKM_CONT void MapFieldsOntoOutput(const vtkm::cont::DataSet& input,
@@ -442,6 +388,30 @@ protected:
   }
 
 private:
+  VTKM_CONT
+  virtual vtkm::Id DetermineNumberOfThreads(const vtkm::cont::PartitionedDataSet& input);
+
+  //@{
+  /// when operating on vtkm::cont::PartitionedDataSet, we
+  /// want to do processing across ranks as well. Just adding pre/post handles
+  /// for the same does the trick.
+  VTKM_CONT virtual void PreExecute(const vtkm::cont::PartitionedDataSet&) {}
+
+  VTKM_CONT virtual void PostExecute(const vtkm::cont::PartitionedDataSet&,
+                                     vtkm::cont::PartitionedDataSet&)
+  {
+  }
+  //@}
+
+  VTKM_CONT virtual vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& inData) = 0;
+  VTKM_CONT virtual vtkm::cont::PartitionedDataSet DoExecute(
+    const vtkm::cont::PartitionedDataSet& inData);
+
+  static void defaultMapper(vtkm::cont::DataSet& output, const vtkm::cont::Field& field)
+  {
+    output.AddField(field);
+  };
+
   vtkm::filter::FieldSelection FieldsToPass = vtkm::filter::FieldSelection::MODE_ALL;
   bool RunFilterWithMultipleThreads = false;
 };

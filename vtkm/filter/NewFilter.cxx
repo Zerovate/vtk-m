@@ -37,6 +37,13 @@ void RunFilter(NewFilter* self,
 }
 } // anonymous namespace
 
+NewFilter::~NewFilter() = default;
+
+bool NewFilter::CanThread() const
+{
+  return true;
+}
+
 //----------------------------------------------------------------------------
 vtkm::cont::PartitionedDataSet NewFilter::DoExecute(const vtkm::cont::PartitionedDataSet& input)
 {
@@ -74,6 +81,10 @@ vtkm::cont::PartitionedDataSet NewFilter::DoExecute(const vtkm::cont::Partitione
   }
 
   return output;
+}
+vtkm::cont::DataSet NewFilter::Execute(const vtkm::cont::DataSet& input)
+{
+  return this->DoExecute(input);
 }
 
 vtkm::cont::PartitionedDataSet NewFilter::Execute(const vtkm::cont::PartitionedDataSet& input)

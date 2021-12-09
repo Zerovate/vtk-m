@@ -84,8 +84,7 @@ public:
   bool GetUseFloat() const { return this->UseFloat; }
   void SetUseFloat(bool flag) { this->UseFloat = flag; }
 
-  using vtkm::filter::NewFilter::Execute; // bring overloads of Execute into name lookup
-  vtkm::cont::DataSet Execute(const vtkm::cont::DataSet& input) override;
+  vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 };
 
 } // namespace vtkm::filter
