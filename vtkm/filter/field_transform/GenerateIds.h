@@ -17,7 +17,8 @@ namespace vtkm
 {
 namespace filter
 {
-
+namespace field_transform
+{
 /// \brief Adds fields to a `DataSet` that give the ids for the points and cells.
 ///
 /// This filter will add (by default) a point field named `pointids` that gives the
@@ -86,7 +87,7 @@ public:
 
   vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
 };
-
+} // namespace field_transform
 } // namespace vtkm::filter
 } // namespace vtkm
 

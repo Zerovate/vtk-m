@@ -32,7 +32,7 @@ public:
 
     vtkm::Id3 dims(4, 4, 4);
     vtkm::source::Tangle tangle(dims);
-    vtkm::filter::GenerateIds genIds;
+    vtkm::filter::field_transform::GenerateIds genIds;
     genIds.SetUseFloat(true);
     genIds.SetGeneratePointIds(false);
     genIds.SetCellFieldName("cellvar");
