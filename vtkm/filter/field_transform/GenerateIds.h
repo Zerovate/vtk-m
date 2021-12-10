@@ -7,8 +7,8 @@
 //  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
-#ifndef vtk_m_filter_GenerateIds_h
-#define vtk_m_filter_GenerateIds_h
+#ifndef vtk_m_filter_field_transform_GenerateIds_h
+#define vtk_m_filter_field_transform_GenerateIds_h
 
 #include <vtkm/filter/NewFilter.h>
 #include <vtkm/filter/field_transform/vtkm_filter_field_transform_export.h>
@@ -91,4 +91,4 @@ public:
 } // namespace vtkm::filter
 } // namespace vtkm
 
-#endif //vtk_m_filter_GenerateIds_h
+#endif //vtk_m_filter_field_transform_GenerateIds_h
