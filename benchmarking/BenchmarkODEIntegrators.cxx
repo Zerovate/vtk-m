@@ -17,7 +17,7 @@
 #include <vtkm/cont/RuntimeDeviceTracker.h>
 #include <vtkm/cont/Timer.h>
 #include <vtkm/cont/internal/OptionParser.h>
-#include <vtkm/filter/ParticleAdvection.h>
+#include <vtkm/filter/particle_advection/ParticleAdvection.h>
 #include <vtkm/worklet/particleadvection/EulerIntegrator.h>
 #include <vtkm/worklet/particleadvection/RK4Integrator.h>
 

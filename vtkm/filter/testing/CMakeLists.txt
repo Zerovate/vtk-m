@@ -62,7 +62,6 @@ set(unit_tests
   UnitTestPointTransform.cxx
   UnitTestProbe.cxx
   UnitTestSplitSharpEdgesFilter.cxx
-  UnitTestStreamlineFilter.cxx
   UnitTestStreamSurfaceFilter.cxx
   UnitTestSurfaceNormalsFilter.cxx
   UnitTestTetrahedralizeFilter.cxx
@@ -82,7 +81,6 @@ if(HIP IN_LIST Kokkos_DEVICES)
   list(REMOVE_ITEM unit_tests
        UnitTestLagrangianFilter.cxx
        UnitTestLagrangianStructuresFilter.cxx
-       UnitTestStreamlineFilter.cxx
        UnitTestStreamSurfaceFilter.cxx
   )
 endif()
@@ -102,7 +100,6 @@ if (VTKm_ENABLE_RENDERING)
     RegressionTestPointTransform.cxx
     RegressionTestSliceFilter.cxx
     RegressionTestSplitSharpEdges.cxx
-    RegressionTestStreamline.cxx
     RegressionTestSurfaceNormals.cxx
   )
 endif()
@@ -116,9 +113,7 @@ if ((TARGET vtkm::cuda) OR (TARGET vtkm::kokkos_cuda))
 #TODO : Find a more elegant way to do this.Either figure out a way around this problem
 # or add more general flags to vtkm_library / vtkm_unit_tests for sources with "large" kernels.
   set(large_kernel_sources
-    RegressionTestStreamline.cxx
     UnitTestLagrangianFilter.cxx
-    UnitTestStreamlineFilter.cxx
     UnitTestStreamSurfaceFilter.cxx
     )
   set_source_files_properties(${large_kernel_sources} PROPERTIES
@@ -138,8 +133,6 @@ vtkm_unit_tests(
 if (VTKm_ENABLE_MPI)
   set(mpi_unit_tests
     UnitTestContourTreeUniformDistributedFilterMPI.cxx
-    UnitTestParticleMessengerMPI.cxx
-    UnitTestStreamlineFilterMPI.cxx
   )
   vtkm_unit_tests(
     MPI SOURCES ${mpi_unit_tests}

@@ -12,10 +12,10 @@
 #define vtk_m_filter_StreamSurface_h
 
 #include <vtkm/filter/FilterDataSetWithField.h>
-#include <vtkm/worklet/ParticleAdvection.h>
+#include <vtkm/filter/particle_advection/worklet/GridEvaluators.h>
+#include <vtkm/filter/particle_advection/worklet/ParticleAdvection.h>
+#include <vtkm/filter/particle_advection/worklet/Stepper.h>
 #include <vtkm/worklet/StreamSurface.h>
-#include <vtkm/worklet/particleadvection/GridEvaluators.h>
-#include <vtkm/worklet/particleadvection/Stepper.h>
 
 namespace vtkm
 {

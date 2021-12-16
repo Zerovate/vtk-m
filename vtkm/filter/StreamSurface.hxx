@@ -16,12 +16,12 @@
 #include <vtkm/cont/ArrayCopy.h>
 #include <vtkm/cont/ArrayHandleIndex.h>
 #include <vtkm/cont/ErrorFilterExecution.h>
-#include <vtkm/worklet/ParticleAdvection.h>
-#include <vtkm/worklet/particleadvection/Field.h>
-#include <vtkm/worklet/particleadvection/GridEvaluators.h>
-#include <vtkm/worklet/particleadvection/Particles.h>
-#include <vtkm/worklet/particleadvection/RK4Integrator.h>
-#include <vtkm/worklet/particleadvection/Stepper.h>
+#include <vtkm/filter/particle_advection/worklet/Field.h>
+#include <vtkm/filter/particle_advection/worklet/GridEvaluators.h>
+#include <vtkm/filter/particle_advection/worklet/ParticleAdvection.h>
+#include <vtkm/filter/particle_advection/worklet/Particles.h>
+#include <vtkm/filter/particle_advection/worklet/RK4Integrator.h>
+#include <vtkm/filter/particle_advection/worklet/Stepper.h>
 
 namespace vtkm
 {
@@ -52,10 +52,10 @@ inline VTKM_CONT vtkm::cont::DataSet StreamSurface::DoExecute(
     input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex());
 
   using FieldHandle = vtkm::cont::ArrayHandle<vtkm::Vec<T, 3>, StorageType>;
-  using FieldType = vtkm::worklet::particleadvection::VelocityField<FieldHandle>;
-  using GridEvalType = vtkm::worklet::particleadvection::GridEvaluator<FieldType>;
-  using RK4Type = vtkm::worklet::particleadvection::RK4Integrator<GridEvalType>;
-  using Stepper = vtkm::worklet::particleadvection::Stepper<RK4Type, GridEvalType>;
+  using FieldType = vtkm::worklet::particle_advection::VelocityField<FieldHandle>;
+  using GridEvalType = vtkm::worklet::particle_advection::GridEvaluator<FieldType>;
+  using RK4Type = vtkm::worklet::particle_advection::RK4Integrator<GridEvalType>;
+  using Stepper = vtkm::worklet::particle_advection::Stepper<RK4Type, GridEvalType>;
 
   //compute streamlines
   FieldType velocities(field, fieldMeta.GetAssociation());

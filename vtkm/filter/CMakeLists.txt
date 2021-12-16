@@ -108,15 +108,11 @@ set(extra_headers
   ParticleDensityBase.h
   ParticleDensityCloudInCell.h
   ParticleDensityNearestGridPoint.h
-  ParticleAdvection.h
-  Pathline.h
-  PathParticle.h
   PointAverage.h
   PointElevation.h
   PointTransform.h
   Probe.h
   SplitSharpEdges.h
-  Streamline.h
   StreamSurface.h
   SurfaceNormals.h
   Tetrahedralize.h
@@ -163,14 +159,10 @@ set(extra_header_template_sources
   NDHistogram.hxx
   ParticleDensityCloudInCell.hxx
   ParticleDensityNearestGridPoint.hxx
-  ParticleAdvection.hxx
-  Pathline.hxx
-  PathParticle.hxx
   PointElevation.hxx
   PointTransform.hxx
   Probe.hxx
   SplitSharpEdges.hxx
-  Streamline.hxx
   StreamSurface.hxx
   SurfaceNormals.hxx
   Tetrahedralize.hxx
@@ -193,8 +185,6 @@ set(extra_sources_device
   ${ClipWithImplicitFunctionInstantiations}
   ExternalFaces.cxx
   VectorMagnitude.cxx
-  particleadvection/Messenger.cxx
-  particleadvection/ParticleMessenger.cxx
 )
 
 set(contour_headers
@@ -237,9 +227,14 @@ vtkm_pyexpander_generated_file(ClipWithImplicitFunctionExternInstantiations.h)
 set(core_headers
   NewFilter.h
   NewFilterField.h
+  NewFilterParticleAdvection.h
+  NewFilterTemporalParticleAdvection.h
   )
 set(core_sources_device
-  NewFilter.cxx)
+  NewFilter.cxx
+  NewFilterParticleAdvection.cxx
+  NewFilterTemporalParticleAdvection.cxx
+  )
 
 vtkm_library(
   NAME vtkm_filter_core
@@ -316,8 +311,9 @@ install(TARGETS vtkm_filter EXPORT ${VTKm_EXPORT_NAME})
 
 
 add_subdirectory(internal)
-add_subdirectory(particleadvection)
+
 add_subdirectory(field_transform)
+add_subdirectory(particle_advection)
 add_subdirectory(vector_calculus)
 
 #-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -

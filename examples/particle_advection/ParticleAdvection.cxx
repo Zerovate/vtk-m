@@ -10,7 +10,7 @@
 
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/Initialize.h>
-#include <vtkm/filter/Streamline.h>
+#include <vtkm/filter/particle_advection/Streamline.h>
 #include <vtkm/io/VTKDataSetReader.h>
 #include <vtkm/io/VTKDataSetWriter.h>
 

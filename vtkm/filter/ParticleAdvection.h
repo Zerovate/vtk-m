@@ -7,37 +7,35 @@
 //  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
-
 #ifndef vtk_m_filter_ParticleAdvection_h
 #define vtk_m_filter_ParticleAdvection_h
 
-#include <vtkm/Particle.h>
-#include <vtkm/filter/FilterParticleAdvection.h>
+#include <vtkm/Deprecated.h>
+#include <vtkm/filter/particle_advection //ParticleAdvection.h>
 
 namespace vtkm
 {
 namespace filter
 {
-/// \brief Advect particles in a vector field.
 
-/// Takes as input a vector field and seed locations and generates the
-/// end points for each seed through the vector field.
+VTKM_DEPRECATED(1.8,
+                "Use vtkm/filter/particle_advection/ParticleAdvection.h instead of "
+                "vtkm/filter/ParticleAdvection.h.")
+inline void ParticleAdvection_deprecated() {}
 
-class ParticleAdvection : public vtkm::filter::FilterParticleAdvection<ParticleAdvection>
+inline void ParticleAdvection_deprecated_warning()
 {
-public:
-  VTKM_CONT ParticleAdvection();
+  ParticleAdvection_deprecated();
+}
 
-  template <typename DerivedPolicy>
-  vtkm::cont::PartitionedDataSet PrepareForExecution(
-    const vtkm::cont::PartitionedDataSet& input,
-    const vtkm::filter::PolicyBase<DerivedPolicy>& policy);
+class VTKM_DEPRECATED(1.8,
+                      "Use vtkm::filter::particle_advection::ParticleAdvection.") ParticleAdvection
+  : public vtkm::filter::particle_advection::ParticleAdvection
+{
+  using particle_advection::ParticleAdvection::ParticleAdvection;
 };
+
 }
 } // namespace vtkm::filter
 
-#ifndef vtk_m_filter_ParticleAdvection_hxx
-#include <vtkm/filter/ParticleAdvection.hxx>
-#endif
-
-#endif // vtk_m_filter_ParticleAdvection_h
+#endif //vtk_m_filter_ParticleAdvection_h

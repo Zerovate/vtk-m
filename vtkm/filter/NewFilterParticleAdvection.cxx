@@ -7,10 +7,8 @@
 //  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
-#ifndef vtk_m_filter_FilterParticleAdvection_hxx
-#define vtk_m_filter_FilterParticleAdvection_hxx
-
-#include <vtkm/filter/FilterParticleAdvection.h>
+#include <vtkm/cont/ErrorFilterExecution.h>
+#include <vtkm/filter/NewFilterParticleAdvection.h>
 
 namespace vtkm
 {
@@ -18,17 +16,7 @@ namespace filter
 {
 
 //-----------------------------------------------------------------------------
-template <typename Derived>
-inline VTKM_CONT FilterParticleAdvection<Derived>::FilterParticleAdvection()
-  : vtkm::filter::FilterDataSetWithField<Derived>()
-  , NumberOfSteps(0)
-  , StepSize(0)
-  , UseThreadedAlgorithm(false)
-{
-}
-
-template <typename Derived>
-void FilterParticleAdvection<Derived>::ValidateOptions() const
+void NewFilterParticleAdvection::ValidateOptions() const
 {
   if (this->GetUseCoordinateSystemAsField())
     throw vtkm::cont::ErrorFilterExecution("Coordinate system as field not supported");
@@ -40,9 +28,8 @@ void FilterParticleAdvection<Derived>::ValidateOptions() const
     throw vtkm::cont::ErrorFilterExecution("Step size not specified.");
 }
 
-template <typename Derived>
 std::vector<vtkm::filter::particle_advection::DataSetIntegrator>
-FilterParticleAdvection<Derived>::CreateDataSetIntegrators(
+NewFilterParticleAdvection::CreateDataSetIntegrators(
   const vtkm::cont::PartitionedDataSet& input,
   const vtkm::filter::particle_advection::BoundsMap& boundsMap) const
 {
@@ -58,23 +45,20 @@ FilterParticleAdvection<Derived>::CreateDataSetIntegrators(
     vtkm::Id blockId = boundsMap.GetLocalBlockId(i);
     auto ds = input.GetPartition(i);
     if (!ds.HasPointField(activeField))
-      throw vtkm::cont::ErrorFilterExecution("Unsupported field assocation");
-    dsi.push_back(DSIType(ds, blockId, activeField));
+      throw vtkm::cont::ErrorFilterExecution("Unsupported field association");
+    dsi.emplace_back(ds, blockId, activeField);
   }
 
   return dsi;
 }
 
 //-----------------------------------------------------------------------------
-template <typename Derived>
-template <typename DerivedPolicy>
-inline VTKM_CONT vtkm::cont::DataSet FilterParticleAdvection<Derived>::PrepareForExecution(
-  const vtkm::cont::DataSet& input,
-  vtkm::filter::PolicyBase<DerivedPolicy> policy)
+VTKM_CONT vtkm::cont::DataSet NewFilterParticleAdvection::DoExecute(
+  const vtkm::cont::DataSet& input)
 {
-  return (static_cast<Derived*>(this))->DoExecute(input, policy);
+  vtkm::cont::PartitionedDataSet output = this->Execute(vtkm::cont::PartitionedDataSet(input));
+  return output.GetPartition(0);
 }
 
 }
 } // namespace vtkm::filter
-#endif

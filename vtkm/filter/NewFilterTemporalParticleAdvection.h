@@ -8,13 +8,11 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#ifndef vtk_m_filter_TemporalFilterParticleAdvection_h
-#define vtk_m_filter_TemporalFilterParticleAdvection_h
+#ifndef vtk_m_filter_NewTemporalFilterParticleAdvection_h
+#define vtk_m_filter_NewTemporalFilterParticleAdvection_h
 
-#include <vtkm/Particle.h>
-#include <vtkm/filter/FilterParticleAdvection.h>
-#include <vtkm/filter/particle_advection/BoundsMap.h>
-#include <vtkm/filter/particle_advection/DataSetIntegrator.h>
+#include <vtkm/filter/NewFilterParticleAdvection.h>
+#include <vtkm/filter/vtkm_filter_core_export.h>
 
 namespace vtkm
 {
@@ -24,14 +22,10 @@ namespace filter
 
 /// Takes as input a vector field and seed locations and advects the seeds
 /// through the flow field.
-
-template <class Derived>
-class FilterTemporalParticleAdvection : public vtkm::filter::FilterParticleAdvection<Derived>
+class VTKM_FILTER_CORE_EXPORT NewFilterTemporalParticleAdvection
+  : public vtkm::filter::NewFilterParticleAdvection
 {
 public:
-  VTKM_CONT
-  FilterTemporalParticleAdvection();
-
   VTKM_CONT
   void SetPreviousTime(vtkm::FloatDefault t) { this->PreviousTime = t; }
   VTKM_CONT
@@ -46,30 +40,21 @@ public:
   VTKM_CONT
   void SetNextDataSet(const vtkm::cont::PartitionedDataSet& pds) { this->NextDataSet = pds; }
 
-  template <typename DerivedPolicy>
-  VTKM_CONT vtkm::cont::DataSet PrepareForExecution(const vtkm::cont::DataSet& input,
-                                                    vtkm::filter::PolicyBase<DerivedPolicy> policy);
-
 protected:
   VTKM_CONT void ValidateOptions(const vtkm::cont::PartitionedDataSet& input) const;
-  using vtkm::filter::FilterParticleAdvection<Derived>::ValidateOptions;
+  using vtkm::filter::NewFilterParticleAdvection::ValidateOptions;
 
   using DSIType = vtkm::filter::particle_advection::TemporalDataSetIntegrator;
   VTKM_CONT std::vector<DSIType> CreateDataSetIntegrators(
     const vtkm::cont::PartitionedDataSet& input,
     const vtkm::filter::particle_advection::BoundsMap& boundsMap) const;
 
-  vtkm::FloatDefault PreviousTime;
-  vtkm::FloatDefault NextTime;
+  vtkm::FloatDefault PreviousTime = 0;
+  vtkm::FloatDefault NextTime = 0;
   vtkm::cont::PartitionedDataSet NextDataSet;
-
-private:
 };
-}
-} // namespace vtkm::filter
 
-#ifndef vtk_m_filter_FilterTemporalParticleAdvection_hxx
-#include <vtkm/filter/FilterTemporalParticleAdvection.hxx>
-#endif
+} // namespace filter
+} // namespace vtkm
 
-#endif // vtk_m_filter_FilterTemporalParticleAdvection_h
+#endif // vtk_m_filter_NewTemporalFilterParticleAdvection_h

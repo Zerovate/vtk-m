@@ -16,7 +16,7 @@
 #include <vtkm/cont/Initialize.h>
 #include <vtkm/cont/Timer.h>
 
-#include <vtkm/filter/Pathline.h>
+#include <vtkm/filter/particle_advection/Pathline.h>
 
 #include <vtkm/io/VTKDataSetReader.h>
 #include <vtkm/io/VTKDataSetWriter.h>

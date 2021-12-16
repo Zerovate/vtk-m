@@ -14,7 +14,7 @@
 #include <vtkm/cont/Field.h>
 #include <vtkm/cont/Initialize.h>
 #include <vtkm/cont/PartitionedDataSet.h>
-#include <vtkm/filter/Streamline.h>
+#include <vtkm/filter/particle_advection/Streamline.h>
 #include <vtkm/io/VTKDataSetReader.h>
 #include <vtkm/io/VTKDataSetWriter.h>
 #include <vtkm/io/reader/VTKDataSetReader.h>
@@ -24,7 +24,7 @@
 #include <vtkm/thirdparty/diy/mpi-cast.h>
 
 
-#include <vtkm/filter/ParticleAdvection.h>
+#include <vtkm/filter/particle_advection/ParticleAdvection.h>
 #include <vtkm/filter/particleadvection/BoundsMap.h>
 #include <vtkm/filter/particleadvection/ParticleMessenger.h>
 

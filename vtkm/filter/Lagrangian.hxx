@@ -21,13 +21,13 @@
 #include <vtkm/cont/DataSetBuilderRectilinear.h>
 #include <vtkm/cont/DeviceAdapter.h>
 #include <vtkm/cont/ErrorFilterExecution.h>
-#include <vtkm/worklet/ParticleAdvection.h>
+#include <vtkm/filter/particle_advection/worklet/Field.h>
+#include <vtkm/filter/particle_advection/worklet/GridEvaluators.h>
+#include <vtkm/filter/particle_advection/worklet/ParticleAdvection.h>
+#include <vtkm/filter/particle_advection/worklet/Particles.h>
+#include <vtkm/filter/particle_advection/worklet/RK4Integrator.h>
+#include <vtkm/filter/particle_advection/worklet/Stepper.h>
 #include <vtkm/worklet/WorkletMapField.h>
-#include <vtkm/worklet/particleadvection/Field.h>
-#include <vtkm/worklet/particleadvection/GridEvaluators.h>
-#include <vtkm/worklet/particleadvection/Particles.h>
-#include <vtkm/worklet/particleadvection/RK4Integrator.h>
-#include <vtkm/worklet/particleadvection/Stepper.h>
 
 #include <cstring>
 #include <sstream>
@@ -271,19 +271,19 @@ inline VTKM_CONT vtkm::cont::DataSet Lagrangian::DoExecute(
   vtkm::Bounds bounds = input.GetCoordinateSystem().GetBounds();
 
   using FieldHandle = vtkm::cont::ArrayHandle<vtkm::Vec<T, 3>, StorageType>;
-  using FieldType = vtkm::worklet::particleadvection::VelocityField<FieldHandle>;
-  using GridEvalType = vtkm::worklet::particleadvection::GridEvaluator<FieldType>;
-  using RK4Type = vtkm::worklet::particleadvection::RK4Integrator<GridEvalType>;
-  using Stepper = vtkm::worklet::particleadvection::Stepper<RK4Type, GridEvalType>;
+  using FieldType = vtkm::worklet::particle_advection::VelocityField<FieldHandle>;
+  using GridEvalType = vtkm::worklet::particle_advection::GridEvaluator<FieldType>;
+  using RK4Type = vtkm::worklet::particle_advection::RK4Integrator<GridEvalType>;
+  using Stepper = vtkm::worklet::particle_advection::Stepper<RK4Type, GridEvalType>;
 
-  vtkm::worklet::ParticleAdvection particleadvection;
+  vtkm::worklet::ParticleAdvection particle_advection;
   vtkm::worklet::ParticleAdvectionResult<vtkm::Particle> res;
 
   FieldType velocities(field, fieldMeta.GetAssociation());
   GridEvalType gridEval(coords, cells, velocities);
   Stepper rk4(gridEval, static_cast<vtkm::Float32>(this->stepSize));
 
-  res = particleadvection.Run(rk4, basisParticleArray, 1); // Taking a single step
+  res = particle_advection.Run(rk4, basisParticleArray, 1); // Taking a single step
   auto particles = res.Particles;
 
   vtkm::cont::DataSet outputData;
