@@ -13,6 +13,8 @@
 #ifndef vtk_m_worklet_particle_advection_EulerIntegrator_h
 #define vtk_m_worklet_particle_advection_EulerIntegrator_h
 
+#include <vtkm/filter/particle_advection/worklet/IntegratorStatus.h>
+
 namespace vtkm
 {
 namespace worklet
