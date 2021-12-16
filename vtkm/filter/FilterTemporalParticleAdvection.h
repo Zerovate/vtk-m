@@ -13,8 +13,8 @@
 
 #include <vtkm/Particle.h>
 #include <vtkm/filter/FilterParticleAdvection.h>
-#include <vtkm/filter/particleadvection/BoundsMap.h>
-#include <vtkm/filter/particleadvection/DataSetIntegrator.h>
+#include <vtkm/filter/particle_advection/BoundsMap.h>
+#include <vtkm/filter/particle_advection/DataSetIntegrator.h>
 
 namespace vtkm
 {
@@ -54,10 +54,10 @@ protected:
   VTKM_CONT void ValidateOptions(const vtkm::cont::PartitionedDataSet& input) const;
   using vtkm::filter::FilterParticleAdvection<Derived>::ValidateOptions;
 
-  using DSIType = vtkm::filter::particleadvection::TemporalDataSetIntegrator;
+  using DSIType = vtkm::filter::particle_advection::TemporalDataSetIntegrator;
   VTKM_CONT std::vector<DSIType> CreateDataSetIntegrators(
     const vtkm::cont::PartitionedDataSet& input,
-    const vtkm::filter::particleadvection::BoundsMap& boundsMap) const;
+    const vtkm::filter::particle_advection::BoundsMap& boundsMap) const;
 
   vtkm::FloatDefault PreviousTime;
   vtkm::FloatDefault NextTime;

@@ -7,38 +7,34 @@
 //  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
-
 #ifndef vtk_m_filter_Streamline_h
 #define vtk_m_filter_Streamline_h
 
-#include <vtkm/filter/FilterParticleAdvection.h>
+#include <vtkm/Deprecated.h>
+#include <vtkm/filter/particle_advection //Streamline.h>
 
 namespace vtkm
 {
 namespace filter
 {
-/// \brief Generate streamlines from a vector field.
 
-/// Takes as input a vector field and seed locations and generates the
-/// paths taken by the seeds through the vector field.
-class Streamline : public vtkm::filter::FilterParticleAdvection<Streamline>
+VTKM_DEPRECATED(
+  1.8,
+  "Use vtkm/filter/particle_advection/Streamline.h instead of vtkm/filter/Streamline.h.")
+inline void Streamline_deprecated() {}
+
+inline void Streamline_deprecated_warning()
 {
-public:
-  VTKM_CONT
-  Streamline();
+  Streamline_deprecated();
+}
 
-  template <typename DerivedPolicy>
-  vtkm::cont::PartitionedDataSet PrepareForExecution(
-    const vtkm::cont::PartitionedDataSet& input,
-    const vtkm::filter::PolicyBase<DerivedPolicy>& policy);
-
-private:
+class VTKM_DEPRECATED(1.8, "Use vtkm::filter::particle_advection::Streamline.") Streamline
+  : public vtkm::filter::particle_advection::Streamline
+{
+  using particle_advection::Streamline::Streamline;
 };
+
 }
 } // namespace vtkm::filter
 
-#ifndef vtk_m_filter_Streamline_hxx
-#include <vtkm/filter/Streamline.hxx>
-#endif
-
-#endif // vtk_m_filter_Streamline_h
+#endif //vtk_m_filter_Streamline_h

@@ -57,7 +57,7 @@ set(headers
   OrientNormals.h
   OrientPointNormals.h
   OrientPointAndCellNormals.h
-  ParticleAdvection.h
+  ../filter/particle_advection/worklet/ParticleAdvection.h
   PointAverage.h
   PointElevation.h
   PointMerge.h
@@ -143,7 +143,6 @@ add_subdirectory(spatialstructure)
 add_subdirectory(tetrahedralize)
 add_subdirectory(triangulate)
 add_subdirectory(wavelets)
-add_subdirectory(particleadvection)
 add_subdirectory(zfp)
 
 vtkm_library(

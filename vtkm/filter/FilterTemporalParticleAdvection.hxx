@@ -39,10 +39,10 @@ void FilterTemporalParticleAdvection<Derived>::ValidateOptions(
 }
 
 template <typename Derived>
-std::vector<vtkm::filter::particleadvection::TemporalDataSetIntegrator>
+std::vector<vtkm::filter::particle_advection::TemporalDataSetIntegrator>
 FilterTemporalParticleAdvection<Derived>::CreateDataSetIntegrators(
   const vtkm::cont::PartitionedDataSet& input,
-  const vtkm::filter::particleadvection::BoundsMap& boundsMap) const
+  const vtkm::filter::particle_advection::BoundsMap& boundsMap) const
 {
   std::vector<DSIType> dsi;
   std::string activeField = this->GetActiveFieldName();

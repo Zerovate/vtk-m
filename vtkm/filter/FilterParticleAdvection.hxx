@@ -41,12 +41,12 @@ void FilterParticleAdvection<Derived>::ValidateOptions() const
 }
 
 template <typename Derived>
-std::vector<vtkm::filter::particleadvection::DataSetIntegrator>
+std::vector<vtkm::filter::particle_advection::DataSetIntegrator>
 FilterParticleAdvection<Derived>::CreateDataSetIntegrators(
   const vtkm::cont::PartitionedDataSet& input,
-  const vtkm::filter::particleadvection::BoundsMap& boundsMap) const
+  const vtkm::filter::particle_advection::BoundsMap& boundsMap) const
 {
-  std::vector<vtkm::filter::particleadvection::DataSetIntegrator> dsi;
+  std::vector<vtkm::filter::particle_advection::DataSetIntegrator> dsi;
 
   if (boundsMap.GetTotalNumBlocks() == 0)
     throw vtkm::cont::ErrorFilterExecution("No input datasets.");

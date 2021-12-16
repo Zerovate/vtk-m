@@ -28,9 +28,9 @@
 #include <vtkm/filter/Contour.h>
 #include <vtkm/filter/Gradient.h>
 #include <vtkm/filter/Slice.h>
-#include <vtkm/filter/Streamline.h>
 #include <vtkm/filter/Tetrahedralize.h>
 #include <vtkm/filter/Tube.h>
+#include <vtkm/filter/particle_advection/Streamline.h>
 
 #include <vtkm/rendering/Actor.h>
 #include <vtkm/rendering/CanvasRayTracer.h>

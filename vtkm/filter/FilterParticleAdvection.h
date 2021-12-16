@@ -13,8 +13,8 @@
 
 #include <vtkm/Particle.h>
 #include <vtkm/filter/FilterDataSetWithField.h>
-#include <vtkm/filter/particleadvection/BoundsMap.h>
-#include <vtkm/filter/particleadvection/DataSetIntegrator.h>
+#include <vtkm/filter/particle_advection/BoundsMap.h>
+#include <vtkm/filter/particle_advection/DataSetIntegrator.h>
 
 namespace vtkm
 {
@@ -71,10 +71,10 @@ public:
 protected:
   VTKM_CONT virtual void ValidateOptions() const;
 
-  using DSIType = vtkm::filter::particleadvection::DataSetIntegrator;
+  using DSIType = vtkm::filter::particle_advection::DataSetIntegrator;
   VTKM_CONT std::vector<DSIType> CreateDataSetIntegrators(
     const vtkm::cont::PartitionedDataSet& input,
-    const vtkm::filter::particleadvection::BoundsMap& boundsMap) const;
+    const vtkm::filter::particle_advection::BoundsMap& boundsMap) const;
 
   vtkm::Id NumberOfSteps;
   vtkm::FloatDefault StepSize;
