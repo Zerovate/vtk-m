@@ -21,7 +21,7 @@
 #include <vtkm/Types.h>
 #include <vtkm/VectorAnalysis.h>
 
-#include <vtkm/filter/particle_advection/worklet //GridEvaluatorStatus.h>
+#include <vtkm/filter/particle_advection/worklet/GridEvaluatorStatus.h>
 
 namespace vtkm
 {
