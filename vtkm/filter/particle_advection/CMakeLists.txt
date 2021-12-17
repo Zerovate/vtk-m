@@ -12,7 +12,6 @@
 
 set(particle_advection_headers
   AdvectorBaseAlgorithm.h
-  AdvectorBaseAlgorithm.hxx # FIXME: not used anywhere?
   AdvectorBaseThreadedAlgorithm.h
   BoundsMap.h
   DataSetIntegrator.h
