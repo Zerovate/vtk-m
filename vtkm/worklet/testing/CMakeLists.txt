@@ -31,6 +31,7 @@ set(unit_tests
   UnitTestCosmoTools.cxx
   UnitTestCrossProduct.cxx
   UnitTestDescriptiveStatistics.cxx
+  UnitTestDormandPrince.cxx
   UnitTestDotProduct.cxx
   UnitTestFieldHistogram.cxx
   UnitTestFieldStatistics.cxx
