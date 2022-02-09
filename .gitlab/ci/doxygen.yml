@@ -8,11 +8,9 @@ doxygen:
     #establish that we need doxygen related
     #env variables
     name: doxygen-upload
-  only:
-    #make sure we are only trigged on
-    #the vtk-m primary project
-    variables:
-      - '$DOXYGEN_UPLOAD_ENABLE == "true"'
+  extends:
+    .run_scheduled
+
   timeout:  30 minutes
   interruptible: true
   tags:
