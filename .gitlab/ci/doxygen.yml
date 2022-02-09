@@ -8,8 +8,8 @@ doxygen:
     #establish that we need doxygen related
     #env variables
     name: doxygen-upload
-  extends:
-    .run_scheduled
+  #extends:
+  #ex.run_scheduled
 
   timeout:  30 minutes
   interruptible: true
@@ -25,7 +25,7 @@ doxygen:
   script:
     - doxygen build/docs/doxyfile
     - chmod 400 $DOC_KEY_FILE
-    - test -n "$GIT_COMMIT_TAG" && DOXYGEN_UPLOAD_REMOTE_PATH=latest
+    - DOXYGEN_UPLOAD_REMOTE_PATH=latest
     - rsync -tv --recursive --delete -e "ssh -i $DOC_KEY_FILE -o StrictHostKeyChecking=no" build/docs/doxygen/html/ "kitware@web.kitware.com:vtkm_documentation/$DOXYGEN_UPLOAD_REMOTE_PATH"
   variables:
     CMAKE_BUILD_TYPE: Release
