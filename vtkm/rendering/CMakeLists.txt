@@ -90,6 +90,7 @@ set(sources
   View3D.cxx
   WorldAnnotator.cxx
 
+  raytracing/ConnectivityTracer.cxx
   raytracing/Logger.cxx
   raytracing/MeshConnectivityContainers.cxx
   raytracing/TriangleExtractor.cxx
@@ -116,7 +117,6 @@ set(device_sources
   raytracing/BoundingVolumeHierarchy.cxx
   raytracing/Camera.cxx
   raytracing/ChannelBuffer.cxx
-  raytracing/ConnectivityTracer.cxx
   raytracing/CylinderExtractor.cxx
   raytracing/CylinderIntersector.cxx
   raytracing/MeshConnectivityBuilder.cxx
@@ -131,6 +131,13 @@ set(device_sources
   raytracing/TriangleIntersector.cxx
   raytracing/VolumeRendererStructured.cxx
   )
+
+# Set up instantiations, which break up compiles of templates into multiple
+# source files.
+vtkm_add_instantiations(connectivity_tracer_instantiations
+  INSTANTIATIONS_FILE raytracing/ConnectivityTracerTemplates.hxx
+  )
+list(APPEND device_sources ${connectivity_tracer_instantiations})
 
 # the None backend supports not building the opengl version
 

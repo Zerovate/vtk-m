@@ -115,6 +115,10 @@ function(do_verify root_dir prefix)
   set(file_exceptions
     thirdparty/diy/vtkmdiy/cmake/mpi_types.h
 
+    # Ignore header files only for instantiations that are not intended to be included
+    # outside of VTK-m.
+    rendering/raytracing/ConnectivityTracerTemplates.hxx
+
     # Ignore deprecated virtual classes (which are not installed if VTKm_NO_DEPRECATED_VIRTUAL
     # is on). These exceptions can be removed when these files are completely removed.
     cont/ArrayHandleVirtual.h
