@@ -138,6 +138,15 @@ bool CudaAllocator::IsManagedPointer(const void* ptr)
 #endif
 }
 
+//DRP multiblock.
+//thread local variable with allocated memory.
+//c++14 thread local
+//managed memory: the ptr can be allocated in unified memory space (both host and device).
+//c++ stuff:
+// thread local variable.
+//  look how boost implements memory pools.
+//  pre allocate?
+//  or build the pool as you go.
 void* CudaAllocator::Allocate(std::size_t numBytes)
 {
   CudaAllocator::Initialize();
@@ -155,7 +164,13 @@ void* CudaAllocator::Allocate(std::size_t numBytes)
   }
   else
   {
+    std::cout<<"CudaAllocator::Allocate("<<numBytes<<") ASYNC"<<std::endl;
+#if CUDART_VERSION >= 11200
+    printf("DRP. Using Async cuda Malloc\n");
+    VTKM_CUDA_CALL(cudaMallocAsync(&ptr, numBytes, cudaStreamPerThread));
+#else
     VTKM_CUDA_CALL(cudaMalloc(&ptr, numBytes));
+#endif //CUDA >= 11.2
   }
 
   {
@@ -171,6 +186,8 @@ void* CudaAllocator::Allocate(std::size_t numBytes)
 void* CudaAllocator::AllocateUnManaged(std::size_t numBytes)
 {
   void* ptr = nullptr;
+  std::cout<<"CudaAllocator::AllocateUnManaged("<<numBytes<<") ASYNC"<<std::endl;
+  //VTKM_CUDA_CALL(cudaMallocAsync(&ptr, numBytes, cudaStreamPerThread));
   VTKM_CUDA_CALL(cudaMalloc(&ptr, numBytes));
   {
     VTKM_LOG_F(vtkm::cont::LogLevel::MemExec,
@@ -184,7 +201,13 @@ void* CudaAllocator::AllocateUnManaged(std::size_t numBytes)
 void CudaAllocator::Free(void* ptr)
 {
   VTKM_LOG_F(vtkm::cont::LogLevel::MemExec, "Freeing CUDA allocation at %p.", ptr);
+  std::cout<<"CudaAllocator::Free() ASYNC"<<std::endl;
+#if CUDART_VERSION >= 11200
+  printf("DRP. Using Async cuda Malloc\n");
+  VTKM_CUDA_CALL(cudaFreeAsync(ptr, cudaStreamPerThread));
+#else
   VTKM_CUDA_CALL(cudaFree(ptr));
+#endif //CUDA >= 11.2
 }
 
 void CudaAllocator::FreeDeferred(void* ptr, std::size_t numBytes)
@@ -217,6 +240,8 @@ void CudaAllocator::FreeDeferred(void* ptr, std::size_t numBytes)
   for (auto&& p : toFree)
   {
     VTKM_LOG_F(vtkm::cont::LogLevel::MemExec, "Freeing deferred CUDA allocation at %p.", p);
+    std::cout<<"CudaAllocator::FreeDeferred() ASYNC"<<std::endl;
+    //VTKM_CUDA_CALL(cudaFreeAsync(p, cudaStreamPerThread));
     VTKM_CUDA_CALL(cudaFree(p));
   }
 }
