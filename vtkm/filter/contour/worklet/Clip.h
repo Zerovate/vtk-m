@@ -10,6 +10,7 @@
 #ifndef vtkm_m_worklet_Clip_h
 #define vtkm_m_worklet_Clip_h
 
+#include <vtkm/filter/contour/worklet/MapFieldEdgeInterpolation.h>
 #include <vtkm/filter/contour/worklet/clip/ClipTables.h>
 #include <vtkm/worklet/DispatcherMapField.h>
 #include <vtkm/worklet/DispatcherMapTopology.h>
@@ -79,47 +80,8 @@ struct ClipStats
   };
 };
 
-struct EdgeInterpolation
-{
-  vtkm::Id Vertex1 = -1;
-  vtkm::Id Vertex2 = -1;
-  vtkm::Float64 Weight = 0;
-
-  struct LessThanOp
-  {
-    VTKM_EXEC
-    bool operator()(const EdgeInterpolation& v1, const EdgeInterpolation& v2) const
-    {
-      return (v1.Vertex1 < v2.Vertex1) || (v1.Vertex1 == v2.Vertex1 && v1.Vertex2 < v2.Vertex2);
-    }
-  };
-
-  struct EqualToOp
-  {
-    VTKM_EXEC
-    bool operator()(const EdgeInterpolation& v1, const EdgeInterpolation& v2) const
-    {
-      return v1.Vertex1 == v2.Vertex1 && v1.Vertex2 == v2.Vertex2;
-    }
-  };
-};
-
 namespace internal
 {
-
-template <typename T>
-VTKM_EXEC_CONT T Scale(const T& val, vtkm::Float64 scale)
-{
-  return static_cast<T>(scale * static_cast<vtkm::Float64>(val));
-}
-
-template <typename T, vtkm::IdComponent NumComponents>
-VTKM_EXEC_CONT vtkm::Vec<T, NumComponents> Scale(const vtkm::Vec<T, NumComponents>& val,
-                                                 vtkm::Float64 scale)
-{
-  return val * scale;
-}
-
 template <typename Device>
 class ExecutionConnectivityExplicit
 {
@@ -434,7 +396,7 @@ public:
                 this->swap(ei.Vertex1, ei.Vertex2);
                 this->swap(edge[0], edge[1]);
               }
-              ei.Weight = (static_cast<vtkm::Float64>(scalars[edge[0]]) - this->Value) /
+              ei.Weight = (this->Value - static_cast<vtkm::Float64>(scalars[edge[0]])) /
                 static_cast<vtkm::Float64>(scalars[edge[1]] - scalars[edge[0]]);
 
               inCellEdgeReverseConnectivity.Set(inCellEdgeInterpIndex, inCellInterpPointIndex);
@@ -489,7 +451,7 @@ public:
                 this->swap(ei.Vertex1, ei.Vertex2);
                 this->swap(edge[0], edge[1]);
               }
-              ei.Weight = (static_cast<vtkm::Float64>(scalars[edge[0]]) - this->Value) /
+              ei.Weight = (this->Value - static_cast<vtkm::Float64>(scalars[edge[0]])) /
                 static_cast<vtkm::Float64>(scalars[edge[1]] - scalars[edge[0]]);
               //Add to set of new edge points
               //Add reverse connectivity;
@@ -772,34 +734,6 @@ public:
     {
     }
 
-    class PerformEdgeInterpolations : public vtkm::worklet::WorkletMapField
-    {
-    public:
-      PerformEdgeInterpolations(vtkm::Id edgePointsOffset)
-        : EdgePointsOffset(edgePointsOffset)
-      {
-      }
-
-      using ControlSignature = void(FieldIn edgeInterpolations, WholeArrayInOut outputField);
-
-      using ExecutionSignature = void(_1, _2, WorkIndex);
-
-      template <typename EdgeInterp, typename OutputFieldPortal>
-      VTKM_EXEC void operator()(const EdgeInterp& ei,
-                                OutputFieldPortal& field,
-                                const vtkm::Id workIndex) const
-      {
-        using T = typename OutputFieldPortal::ValueType;
-        T v1 = field.Get(ei.Vertex1);
-        T v2 = field.Get(ei.Vertex2);
-        field.Set(this->EdgePointsOffset + workIndex,
-                  static_cast<T>(internal::Scale(T(v1 - v2), ei.Weight) + v1));
-      }
-
-    private:
-      vtkm::Id EdgePointsOffset;
-    };
-
     class PerformInCellInterpolations : public vtkm::worklet::WorkletReduceByKey
     {
     public:
@@ -835,10 +769,12 @@ public:
       result.Allocate(numberOfOriginalValues + numberOfEdgePoints + numberOfInCellPoints);
       vtkm::cont::Algorithm::CopySubRange(field, 0, numberOfOriginalValues, result);
 
-      PerformEdgeInterpolations edgeInterpWorklet(numberOfOriginalValues);
+      vtkm::worklet::PerformEdgeInterpolations edgeInterpWorklet;
+      auto edgeResult =
+        vtkm::cont::make_ArrayHandleView(result, numberOfOriginalValues, numberOfEdgePoints);
       vtkm::worklet::DispatcherMapField<PerformEdgeInterpolations> edgeInterpDispatcher(
         edgeInterpWorklet);
-      edgeInterpDispatcher.Invoke(this->EdgeInterpolationArray, result);
+      edgeInterpDispatcher.Invoke(this->EdgeInterpolationArray, field, edgeResult);
 
       // Perform a gather on output to get all required values for calculation of
       // centroids using the interpolation info array.

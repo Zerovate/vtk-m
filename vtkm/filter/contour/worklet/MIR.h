@@ -41,6 +41,7 @@
 #include <vtkm/worklet/WorkletMapTopology.h>
 #include <vtkm/worklet/WorkletReduceByKey.h>
 
+#include <vtkm/filter/contour/worklet/MapFieldEdgeInterpolation.h>
 #include <vtkm/filter/contour/worklet/clip/ClipTables.h>
 #include <vtkm/filter/contour/worklet/mir/MIRTables.h>
 
@@ -78,45 +79,6 @@ struct MIRStats
     }
   };
 };
-struct EdgeInterpolation
-{
-  vtkm::Id Vertex1 = -1;
-  vtkm::Id Vertex2 = -1;
-  vtkm::Float64 Weight = 0;
-
-  struct LessThanOp
-  {
-    VTKM_EXEC
-    bool operator()(const EdgeInterpolation& v1, const EdgeInterpolation& v2) const
-    {
-      return (v1.Vertex1 < v2.Vertex1) || (v1.Vertex1 == v2.Vertex1 && v1.Vertex2 < v2.Vertex2);
-    }
-  };
-
-  struct EqualToOp
-  {
-    VTKM_EXEC
-    bool operator()(const EdgeInterpolation& v1, const EdgeInterpolation& v2) const
-    {
-      return v1.Vertex1 == v2.Vertex1 && v1.Vertex2 == v2.Vertex2;
-    }
-  };
-};
-namespace MIRinternal
-{
-template <typename T>
-VTKM_EXEC_CONT T Scale(const T& val, vtkm::Float64 scale)
-{
-  return static_cast<T>(scale * static_cast<vtkm::Float64>(val));
-}
-
-template <typename T, vtkm::IdComponent NumComponents>
-VTKM_EXEC_CONT vtkm::Vec<T, NumComponents> Scale(const vtkm::Vec<T, NumComponents>& val,
-                                                 vtkm::Float64 scale)
-{
-  return val * scale;
-}
-}
 
 class ExecutionConnectivityExplicit
 {
@@ -870,38 +832,6 @@ public:
     {
     }
 
-    class PerformEdgeInterpolations : public vtkm::worklet::WorkletMapField
-    {
-    public:
-      PerformEdgeInterpolations(vtkm::Id edgePointsOffset)
-        : EdgePointsOffset(edgePointsOffset)
-      {
-      }
-
-      using ControlSignature = void(FieldIn edgeInterpolations, WholeArrayInOut outputField);
-
-      using ExecutionSignature = void(_1, _2, WorkIndex);
-
-      template <typename EdgeInterp, typename OutputFieldPortal>
-      VTKM_EXEC void operator()(const EdgeInterp& ei,
-                                OutputFieldPortal& field,
-                                const vtkm::Id workIndex) const
-      {
-        using T = typename OutputFieldPortal::ValueType;
-        T v1 = field.Get(ei.Vertex1);
-        T v2 = field.Get(ei.Vertex2);
-        field.Set(this->EdgePointsOffset + workIndex,
-                  static_cast<T>(MIRinternal::Scale(T(v1 - v2), ei.Weight) + v2));
-        if (ei.Weight > vtkm::Float64(1) || ei.Weight < vtkm::Float64(0))
-        {
-          this->RaiseError("Error in edge weight, assigned value not it interval [0,1].");
-        }
-      }
-
-    private:
-      vtkm::Id EdgePointsOffset;
-    };
-
     class PerformInCellInterpolations : public vtkm::worklet::WorkletReduceByKey
     {
     public:
@@ -920,7 +850,7 @@ public:
           // static_cast is for when MappedValueType is a small int that gets promoted to int32.
           sum = static_cast<MappedValueType>(sum + value);
         }
-        centroid = MIRinternal::Scale(sum, 1. / static_cast<vtkm::Float64>(numValues));
+        centroid = internal::Scale(sum, 1. / static_cast<vtkm::Float64>(numValues));
       }
     };
 
@@ -937,10 +867,12 @@ public:
       result.Allocate(numberOfOriginalValues + numberOfEdgePoints + numberOfInCellPoints);
       vtkm::cont::Algorithm::CopySubRange(field, 0, numberOfOriginalValues, result);
 
-      PerformEdgeInterpolations edgeInterpWorklet(numberOfOriginalValues);
+      vtkm::worklet::PerformEdgeInterpolations edgeInterpWorklet;
+      auto edgeResult =
+        vtkm::cont::make_ArrayHandleView(result, numberOfOriginalValues, numberOfEdgePoints);
       vtkm::worklet::DispatcherMapField<PerformEdgeInterpolations> edgeInterpDispatcher(
         edgeInterpWorklet);
-      edgeInterpDispatcher.Invoke(this->EdgeInterpolationArray, result);
+      edgeInterpDispatcher.Invoke(this->EdgeInterpolationArray, field, edgeResult);
 
       // Perform a gather on output to get all required values for calculation of
       // centroids using the interpolation info array.
