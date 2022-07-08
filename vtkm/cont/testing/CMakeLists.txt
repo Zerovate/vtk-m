@@ -46,6 +46,7 @@ set(unit_tests
   UnitTestArrayHandleIndex.cxx
   UnitTestArrayHandleOffsetsToNumComponents.cxx
   UnitTestArrayHandlePermutation.cxx
+  UnitTestArrayHandleRandomBernoulli.cxx
   UnitTestArrayHandleRandomStandardNormal.cxx
   UnitTestArrayHandleRandomUniformBits.cxx
   UnitTestArrayHandleRandomUniformReal.cxx

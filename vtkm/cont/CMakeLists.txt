@@ -35,6 +35,7 @@ set(headers
   ArrayHandlePermutation.h
   ArrayHandleRecombineVec.h
   ArrayHandleReverse.h
+  ArrayHandleRandomBernoulli.h
   ArrayHandleRandomStandardNormal.h
   ArrayHandleRandomUniformBits.h
   ArrayHandleRandomUniformReal.h
