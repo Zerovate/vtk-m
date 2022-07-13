@@ -764,20 +764,20 @@ public:
     //{
     // Get unique keys for all shared edges
     vtkm::cont::Algorithm::SortByKey(
-      edgeInterpolation, edgePointReverseConnectivity, EdgeInterpolation::LessThanOp());
+      edgeInterpolation, edgePointReverseConnectivity, vtkm::SortLess{});
     vtkm::cont::Algorithm::Copy(edgeInterpolation, this->EdgePointsInterpolation);
-    vtkm::cont::Algorithm::Unique(this->EdgePointsInterpolation, EdgeInterpolation::EqualToOp());
+    vtkm::cont::Algorithm::Unique(this->EdgePointsInterpolation, vtkm::Equal{});
     vtkm::cont::ArrayHandle<vtkm::Id> edgeInterpolationIndexToUnique;
     vtkm::cont::Algorithm::LowerBounds(this->EdgePointsInterpolation,
                                        edgeInterpolation,
                                        edgeInterpolationIndexToUnique,
-                                       EdgeInterpolation::LessThanOp());
+                                       vtkm::SortLess{});
 
     vtkm::cont::ArrayHandle<vtkm::Id> cellInterpolationIndexToUnique;
     vtkm::cont::Algorithm::LowerBounds(this->EdgePointsInterpolation,
                                        cellPointEdgeInterpolation,
                                        cellInterpolationIndexToUnique,
-                                       EdgeInterpolation::LessThanOp());
+                                       vtkm::SortLess{});
     this->EdgePointsOffset = cellSet.GetNumberOfPoints();
     this->InCellPointsOffset =
       this->EdgePointsOffset + this->EdgePointsInterpolation.GetNumberOfValues();

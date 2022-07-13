@@ -612,21 +612,21 @@ public:
     // LowerBound for edgeInterpolation : get index into new edge points array.
     // LowerBound for cellPointEdgeInterpolation : get index into new edge points array.
     vtkm::cont::Algorithm::SortByKey(
-      edgeInterpolation, edgePointReverseConnectivity, EdgeInterpolation::LessThanOp());
+      edgeInterpolation, edgePointReverseConnectivity, vtkm::SortLess{});
     vtkm::cont::Algorithm::Copy(edgeInterpolation, this->EdgePointsInterpolation);
-    vtkm::cont::Algorithm::Unique(this->EdgePointsInterpolation, EdgeInterpolation::EqualToOp());
+    vtkm::cont::Algorithm::Unique(this->EdgePointsInterpolation, vtkm::Equal{});
 
     vtkm::cont::ArrayHandle<vtkm::Id> edgeInterpolationIndexToUnique;
     vtkm::cont::Algorithm::LowerBounds(this->EdgePointsInterpolation,
                                        edgeInterpolation,
                                        edgeInterpolationIndexToUnique,
-                                       EdgeInterpolation::LessThanOp());
+                                       vtkm::SortLess{});
 
     vtkm::cont::ArrayHandle<vtkm::Id> cellInterpolationIndexToUnique;
     vtkm::cont::Algorithm::LowerBounds(this->EdgePointsInterpolation,
                                        cellPointEdgeInterpolation,
                                        cellInterpolationIndexToUnique,
-                                       EdgeInterpolation::LessThanOp());
+                                       vtkm::SortLess{});
 
     this->EdgePointsOffset = scalars.GetNumberOfValues();
     this->InCellPointsOffset =
@@ -775,6 +775,9 @@ public:
       vtkm::worklet::DispatcherMapField<PerformEdgeInterpolations> edgeInterpDispatcher(
         edgeInterpWorklet);
       edgeInterpDispatcher.Invoke(this->EdgeInterpolationArray, field, edgeResult);
+      //      auto edgeResult =
+      //        vtkm::cont::make_ArrayHandleView(result, numberOfOriginalValues, numberOfEdgePoints);
+      //      vtkm::filter::MapFieldEdgeInterpolation(field, this->EdgeInterpolationArray, edgeResult);
 
       // Perform a gather on output to get all required values for calculation of
       // centroids using the interpolation info array.

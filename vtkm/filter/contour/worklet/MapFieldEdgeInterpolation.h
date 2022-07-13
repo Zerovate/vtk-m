@@ -25,23 +25,18 @@ struct EdgeInterpolation
   vtkm::Id Vertex2 = -1;
   vtkm::Float64 Weight = 0;
 
-  struct LessThanOp
+  VTKM_EXEC_CONT
+  bool operator<(const EdgeInterpolation& that) const
   {
-    VTKM_EXEC
-    bool operator()(const EdgeInterpolation& v1, const EdgeInterpolation& v2) const
-    {
-      return (v1.Vertex1 < v2.Vertex1) || (v1.Vertex1 == v2.Vertex1 && v1.Vertex2 < v2.Vertex2);
-    }
-  };
+    return (this->Vertex1 < that.Vertex1) ||
+      (this->Vertex1 == that.Vertex1 && this->Vertex2 < that.Vertex2);
+  }
 
-  struct EqualToOp
+  VTKM_EXEC_CONT
+  bool operator==(const EdgeInterpolation& that) const
   {
-    VTKM_EXEC
-    bool operator()(const EdgeInterpolation& v1, const EdgeInterpolation& v2) const
-    {
-      return v1.Vertex1 == v2.Vertex1 && v1.Vertex2 == v2.Vertex2;
-    }
-  };
+    return this->Vertex1 == that.Vertex1 && this->Vertex2 == that.Vertex2;
+  }
 };
 
 namespace internal
@@ -86,5 +81,27 @@ public:
 };
 
 } // namespace worklet
+
+//namespace filter
+//{
+//VTKM_CONT bool MapArrayEdgeInterpolation(
+//  const vtkm::cont::UnknownArrayHandle& inputArray,
+//  const vtkm::cont::ArrayHandle<worklet::EdgeInterpolation> edgeInterpolations,
+//  const vtkm::cont::UnknownArrayHandle& outputArray
+//  )
+//{
+//  auto DoMapFieldEdgeInterpolation = [&](const auto& a, const auto& b)
+//  {
+//    vtkm::worklet::PerformEdgeInterpolations edgeInterpWorklet;
+//
+//    vtkm::worklet::DispatcherMapField<worklet::PerformEdgeInterpolations> edgeInterpDispatcher(
+//      edgeInterpWorklet);
+//    edgeInterpDispatcher.Invoke(edgeInterpolations, a, b);
+//  };
+//
+//  inputArray.CastAndCallWithExtractedArray(DoMapFieldEdgeInterpolation, outputArray);
+//  return true;
+//}
+//} // namespace filter
 } // namespace vtkm
 #endif //vtk_m_worklet_MapFieldEdge_Interpolation_h
