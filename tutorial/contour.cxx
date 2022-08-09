@@ -18,15 +18,14 @@ int main(int argc, char** argv)
 {
   vtkm::cont::Initialize(argc, argv);
 
-  vtkm::io::VTKDataSetReader reader("data/kitchen.vtk");
+  vtkm::io::VTKDataSetReader reader("data/skull.vtk");
   vtkm::cont::DataSet ds_from_file = reader.ReadDataSet();
 
   vtkm::filter::contour::Contour contour;
-  contour.SetActiveField("c1");
-  contour.SetNumberOfIsoValues(3);
-  contour.SetIsoValue(0, 0.05);
-  contour.SetIsoValue(1, 0.10);
-  contour.SetIsoValue(2, 0.15);
+  contour.SetActiveField("Scalars_");
+  contour.SetNumberOfIsoValues(1);
+  contour.SetIsoValue(0, 2000);
+  contour.SetGenerateNormals(true);
 
   vtkm::cont::DataSet ds_from_contour = contour.Execute(ds_from_file);
   vtkm::io::VTKDataSetWriter writer("out_mc.vtk");
