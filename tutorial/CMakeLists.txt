@@ -60,7 +60,7 @@ vtkm_add_target_information(point_to_cell
   DEVICE_SOURCES point_to_cell.cxx)
 
 add_executable(extract_edges extract_edges.cxx)
-target_link_libraries(extract_edges vtkm_cont vtkm_filter vtkm_io)
+target_link_libraries(extract_edges vtkm_cont vtkm_worklet vtkm_filter vtkm_io)
 vtkm_add_target_information(extract_edges
   DROP_UNUSED_SYMBOLS MODIFY_CUDA_FLAGS
   DEVICE_SOURCES extract_edges.cxx)
