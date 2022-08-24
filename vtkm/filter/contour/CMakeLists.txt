@@ -39,7 +39,7 @@ set_property(TARGET
 )
 
 target_link_libraries(vtkm_filter_contour
-  PUBLIC vtkm_filter_core vtkm_filter_vector_analysis vtkm_filter_mesh_info)
+  PUBLIC vtkm_filter_core PRIVATE vtkm_filter_vector_analysis vtkm_filter_mesh_info)
 
 if (VTKm_ENABLE_MPI)
   target_link_libraries(vtkm_filter_contour PUBLIC MPI::MPI_CXX)
