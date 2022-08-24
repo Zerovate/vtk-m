@@ -70,7 +70,7 @@ vtkm_library(
   USE_VTKM_JOB_POOL
 )
 
-target_link_libraries(vtkm_filter_mesh_info PUBLIC vtkm_worklet vtkm_filter_core)
+target_link_libraries(vtkm_filter_mesh_info PUBLIC vtkm_filter_core)
 target_link_libraries(vtkm_filter PUBLIC INTERFACE vtkm_filter_mesh_info)
 
 add_subdirectory(worklet)

@@ -39,7 +39,6 @@ set_property(TARGET
 )
 
 target_link_libraries(vtkm_filter_contour
-  PRIVATE vtkm_worklet
   PUBLIC vtkm_filter_core vtkm_filter_vector_analysis vtkm_filter_mesh_info)
 
 if (VTKm_ENABLE_MPI)

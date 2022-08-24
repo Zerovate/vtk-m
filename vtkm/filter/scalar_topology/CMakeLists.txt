@@ -31,7 +31,7 @@ vtkm_library(
   USE_VTKM_JOB_POOL
 )
 
-target_link_libraries(vtkm_filter_scalar_topology PUBLIC vtkm_worklet vtkm_filter_core)
+target_link_libraries(vtkm_filter_scalar_topology PUBLIC vtkm_filter_core)
 if (VTKm_ENABLE_MPI)
   target_link_libraries(vtkm_filter_scalar_topology PUBLIC MPI::MPI_CXX)
 endif ()
