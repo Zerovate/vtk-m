@@ -25,10 +25,12 @@ namespace flow
 namespace internal
 {
 
-template <typename DSIType, template <typename> class ResultType, typename ParticleType>
+template <typename DSIType>
 class AdvectAlgorithm
 {
 public:
+  using ParticleType = typename DSIType::PType;
+
   AdvectAlgorithm(const vtkm::filter::flow::internal::BoundsMap& bm, std::vector<DSIType>& blocks)
     : Blocks(blocks)
     , BoundsMap(bm)
@@ -37,11 +39,8 @@ public:
   {
   }
 
-  void Execute(vtkm::Id numSteps,
-               vtkm::FloatDefault stepSize,
-               const vtkm::cont::ArrayHandle<ParticleType>& seeds)
+  void Execute(const vtkm::cont::ArrayHandle<ParticleType>& seeds, vtkm::FloatDefault stepSize)
   {
-    this->SetNumberOfSteps(numSteps);
     this->SetStepSize(stepSize);
     this->SetSeeds(seeds);
     this->Go();
@@ -50,19 +49,17 @@ public:
   vtkm::cont::PartitionedDataSet GetOutput() const
   {
     vtkm::cont::PartitionedDataSet output;
-
     for (const auto& b : this->Blocks)
     {
       vtkm::cont::DataSet ds;
-      if (b.template GetOutput<ParticleType>(ds))
+      if (b.GetOutput(ds))
         output.AppendPartition(ds);
     }
-
     return output;
   }
 
   void SetStepSize(vtkm::FloatDefault stepSize) { this->StepSize = stepSize; }
-  void SetNumberOfSteps(vtkm::Id numSteps) { this->NumberOfSteps = numSteps; }
+
   void SetSeeds(const vtkm::cont::ArrayHandle<ParticleType>& seeds)
   {
     this->ClearParticles();
@@ -83,7 +80,6 @@ public:
         blockIDs.emplace_back(ids);
       }
     }
-
     this->SetSeedArray(particles, blockIDs);
   }
 
@@ -104,10 +100,9 @@ public:
       {
         //make this a pointer to avoid the copy?
         auto& block = this->GetDataSet(blockId);
-        DSIHelperInfoType bb =
-          DSIHelperInfo<ParticleType>(v, this->BoundsMap, this->ParticleBlockIDsMap);
-        block.Advect(bb, this->StepSize, this->NumberOfSteps);
-        numTerm = this->UpdateResult(bb.Get<DSIHelperInfo<ParticleType>>());
+        DSIHelperInfo<ParticleType> bb(v, this->BoundsMap, this->ParticleBlockIDsMap);
+        block.Advect(bb, this->StepSize);
+        numTerm = this->UpdateResult(bb);
       }
 
       vtkm::Id numTermMessages = 0;
@@ -137,7 +132,7 @@ public:
     this->TotalNumParticles = static_cast<vtkm::Id>(total);
   }
 
-  DataSetIntegrator<DSIType>& GetDataSet(vtkm::Id id)
+  DataSetIntegrator<DSIType, ParticleType>& GetDataSet(vtkm::Id id)
   {
     for (auto& it : this->Blocks)
       if (it.GetID() == id)
