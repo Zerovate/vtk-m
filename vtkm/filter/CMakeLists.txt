@@ -128,7 +128,7 @@ set_target_properties(
   UNITY_BUILD_MODE BATCH
 )
 
-target_link_libraries(vtkm_filter_core PUBLIC vtkm_cont vtkm_worklet)
+target_link_libraries(vtkm_filter_core PRIVATE vtkm_worklet PUBLIC vtkm_cont)
 
 target_link_libraries(vtkm_filter PUBLIC INTERFACE
   vtkm_filter_core

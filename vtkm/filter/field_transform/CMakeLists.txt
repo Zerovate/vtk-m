@@ -38,7 +38,7 @@ vtkm_library(
   USE_VTKM_JOB_POOL
 )
 
-target_link_libraries(vtkm_filter_field_transform PUBLIC vtkm_worklet vtkm_filter_core)
+target_link_libraries(vtkm_filter_field_transform PUBLIC vtkm_filter_core)
 target_link_libraries(vtkm_filter PUBLIC INTERFACE vtkm_filter_field_transform)
 
 add_subdirectory(worklet)

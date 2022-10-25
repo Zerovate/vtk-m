@@ -23,7 +23,7 @@ vtkm_library(
   USE_VTKM_JOB_POOL
 )
 
-target_link_libraries(vtkm_filter_connected_components PRIVATE vtkm_worklet PUBLIC vtkm_filter_core)
+target_link_libraries(vtkm_filter_connected_components PUBLIC vtkm_filter_core)
 target_link_libraries(vtkm_filter PUBLIC INTERFACE vtkm_filter_connected_components)
 
 add_subdirectory(worklet)
