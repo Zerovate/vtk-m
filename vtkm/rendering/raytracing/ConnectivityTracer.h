@@ -14,6 +14,7 @@
 
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/CellLocatorGeneral.h>
+#include <vtkm/cont/Invoker.h>
 
 #include <vtkm/rendering/raytracing/MeshConnectivityContainers.h>
 #include <vtkm/rendering/raytracing/PartialComposite.h>
@@ -58,6 +59,9 @@ public:
   void Init(const vtkm::Id size, vtkm::cont::ArrayHandle<FloatType>& distances);
 
   void Swap();
+
+private:
+  vtkm::cont::Invoker Invoke;
 };
 
 } //namespace detail
@@ -215,7 +219,10 @@ protected:
   vtkm::Float64 MeshEntryTime;
   vtkm::Float32 UnitScalar;
 
+  vtkm::cont::Invoker Invoke;
+
 }; // class ConnectivityTracer<CellType,ConnectivityType>
+
 }
 }
 } // namespace vtkm::rendering::raytracing

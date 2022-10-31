@@ -113,6 +113,10 @@ function(do_verify root_dir prefix)
     thirdparty/lodepng/vtkmlodepng/lodepng.h
     thirdparty/loguru/vtkmloguru/loguru.hpp
 
+    # Ignore header files only for instantiations that are not intended to be included
+    # outside of VTK-m.
+    rendering/raytracing/ConnectivityTracerTemplates.hxx
+
     # Ignore deprecated virtual classes (which are not installed if VTKm_NO_DEPRECATED_VIRTUAL
     # is on). These exceptions can be removed when these files are completely removed.
     cont/ArrayHandleVirtual.h
