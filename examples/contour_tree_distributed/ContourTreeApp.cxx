@@ -154,6 +154,80 @@ private:
   std::vector<std::string> mCLOptions;
 };
 
+void ComputeGlobalPointSize(vtkm::cont::PartitionedDataSet& pds)
+{
+  // Compute GlobalPointDimensions as maximim of GlobalPointIndexStart + PointDimensions
+  // for each dimension across all blocks
+
+  // Compute GlobalPointDimensions for all data sets on this MPI rank
+  std::vector<vtkm::Id> globalPointDimensionsThisRank;
+  using ds_const_iterator = vtkm::cont::PartitionedDataSet::const_iterator;
+  for (ds_const_iterator ds_it = pds.cbegin(); ds_it != pds.cend(); ++ds_it)
+  {
+    ds_it->GetCellSet().CastAndCallForTypes<vtkm::cont::CellSetListStructured>(
+      [&globalPointDimensionsThisRank](const auto& css) {
+        globalPointDimensionsThisRank.resize(css.Dimension, -1);
+        for (vtkm::IdComponent d = 0; d < css.Dimension; ++d)
+        {
+          globalPointDimensionsThisRank[d] =
+            std::max(globalPointDimensionsThisRank[d],
+                     css.GetGlobalPointIndexStart()[d] + css.GetPointDimensions()[d]);
+        }
+      });
+  }
+
+  // Perform global reduction to find GlobalPointDimensions across all ranks
+  std::vector<vtkm::Id> globalPointDimensions;
+  auto comm = vtkm::cont::EnvironmentTracker::GetCommunicator();
+  vtkmdiy::mpi::all_reduce(
+    comm, globalPointDimensionsThisRank, globalPointDimensions, vtkmdiy::mpi::maximum<vtkm::Id>{});
+
+  // Set this information in all cell sets
+  using ds_iterator = vtkm::cont::PartitionedDataSet::iterator;
+  for (ds_iterator ds_it = pds.begin(); ds_it != pds.end(); ++ds_it)
+  {
+#if 0
+    // This does not work, i.e., it does not really change the cell set for the DataSet
+    ds_it->GetCellSet().CastAndCallForTypes<vtkm::cont::CellSetListStructured>(
+      [&globalPointDimensions](auto& css)
+      {
+        typename std::remove_reference_t<decltype(css)>::SchedulingRangeType gpd;
+        for (vtkm::IdComponent d = 0; d < css.Dimension; ++d)
+        {
+          gpd[d] = globalPointDimensions[d];
+        }
+        css.SetGlobalPointDimensions(gpd);
+      });
+#else
+    if (globalPointDimensions.size() == 2)
+    {
+      vtkm::cont::CellSetStructured<2> cs;
+      ds_it->GetCellSet().AsCellSet<vtkm::cont::CellSetStructured<2>>(cs);
+      vtkm::Id2 gpd{ globalPointDimensions[0], globalPointDimensions[1] };
+      cs.SetGlobalPointDimensions(gpd);
+      ds_it->SetCellSet(cs);
+    }
+    else if (globalPointDimensions.size() == 3)
+    {
+
+      vtkm::cont::CellSetStructured<3> cs;
+      ds_it->GetCellSet().AsCellSet<vtkm::cont::CellSetStructured<3>>(cs);
+      vtkm::Id3 gpd{ globalPointDimensions[0], globalPointDimensions[1], globalPointDimensions[2] };
+      cs.SetGlobalPointDimensions(gpd);
+      ds_it->SetCellSet(cs);
+    }
+    else
+    {
+      throw vtkm::cont::ErrorBadValue("StructuredCellSet dimension must be 2 or 3");
+    }
+#endif
+  }
+
+  for (ds_const_iterator ds_it = pds.cbegin(); ds_it != pds.cend(); ++ds_it)
+  {
+    ds_it->PrintSummary(std::cout);
+  }
+}
 
 // Compute and render an isosurface for a uniform grid example
 int main(int argc, char* argv[])
@@ -627,6 +701,7 @@ int main(int argc, char* argv[])
   filter.SetActiveField("values");
 
   // Execute the contour tree analysis
+  ComputeGlobalPointSize(useDataSet);
   auto result = filter.Execute(useDataSet);
 
   currTime = totalTime.GetElapsedTime();
