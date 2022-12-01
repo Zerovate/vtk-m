@@ -154,9 +154,9 @@ private:
   std::vector<std::string> mCLOptions;
 };
 
-void ComputeGlobalPointSize(vtkm::cont::PartitionedDataSet& pds)
+void ComputeGlobalPointDimensions(vtkm::cont::PartitionedDataSet& pds)
 {
-  // Compute GlobalPointDimensions as maximim of GlobalPointIndexStart + PointDimensions
+  // Compute GlobalPointDimensions as maximum of GlobalPointIndexStart + PointDimensions
   // for each dimension across all blocks
 
   // Compute GlobalPointDimensions for all data sets on this MPI rank
@@ -186,47 +186,23 @@ void ComputeGlobalPointSize(vtkm::cont::PartitionedDataSet& pds)
   using ds_iterator = vtkm::cont::PartitionedDataSet::iterator;
   for (ds_iterator ds_it = pds.begin(); ds_it != pds.end(); ++ds_it)
   {
-#if 0
     // This does not work, i.e., it does not really change the cell set for the DataSet
     ds_it->GetCellSet().CastAndCallForTypes<vtkm::cont::CellSetListStructured>(
-      [&globalPointDimensions](auto& css)
-      {
+      [&globalPointDimensions, &ds_it](auto& css) {
         typename std::remove_reference_t<decltype(css)>::SchedulingRangeType gpd;
         for (vtkm::IdComponent d = 0; d < css.Dimension; ++d)
         {
           gpd[d] = globalPointDimensions[d];
         }
         css.SetGlobalPointDimensions(gpd);
+        // Why is the following necessary? Shouldn't it be sufficient to update the
+        // CellSet through the reference?
+        ds_it->SetCellSet(css);
       });
-#else
-    if (globalPointDimensions.size() == 2)
-    {
-      vtkm::cont::CellSetStructured<2> cs;
-      ds_it->GetCellSet().AsCellSet<vtkm::cont::CellSetStructured<2>>(cs);
-      vtkm::Id2 gpd{ globalPointDimensions[0], globalPointDimensions[1] };
-      cs.SetGlobalPointDimensions(gpd);
-      ds_it->SetCellSet(cs);
-    }
-    else if (globalPointDimensions.size() == 3)
-    {
-
-      vtkm::cont::CellSetStructured<3> cs;
-      ds_it->GetCellSet().AsCellSet<vtkm::cont::CellSetStructured<3>>(cs);
-      vtkm::Id3 gpd{ globalPointDimensions[0], globalPointDimensions[1], globalPointDimensions[2] };
-      cs.SetGlobalPointDimensions(gpd);
-      ds_it->SetCellSet(cs);
-    }
-    else
-    {
-      throw vtkm::cont::ErrorBadValue("StructuredCellSet dimension must be 2 or 3");
-    }
-#endif
   }
 
-  for (ds_const_iterator ds_it = pds.cbegin(); ds_it != pds.cend(); ++ds_it)
-  {
-    ds_it->PrintSummary(std::cout);
-  }
+  // Debug
+  // pds.PrintSummary(std::cout);
 }
 
 // Compute and render an isosurface for a uniform grid example
@@ -701,7 +677,7 @@ int main(int argc, char* argv[])
   filter.SetActiveField("values");
 
   // Execute the contour tree analysis
-  ComputeGlobalPointSize(useDataSet);
+  ComputeGlobalPointDimensions(useDataSet);
   auto result = filter.Execute(useDataSet);
 
   currTime = totalTime.GetElapsedTime();
