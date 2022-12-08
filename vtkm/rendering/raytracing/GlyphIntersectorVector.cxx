@@ -660,7 +660,8 @@ void GlyphIntersectorVector::IntersectRaysImp(Ray<Precision>& rays,
 template <typename Precision>
 void GlyphIntersectorVector::IntersectionDataImp(Ray<Precision>& rays,
                                                  const vtkm::cont::Field field,
-                                                 const vtkm::Range& range)
+                                                 const vtkm::Range& range,
+                                                 const vtkm::cont::Field vtkmNotUsed(normals))
 {
   ShapeIntersector::IntersectionPoint(rays);
 
@@ -693,16 +694,18 @@ void GlyphIntersectorVector::IntersectionDataImp(Ray<Precision>& rays,
 
 void GlyphIntersectorVector::IntersectionData(Ray<vtkm::Float32>& rays,
                                               const vtkm::cont::Field field,
-                                              const vtkm::Range& range)
+                                              const vtkm::Range& range,
+                                              const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, field, range);
+  IntersectionDataImp(rays, field, range, normals);
 }
 
 void GlyphIntersectorVector::IntersectionData(Ray<vtkm::Float64>& rays,
                                               const vtkm::cont::Field field,
-                                              const vtkm::Range& range)
+                                              const vtkm::Range& range,
+                                              const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, field, range);
+  IntersectionDataImp(rays, field, range, normals);
 }
 
 vtkm::Id GlyphIntersectorVector::GetNumberOfShapes() const

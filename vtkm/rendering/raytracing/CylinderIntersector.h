@@ -49,15 +49,18 @@ public:
   template <typename Precision>
   void IntersectionDataImp(Ray<Precision>& rays,
                            const vtkm::cont::Field scalarField,
-                           const vtkm::Range& scalarRange);
+                           const vtkm::Range& scalarRange,
+                           const vtkm::cont::Field normals);
 
   void IntersectionData(Ray<vtkm::Float32>& rays,
                         const vtkm::cont::Field scalarField,
-                        const vtkm::Range& scalarRange = vtkm::Range()) override;
+                        const vtkm::Range& scalarRange = vtkm::Range(),
+                        const vtkm::cont::Field normals = vtkm::cont::Field()) override;
 
   void IntersectionData(Ray<vtkm::Float64>& rays,
                         const vtkm::cont::Field scalarField,
-                        const vtkm::Range& scalarRange = vtkm::Range()) override;
+                        const vtkm::Range& scalarRange = vtkm::Range(),
+                        const vtkm::cont::Field normals = vtkm::cont::Field()) override;
 
   vtkm::Id GetNumberOfShapes() const override;
 }; // class ShapeIntersector

@@ -126,7 +126,7 @@ using ColorBuffer4b = vtkm::cont::ArrayHandle<vtkm::Vec4ui_8>;
 
 //Defining types supported by the rendering
 
-//vec3s
+// Vector Types
 using Vec3F = vtkm::Vec3f_32;
 using Vec3D = vtkm::Vec3f_64;
 using Vec3RenderingTypes = vtkm::List<Vec3F, Vec3D>;

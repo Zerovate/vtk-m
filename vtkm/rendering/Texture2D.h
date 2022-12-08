@@ -31,13 +31,38 @@ enum class TextureWrapMode
   Repeat,
 }; // enum TextureWrapMode
 
-template <vtkm::IdComponent NumComponents>
-class Texture2D
+using RGBPixelFormat = vtkm::Vec3f_32;
+using RGBAPixelFormat = vtkm::Vec4f_32;
+
+template <typename InputFormat, typename OutputFormat>
+VTKM_EXEC inline void ConvertPixel(const InputFormat& input, OutputFormat& output)
+{
+  vtkm::IdComponent numComponents =
+    vtkm::Min(input.GetNumberOfComponents(), output.GetNumberOfComponents());
+  for (vtkm::IdComponent i = 0; i < numComponents; ++i)
+  {
+    output[i] = input[i];
+  }
+}
+
+template <vtkm::IdComponent NumComponents, typename Precision>
+VTKM_EXEC inline void ConvertPixel(const vtkm::Vec<vtkm::UInt8, NumComponents>& input,
+                                   vtkm::Vec<Precision, NumComponents>& output)
+{
+  for (vtkm::IdComponent i = 0; i < NumComponents; ++i)
+  {
+    output[i] = static_cast<Precision>(input[i]) / 255.0f;
+  }
+}
+
+template <typename InputPixelFormat, typename OutputPixelFormat = InputPixelFormat>
+class Texture2D : public vtkm::cont::ExecutionObjectBase
 {
 public:
-  using TextureDataHandle = typename vtkm::cont::ArrayHandle<vtkm::UInt8>;
-  using ColorType = vtkm::Vec<vtkm::Float32, NumComponents>;
+  using DataHandle = typename vtkm::cont::ArrayHandle<InputPixelFormat>;
+  using DataPortal = typename DataHandle::ReadPortalType;
 
+  template <typename Device>
   class Texture2DSampler;
 
 #define UV_BOUNDS_CHECK(u, v, NoneType)             \
@@ -50,20 +75,22 @@ public:
   Texture2D()
     : Width(0)
     , Height(0)
+    , FlipY(false)
   {
   }
 
   VTKM_CONT
-  Texture2D(vtkm::Id width, vtkm::Id height, const TextureDataHandle& data)
+  Texture2D(vtkm::Id width, vtkm::Id height, const DataHandle& data)
     : Width(width)
     , Height(height)
     , FilterMode(TextureFilterMode::Linear)
     , WrapMode(TextureWrapMode::Clamp)
+    , FlipY(false)
   {
-    VTKM_ASSERT(data.GetNumberOfValues() == (Width * Height * NumComponents));
+    VTKM_ASSERT(data.GetNumberOfValues() == (Width * Height));
     // We do not know the lifetime of the underlying data source of input `data`. Since it might
-    // be from a shallow copy of the data source, we make a deep copy of the input data and keep
-    // it's portal. The copy operation is very fast.
+    // be from a shallow copy of the data source, so we make a deep copy of the input data. The
+    // copy operation is very fast.
     this->Data.DeepCopyFrom(data);
   }
 
@@ -82,44 +109,56 @@ public:
   VTKM_CONT
   void SetWrapMode(TextureWrapMode wrapMode) { this->WrapMode = wrapMode; }
 
-  VTKM_CONT Texture2DSampler GetExecObjectFactory() const
+  VTKM_CONT
+  bool GetFlipY() const { return this->FlipY; }
+
+  VTKM_CONT
+  void SetFlipY(bool flipY) { this->FlipY = flipY; }
+
+  template <typename Device>
+  VTKM_CONT Texture2DSampler<Device> PrepareForExecution(Device, vtkm::cont::Token& token) const
   {
-    return Texture2DSampler(Width, Height, Data, FilterMode, WrapMode);
+    return Texture2DSampler<Device>(
+      this->Width, this->Height, this->Data, this->FilterMode, this->WrapMode, this->FlipY, token);
   }
 
   template <typename Device>
-  class Texture2DSamplerExecutionObject
+  class Texture2DSampler
   {
   public:
-    using TextureExecPortal = typename TextureDataHandle::ReadPortalType;
-
     VTKM_CONT
-    Texture2DSamplerExecutionObject()
+    Texture2DSampler()
       : Width(0)
       , Height(0)
+      , FlipY(false)
     {
     }
 
     VTKM_CONT
-    Texture2DSamplerExecutionObject(vtkm::Id width,
-                                    vtkm::Id height,
-                                    const TextureDataHandle& data,
-                                    TextureFilterMode filterMode,
-                                    TextureWrapMode wrapMode,
-                                    vtkm::cont::Token& token)
+    Texture2DSampler(vtkm::Id width,
+                     vtkm::Id height,
+                     const DataHandle& data,
+                     TextureFilterMode filterMode,
+                     TextureWrapMode wrapMode,
+                     bool flipY,
+                     vtkm::cont::Token& token)
       : Width(width)
       , Height(height)
       , Data(data.PrepareForInput(Device(), token))
       , FilterMode(filterMode)
       , WrapMode(wrapMode)
+      , FlipY(flipY)
     {
     }
 
     VTKM_EXEC
-    inline ColorType GetColor(vtkm::Float32 u, vtkm::Float32 v) const
+    inline OutputPixelFormat GetColor(vtkm::Float32 u, vtkm::Float32 v) const
     {
-      v = 1.0f - v;
-      UV_BOUNDS_CHECK(u, v, ColorType);
+      if (this->FlipY)
+      {
+        v = 1.0f - v;
+      }
+      UV_BOUNDS_CHECK(u, v, OutputPixelFormat);
       switch (FilterMode)
       {
         case TextureFilterMode::NearestNeighbour:
@@ -129,13 +168,14 @@ public:
           return GetLinearFilteredColor(u, v);
 
         default:
-          return ColorType();
+          return OutputPixelFormat();
       }
     }
 
   private:
     VTKM_EXEC
-    inline ColorType GetNearestNeighbourFilteredColor(vtkm::Float32 u, vtkm::Float32 v) const
+    inline OutputPixelFormat GetNearestNeighbourFilteredColor(vtkm::Float32 u,
+                                                              vtkm::Float32 v) const
     {
       vtkm::Id x = static_cast<vtkm::Id>(vtkm::Round(u * static_cast<vtkm::Float32>(Width - 1)));
       vtkm::Id y = static_cast<vtkm::Id>(vtkm::Round(v * static_cast<vtkm::Float32>(Height - 1)));
@@ -143,10 +183,10 @@ public:
     }
 
     VTKM_EXEC
-    inline ColorType GetLinearFilteredColor(vtkm::Float32 u, vtkm::Float32 v) const
+    inline OutputPixelFormat GetLinearFilteredColor(vtkm::Float32 u, vtkm::Float32 v) const
     {
-      u = u * static_cast<vtkm::Float32>(Width) - 0.5f;
-      v = v * static_cast<vtkm::Float32>(Height) - 0.5f;
+      u = u * static_cast<vtkm::Float32>(this->Width - 1);
+      v = v * static_cast<vtkm::Float32>(this->Height - 1);
       vtkm::Id x = static_cast<vtkm::Id>(vtkm::Floor(u));
       vtkm::Id y = static_cast<vtkm::Id>(vtkm::Floor(v));
       vtkm::Float32 uRatio = u - static_cast<vtkm::Float32>(x);
@@ -155,22 +195,19 @@ public:
       vtkm::Float32 vOpposite = 1.0f - vRatio;
       vtkm::Id xn, yn;
       GetNextCoords(x, y, xn, yn);
-      ColorType c1 = GetColorAtCoords(x, y);
-      ColorType c2 = GetColorAtCoords(xn, y);
-      ColorType c3 = GetColorAtCoords(x, yn);
-      ColorType c4 = GetColorAtCoords(xn, yn);
+      OutputPixelFormat c1 = GetColorAtCoords(x, y);
+      OutputPixelFormat c2 = GetColorAtCoords(xn, y);
+      OutputPixelFormat c3 = GetColorAtCoords(x, yn);
+      OutputPixelFormat c4 = GetColorAtCoords(xn, yn);
       return (c1 * uOpposite + c2 * uRatio) * vOpposite + (c3 * uOpposite + c4 * uRatio) * vRatio;
     }
 
     VTKM_EXEC
-    inline ColorType GetColorAtCoords(vtkm::Id x, vtkm::Id y) const
+    inline OutputPixelFormat GetColorAtCoords(vtkm::Id x, vtkm::Id y) const
     {
-      vtkm::Id idx = (y * Width + x) * NumComponents;
-      ColorType color;
-      for (vtkm::IdComponent i = 0; i < NumComponents; ++i)
-      {
-        color[i] = Data.Get(idx + i) / 255.0f;
-      }
+      vtkm::Id idx = (y * Width + x);
+      OutputPixelFormat color;
+      ConvertPixel(Data.Get(idx), color);
       return color;
     }
 
@@ -193,58 +230,19 @@ public:
 
     vtkm::Id Width;
     vtkm::Id Height;
-    TextureExecPortal Data;
+    DataPortal Data;
     TextureFilterMode FilterMode;
     TextureWrapMode WrapMode;
+    bool FlipY;
   };
-
-  class Texture2DSampler : public vtkm::cont::ExecutionObjectBase
-  {
-  public:
-    VTKM_CONT
-    Texture2DSampler()
-      : Width(0)
-      , Height(0)
-    {
-    }
-
-    VTKM_CONT
-    Texture2DSampler(vtkm::Id width,
-                     vtkm::Id height,
-                     const TextureDataHandle& data,
-                     TextureFilterMode filterMode,
-                     TextureWrapMode wrapMode)
-      : Width(width)
-      , Height(height)
-      , Data(data)
-      , FilterMode(filterMode)
-      , WrapMode(wrapMode)
-    {
-    }
-
-    template <typename Device>
-    VTKM_CONT Texture2DSamplerExecutionObject<Device> PrepareForExecution(
-      Device,
-      vtkm::cont::Token& token) const
-    {
-      return Texture2DSamplerExecutionObject<Device>(
-        this->Width, this->Height, this->Data, this->FilterMode, this->WrapMode, token);
-    }
-
-  private:
-    vtkm::Id Width;
-    vtkm::Id Height;
-    TextureDataHandle Data;
-    TextureFilterMode FilterMode;
-    TextureWrapMode WrapMode;
-  }; // class Texture2DSampler
 
 private:
   vtkm::Id Width;
   vtkm::Id Height;
-  TextureDataHandle Data;
+  DataHandle Data;
   TextureFilterMode FilterMode;
   TextureWrapMode WrapMode;
+  bool FlipY;
 }; // class Texture2D
 }
 } // namespace vtkm::rendering

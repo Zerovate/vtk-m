@@ -23,13 +23,15 @@ set(headers
   ColorBarAnnotation.h
   ColorLegendAnnotation.h
   ConnectivityProxy.h
+  CubeMap.h
   Cylinderizer.h
   GlyphType.h
+  Light.h
+  LightCollection.h
   LineRenderer.h
   LineRendererBatcher.h
-  MatrixHelpers.h
-  Scene.h
   Mapper.h
+  MapperConnectivity.h
   MapperCylinder.h
   MapperGlyphBase.h
   MapperGlyphScalar.h
@@ -38,10 +40,16 @@ set(headers
   MapperQuad.h
   MapperRayTracer.h
   MapperVolume.h
-  MapperConnectivity.h
   MapperWireframer.h
+  MaterialBase.h
+  MaterialGeneral.h
+  MatrixHelpers.h
+  PBRMaterial.h
+  PhongMaterial.h
+  PointLight.h
   Quadralizer.h
   ScalarRenderer.h
+  Scene.h
   TextAnnotation.h
   TextAnnotationBillboard.h
   TextAnnotationScreen.h
@@ -69,9 +77,14 @@ set(sources
   Color.cxx
   ColorBarAnnotation.cxx
   ColorLegendAnnotation.cxx
+  Light.cxx
+  LightCollection.cxx
   LineRenderer.cxx
   Mapper.cxx
   MapperConnectivity.cxx
+  PBRMaterial.cxx
+  PhongMaterial.cxx
+  PointLight.cxx
   Scene.cxx
   TextAnnotation.cxx
   TextAnnotationBillboard.cxx

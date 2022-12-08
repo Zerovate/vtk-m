@@ -46,19 +46,20 @@ public:
   virtual void IntersectRays(Ray<vtkm::Float64>& rays, bool returnCellIndex = false) = 0;
 
   //
-  // Calling intersection data directly after IntersectRays popoulates
+  // Calling intersection data directly after IntersectRays populates
   // ray data: intersection point, surface normal, and interpolated scalar
   // value at the intersection location. Additionally, distance to intersection
   // becomes the new max distance.
   //
   virtual void IntersectionData(Ray<vtkm::Float32>& rays,
                                 const vtkm::cont::Field scalarField,
-                                const vtkm::Range& scalarRange = vtkm::Range()) = 0;
+                                const vtkm::Range& scalarRange = vtkm::Range(),
+                                const vtkm::cont::Field normals = vtkm::cont::Field()) = 0;
 
   virtual void IntersectionData(Ray<vtkm::Float64>& rays,
                                 const vtkm::cont::Field scalarField,
-                                const vtkm::Range& scalarRange = vtkm::Range()) = 0;
-
+                                const vtkm::Range& scalarRange = vtkm::Range(),
+                                const vtkm::cont::Field normals = vtkm::cont::Field()) = 0;
 
   template <typename Precision>
   void IntersectionPointImp(Ray<Precision>& rays);

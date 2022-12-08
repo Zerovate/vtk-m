@@ -158,7 +158,7 @@ void TextRendererBatcher::Render(const vtkm::rendering::Canvas* canvas) const
           textureCoords,
           colors,
           depths,
-          this->FontTexture.GetExecObjectFactory(),
+          this->FontTexture,
           canvas->GetColorBuffer(),
           canvas->GetDepthBuffer());
 }

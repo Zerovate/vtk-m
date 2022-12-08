@@ -110,18 +110,30 @@ void MapperRayTracer::RenderCells(const vtkm::cont::UnknownCellSet& cellset,
 
   this->Internals->RayCamera.SetParameters(camera, width, height);
 
-  this->Internals->RayCamera.CreateRays(this->Internals->Rays, shapeBounds);
+  bool shouldUseSubset = !this->Internals->CompositeBackground;
+  this->Internals->RayCamera.CreateRays(this->Internals->Rays,
+                                        shouldUseSubset ? shapeBounds : vtkm::Bounds());
   this->Internals->Tracer.GetCamera() = this->Internals->RayCamera;
   this->Internals->Rays.Buffers.at(0).InitConst(0.f);
   raytracing::RayOperations::MapCanvasToRays(
     this->Internals->Rays, camera, *this->Internals->Canvas);
 
-
-
   this->Internals->Tracer.SetField(scalarField, scalarRange);
+  bool hasNormals = this->GetNormals().GetNumberOfValues() > 0;
+  if (hasNormals)
+  {
+    this->Internals->Tracer.SetNormals(this->GetNormals());
+  }
+  bool hasCubeMap = this->GetCubeMap().GetLoaded();
+  if (hasCubeMap)
+  {
+    this->Internals->Tracer.SetCubeMap(this->GetCubeMap());
+  }
+  this->Internals->Tracer.SetMaterial(this->Material);
 
   this->Internals->Tracer.SetColorMap(this->ColorMap);
   this->Internals->Tracer.SetShadingOn(this->Internals->Shade);
+  this->Internals->Tracer.SetLights(this->Lights);
   this->Internals->Tracer.Render(this->Internals->Rays);
 
   timer.Start();
@@ -130,7 +142,14 @@ void MapperRayTracer::RenderCells(const vtkm::cont::UnknownCellSet& cellset,
 
   if (this->Internals->CompositeBackground)
   {
-    this->Internals->Canvas->BlendBackground();
+    if (hasCubeMap)
+    {
+      this->Internals->Canvas->BlendSkybox(this->Internals->Rays, this->GetCubeMap());
+    }
+    else
+    {
+      this->Internals->Canvas->BlendBackground();
+    }
   }
 
   vtkm::Float64 time = timer.GetElapsedTime();

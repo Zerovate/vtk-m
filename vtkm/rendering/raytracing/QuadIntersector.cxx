@@ -496,7 +496,8 @@ void QuadIntersector::IntersectRaysImp(Ray<Precision>& rays, bool vtkmNotUsed(re
 template <typename Precision>
 void QuadIntersector::IntersectionDataImp(Ray<Precision>& rays,
                                           const vtkm::cont::Field scalarField,
-                                          const vtkm::Range& scalarRange)
+                                          const vtkm::Range& scalarRange,
+                                          const vtkm::cont::Field vtkmNotUsed(normals))
 {
   ShapeIntersector::IntersectionPoint(rays);
 
@@ -536,16 +537,18 @@ void QuadIntersector::IntersectionDataImp(Ray<Precision>& rays,
 
 void QuadIntersector::IntersectionData(Ray<vtkm::Float32>& rays,
                                        const vtkm::cont::Field scalarField,
-                                       const vtkm::Range& scalarRange)
+                                       const vtkm::Range& scalarRange,
+                                       const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, scalarField, scalarRange);
+  IntersectionDataImp(rays, scalarField, scalarRange, normals);
 }
 
 void QuadIntersector::IntersectionData(Ray<vtkm::Float64>& rays,
                                        const vtkm::cont::Field scalarField,
-                                       const vtkm::Range& scalarRange)
+                                       const vtkm::Range& scalarRange,
+                                       const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, scalarField, scalarRange);
+  IntersectionDataImp(rays, scalarField, scalarRange, normals);
 }
 
 void QuadIntersector::SetData(const vtkm::cont::CoordinateSystem& coords,

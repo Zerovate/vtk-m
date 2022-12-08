@@ -583,7 +583,8 @@ void GlyphIntersector::IntersectRaysImp(Ray<Precision>& rays, bool vtkmNotUsed(r
 template <typename Precision>
 void GlyphIntersector::IntersectionDataImp(Ray<Precision>& rays,
                                            const vtkm::cont::Field scalarField,
-                                           const vtkm::Range& scalarRange)
+                                           const vtkm::Range& scalarRange,
+                                           const vtkm::cont::Field vtkmNotUsed(normals))
 {
   ShapeIntersector::IntersectionPoint(rays);
 
@@ -616,16 +617,18 @@ void GlyphIntersector::IntersectionDataImp(Ray<Precision>& rays,
 
 void GlyphIntersector::IntersectionData(Ray<vtkm::Float32>& rays,
                                         const vtkm::cont::Field scalarField,
-                                        const vtkm::Range& scalarRange)
+                                        const vtkm::Range& scalarRange,
+                                        const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, scalarField, scalarRange);
+  IntersectionDataImp(rays, scalarField, scalarRange, normals);
 }
 
 void GlyphIntersector::IntersectionData(Ray<vtkm::Float64>& rays,
                                         const vtkm::cont::Field scalarField,
-                                        const vtkm::Range& scalarRange)
+                                        const vtkm::Range& scalarRange,
+                                        const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, scalarField, scalarRange);
+  IntersectionDataImp(rays, scalarField, scalarRange, normals);
 }
 
 vtkm::Id GlyphIntersector::GetNumberOfShapes() const

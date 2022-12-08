@@ -576,16 +576,17 @@ bool Canvas::LoadFont() const
     return false;
   }
   vtkm::Id numValues = static_cast<vtkm::Id>(textureWidth * textureHeight);
-  vtkm::cont::ArrayHandle<UInt8> alpha;
+  vtkm::cont::ArrayHandle<FontPixelInputFormat> alpha;
   alpha.Allocate(numValues);
   auto alphaPortal = alpha.WritePortal();
   for (vtkm::Id i = 0; i < numValues; ++i)
   {
-    alphaPortal.Set(i, rgba[static_cast<std::size_t>(i * 4 + 3)]);
+    alphaPortal.Set(i, FontPixelInputFormat(rgba[static_cast<std::size_t>(i * 4 + 3)]));
   }
   Internals->FontTexture = FontTextureType(vtkm::Id(textureWidth), vtkm::Id(textureHeight), alpha);
   Internals->FontTexture.SetFilterMode(TextureFilterMode::Linear);
   Internals->FontTexture.SetWrapMode(TextureWrapMode::Clamp);
+  Internals->FontTexture.SetFlipY(true);
   return true;
 }
 

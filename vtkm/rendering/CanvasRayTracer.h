@@ -13,6 +13,7 @@
 #include <vtkm/rendering/vtkm_rendering_export.h>
 
 #include <vtkm/rendering/Canvas.h>
+#include <vtkm/rendering/CubeMap.h>
 #include <vtkm/rendering/raytracing/Ray.h>
 
 namespace vtkm
@@ -36,6 +37,12 @@ public:
   void WriteToCanvas(const vtkm::rendering::raytracing::Ray<vtkm::Float64>& rays,
                      const vtkm::cont::ArrayHandle<vtkm::Float64>& colors,
                      const vtkm::rendering::Camera& camera);
+
+  virtual void BlendSkybox(const vtkm::rendering::raytracing::Ray<vtkm::Float32>& rays,
+                           const vtkm::rendering::CubeMap& cubeMap);
+
+  virtual void BlendSkybox(const vtkm::rendering::raytracing::Ray<vtkm::Float64>& rays,
+                           const vtkm::rendering::CubeMap& cubeMap);
 }; // class CanvasRayTracer
 }
 } // namespace vtkm::rendering

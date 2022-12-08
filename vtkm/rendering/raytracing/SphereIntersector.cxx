@@ -347,7 +347,8 @@ void SphereIntersector::IntersectRaysImp(Ray<Precision>& rays, bool vtkmNotUsed(
 template <typename Precision>
 void SphereIntersector::IntersectionDataImp(Ray<Precision>& rays,
                                             const vtkm::cont::Field scalarField,
-                                            const vtkm::Range& scalarRange)
+                                            const vtkm::Range& scalarRange,
+                                            const vtkm::cont::Field vtkmNotUsed(normals))
 {
   ShapeIntersector::IntersectionPoint(rays);
 
@@ -377,16 +378,18 @@ void SphereIntersector::IntersectionDataImp(Ray<Precision>& rays,
 
 void SphereIntersector::IntersectionData(Ray<vtkm::Float32>& rays,
                                          const vtkm::cont::Field scalarField,
-                                         const vtkm::Range& scalarRange)
+                                         const vtkm::Range& scalarRange,
+                                         const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, scalarField, scalarRange);
+  IntersectionDataImp(rays, scalarField, scalarRange, normals);
 }
 
 void SphereIntersector::IntersectionData(Ray<vtkm::Float64>& rays,
                                          const vtkm::cont::Field scalarField,
-                                         const vtkm::Range& scalarRange)
+                                         const vtkm::Range& scalarRange,
+                                         const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, scalarField, scalarRange);
+  IntersectionDataImp(rays, scalarField, scalarRange, normals);
 }
 
 vtkm::Id SphereIntersector::GetNumberOfShapes() const

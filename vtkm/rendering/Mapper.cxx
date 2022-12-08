@@ -52,5 +52,45 @@ void Mapper::SetLogarithmY(bool l)
 {
   this->LogarithmY = l;
 }
+
+const vtkm::cont::Field& Mapper::GetNormals() const
+{
+  return this->Normals;
+}
+
+void Mapper::SetNormals(const vtkm::cont::Field& normals)
+{
+  this->Normals = normals;
+}
+
+const vtkm::rendering::MaterialGeneral& Mapper::GetMaterial() const
+{
+  return this->Material;
+}
+
+void Mapper::SetMaterial(const vtkm::rendering::MaterialGeneral& material)
+{
+  this->Material = material;
+}
+
+const vtkm::rendering::LightCollection& Mapper::GetLights() const
+{
+  return this->Lights;
+}
+
+void Mapper::SetLights(const vtkm::rendering::LightCollection& lights)
+{
+  this->Lights = lights;
+}
+
+const vtkm::rendering::CubeMap& Mapper::GetCubeMap() const
+{
+  return this->CubeMap;
+}
+
+void Mapper::SetCubeMap(const vtkm::rendering::CubeMap& cubeMap)
+{
+  this->CubeMap = cubeMap;
+}
 }
 }
