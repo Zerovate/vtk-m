@@ -202,7 +202,61 @@ void ComputeGlobalPointDimensions(vtkm::cont::PartitionedDataSet& pds)
   }
 
   // Debug
-  // pds.PrintSummary(std::cout);
+  pds.PrintSummary(std::cout);
+}
+void ShiftLogicalOriginToZero(vtkm::cont::PartitionedDataSet& pds)
+{
+  // Shift the logical origin (minimum of LocalPointIndexStart) to zero
+  // along each dimension
+
+  // Compute minimum global point index start for all data sets on this MPI rank
+  std::vector<vtkm::Id> minimumGlobalPointIndexStartThisRank;
+  using ds_const_iterator = vtkm::cont::PartitionedDataSet::const_iterator;
+  for (ds_const_iterator ds_it = pds.cbegin(); ds_it != pds.cend(); ++ds_it)
+  {
+    ds_it->GetCellSet().CastAndCallForTypes<vtkm::cont::CellSetListStructured>(
+      [&minimumGlobalPointIndexStartThisRank](const auto& css) {
+        minimumGlobalPointIndexStartThisRank.resize(css.Dimension,
+                                                    std::numeric_limits<vtkm::Id>::max());
+        for (vtkm::IdComponent d = 0; d < css.Dimension; ++d)
+        {
+          minimumGlobalPointIndexStartThisRank[d] =
+            std::min(minimumGlobalPointIndexStartThisRank[d], css.GetGlobalPointIndexStart()[d]);
+        }
+      });
+  }
+
+  // Perform global reduction to find GlobalPointDimensions across all ranks
+  std::vector<vtkm::Id> minimumGlobalPointIndexStart;
+  auto comm = vtkm::cont::EnvironmentTracker::GetCommunicator();
+  vtkmdiy::mpi::all_reduce(comm,
+                           minimumGlobalPointIndexStartThisRank,
+                           minimumGlobalPointIndexStart,
+                           vtkmdiy::mpi::minimum<vtkm::Id>{});
+
+  // Shift all cell sets so that minimum global point index start
+  // along each dimension is zero
+  using ds_iterator = vtkm::cont::PartitionedDataSet::iterator;
+  for (ds_iterator ds_it = pds.begin(); ds_it != pds.end(); ++ds_it)
+  {
+    // This does not work, i.e., it does not really change the cell set for the DataSet
+    ds_it->GetCellSet().CastAndCallForTypes<vtkm::cont::CellSetListStructured>(
+      [&minimumGlobalPointIndexStart, &ds_it](auto& css) {
+        auto pointIndexStart = css.GetGlobalPointIndexStart();
+        typename std::remove_reference_t<decltype(css)>::SchedulingRangeType shiftedPointIndexStart;
+        for (vtkm::IdComponent d = 0; d < css.Dimension; ++d)
+        {
+          shiftedPointIndexStart[d] = pointIndexStart[d] - minimumGlobalPointIndexStart[d];
+        }
+        css.SetGlobalPointIndexStart(shiftedPointIndexStart);
+        // Why is the following necessary? Shouldn't it be sufficient to update the
+        // CellSet through the reference?
+        ds_it->SetCellSet(css);
+      });
+  }
+
+  // Debug
+  //pds.PrintSummary(std::cout);
 }
 
 // Compute and render an isosurface for a uniform grid example
@@ -677,6 +731,7 @@ int main(int argc, char* argv[])
   filter.SetActiveField("values");
 
   // Execute the contour tree analysis
+  ShiftLogicalOriginToZero(useDataSet);
   ComputeGlobalPointDimensions(useDataSet);
   auto result = filter.Execute(useDataSet);
 
