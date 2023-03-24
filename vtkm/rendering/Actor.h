@@ -26,26 +26,6 @@ namespace rendering
 class VTKM_RENDERING_EXPORT Actor
 {
 public:
-  Actor(const vtkm::cont::DataSet dataSet, const std::string fieldName);
-
-  Actor(const vtkm::cont::DataSet dataSet,
-        const std::string fieldName,
-        const vtkm::cont::ColorTable& colorTable);
-
-  Actor(const vtkm::cont::DataSet dataSet,
-        const std::string fieldName,
-        const vtkm::rendering::Color& color);
-
-  Actor(const vtkm::cont::PartitionedDataSet dataSet, const std::string fieldName);
-
-  Actor(const vtkm::cont::PartitionedDataSet dataSet,
-        const std::string fieldName,
-        const vtkm::cont::ColorTable& colorTable);
-
-  Actor(const vtkm::cont::PartitionedDataSet dataSet,
-        const std::string fieldName,
-        const vtkm::rendering::Color& color);
-
   Actor(const vtkm::cont::UnknownCellSet& cells,
         const vtkm::cont::CoordinateSystem& coordinates,
         const vtkm::cont::Field& scalarField);
@@ -85,11 +65,6 @@ private:
   struct RangeFunctor;
 
   void Init(const vtkm::cont::CoordinateSystem& coordinates, const vtkm::cont::Field& scalarField);
-
-  void Init();
-
-  vtkm::cont::PartitionedDataSet DataSet;
-  std::string FieldName;
 };
 }
 } //namespace vtkm::rendering
