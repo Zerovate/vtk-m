@@ -17,24 +17,6 @@ namespace rendering
 
 Mapper::~Mapper() {}
 
-void Mapper::RenderCellsPartitioned(const vtkm::cont::PartitionedDataSet partitionedData,
-                                    const std::string fieldName,
-                                    const vtkm::cont::ColorTable& colorTable,
-                                    const vtkm::rendering::Camera& camera,
-                                    const vtkm::Range& scalarRange)
-{
-  for (unsigned int p = 0; p < partitionedData.GetNumberOfPartitions(); p++)
-  {
-    auto partition = partitionedData.GetPartition(p);
-    RenderCells(partition.GetCellSet(),
-                partition.GetCoordinateSystem(),
-                partition.GetField(fieldName.c_str()),
-                colorTable,
-                camera,
-                scalarRange);
-  }
-}
-
 void Mapper::SetActiveColorTable(const vtkm::cont::ColorTable& colorTable)
 {
 
