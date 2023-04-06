@@ -186,6 +186,19 @@ public:
       this->GetMetaData(vtkm::cont::TypeToString<MetaDataType>()));
   }
 
+  /// \brief Gets the metadata for the buffer.
+  ///
+  /// This method behaves the same as `GetMetaData`, except that if no metadata yet
+  /// exists, an exception is thrown rather than creating new metadata. This is
+  /// useful for situations where the metadata object has no default constructor.
+  ///
+  template <typename MetaDataType>
+  VTKM_CONT MetaDataType& GetMetaDataNoConstruction() const
+  {
+    return *reinterpret_cast<MetaDataType*>(
+      this->GetMetaData(vtkm::cont::TypeToString<MetaDataType>()));
+  }
+
   /// \brief Returns `true` if the buffer is allocated on the host.
   ///
   VTKM_CONT bool IsAllocatedOnHost() const;

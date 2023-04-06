@@ -15,7 +15,7 @@
 
 #include <type_traits>
 
-#if defined(VTKM_GCC) && !defined(VTKM_USING_GLIBCXX_4)
+#if defined(VTKM_GCC) && !defined(VTKM_USING_GLIBCXX_4) && !defined(VTKM_CUDA)
 #define VTKM_USE_STD_IS_TRIVIAL
 #endif
 
