@@ -138,10 +138,11 @@ elseif(VTKM_COMPILER_IS_GNU OR VTKM_COMPILER_IS_CLANG)
   set(cuda_flags -Xcompiler=-Wall,-Wcast-align,-Wpointer-arith,-Wformat,-Wformat-security,-Wshadow,-fno-common,-Wunused,-Wno-unknown-pragmas,-Wno-unused-local-typedefs,-Wno-unused-function)
 
   #Clang does not support the -Wchar-subscripts flag for warning if an array
-  #subscript has a char type.
+  #subscript has a char type. Also, GCC is too agressive with -Wmaybe-uninitialized
+  #when dealing with nvcc generated code.
   if (VTKM_COMPILER_IS_GNU)
     list(APPEND cxx_flags -Wchar-subscripts)
-    set(cuda_flags "${cuda_flags},-Wchar-subscripts")
+    set(cuda_flags "${cuda_flags},-Wchar-subscripts,-Wno-maybe-uninitialized")
   endif()
 
   #Only add float-conversion warnings for gcc as the integer warnigns in GCC
