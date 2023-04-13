@@ -86,16 +86,6 @@ struct AverageByKey
     return outAverages;
   }
 
-  struct ExtractMean
-  {
-    template <typename ValueType>
-    VTKM_EXEC ValueType
-    operator()(const vtkm::worklet::DescriptiveStatistics::StatState<ValueType>& state) const
-    {
-      return state.Mean();
-    }
-  };
-
   /// \brief Compute average values based on an array of keys.
   ///
   /// This method uses an array of keys and an equally sized array of values. The keys in that
@@ -127,8 +117,11 @@ struct AverageByKey
     // An ArrayHandle of a weird struct by itself is not useful in any general algorithm.
     // In fact, using DescriptiveStatistics at all seems like way overkill. It computes
     // all sorts of statistics, and we then throw them all away except for mean.
-    auto resultsMean =
-      vtkm::cont::make_ArrayHandleTransform(results.GetSecondArray(), ExtractMean{});
+    auto resultsMean = vtkm::cont::make_ArrayHandleTransform(
+      results.GetSecondArray(),
+      VTKM_LAMBDA(const vtkm::worklet::DescriptiveStatistics::StatState<ValueType>& state) {
+        return state.Mean();
+      });
     vtkm::cont::ArrayCopyDevice(resultsMean, outputValueArray);
   }
 };

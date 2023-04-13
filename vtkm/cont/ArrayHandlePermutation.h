@@ -270,7 +270,7 @@ public:
   }
 };
 
-/// make_ArrayHandleTransform is convenience function to generate an
+/// make_ArrayHandlePermutation is convenience function to generate an
 /// ArrayHandleTransform.  It takes in an ArrayHandle and a functor
 /// to apply to each element of the Handle.
 

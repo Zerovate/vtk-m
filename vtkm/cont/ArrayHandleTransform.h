@@ -277,14 +277,15 @@ public:
   {
     if (device == vtkm::cont::DeviceAdapterTagUndefined{})
     {
-      return ReadPortalType(SourceStorage::CreateReadPortal(SourceBuffers(buffers), device, token),
-                            buffers[0].GetMetaData<FunctorManager>().PrepareForControl());
+      return ReadPortalType(
+        SourceStorage::CreateReadPortal(SourceBuffers(buffers), device, token),
+        buffers[0].GetMetaDataNoConstruction<FunctorManager>().PrepareForControl());
     }
     else
     {
       return ReadPortalType(
         SourceStorage::CreateReadPortal(SourceBuffers(buffers), device, token),
-        buffers[0].GetMetaData<FunctorManager>().PrepareForExecution(device, token));
+        buffers[0].GetMetaDataNoConstruction<FunctorManager>().PrepareForExecution(device, token));
     }
   }
 
@@ -304,7 +305,7 @@ public:
 
   VTKM_CONT static FunctorType GetFunctor(const std::vector<vtkm::cont::internal::Buffer>& buffers)
   {
-    return buffers[0].GetMetaData<FunctorManager>().Functor;
+    return buffers[0].GetMetaDataNoConstruction<FunctorManager>().Functor;
   }
 
   VTKM_CONT static NullFunctorType GetInverseFunctor(
@@ -366,16 +367,18 @@ public:
   {
     if (device == vtkm::cont::DeviceAdapterTagUndefined{})
     {
-      return ReadPortalType(SourceStorage::CreateReadPortal(SourceBuffers(buffers), device, token),
-                            buffers[0].GetMetaData<FunctorManager>().PrepareForControl(),
-                            buffers[1].GetMetaData<InverseFunctorManager>().PrepareForControl());
+      return ReadPortalType(
+        SourceStorage::CreateReadPortal(SourceBuffers(buffers), device, token),
+        buffers[0].GetMetaDataNoConstruction<FunctorManager>().PrepareForControl(),
+        buffers[1].GetMetaDataNoConstruction<InverseFunctorManager>().PrepareForControl());
     }
     else
     {
       return ReadPortalType(
         SourceStorage::CreateReadPortal(SourceBuffers(buffers), device, token),
-        buffers[0].GetMetaData<FunctorManager>().PrepareForExecution(device, token),
-        buffers[1].GetMetaData<InverseFunctorManager>().PrepareForExecution(device, token));
+        buffers[0].GetMetaDataNoConstruction<FunctorManager>().PrepareForExecution(device, token),
+        buffers[1].GetMetaDataNoConstruction<InverseFunctorManager>().PrepareForExecution(device,
+                                                                                          token));
     }
   }
 
@@ -386,8 +389,9 @@ public:
   {
     return WritePortalType(
       SourceStorage::CreateWritePortal(SourceBuffers(buffers), device, token),
-      buffers[0].GetMetaData<FunctorManager>().PrepareForExecution(device, token),
-      buffers[1].GetMetaData<InverseFunctorManager>().PrepareForExecution(device, token));
+      buffers[0].GetMetaDataNoConstruction<FunctorManager>().PrepareForExecution(device, token),
+      buffers[1].GetMetaDataNoConstruction<InverseFunctorManager>().PrepareForExecution(device,
+                                                                                        token));
   }
 
   VTKM_CONT static std::vector<vtkm::cont::internal::Buffer> CreateBuffers(
@@ -408,13 +412,13 @@ public:
 
   VTKM_CONT static FunctorType GetFunctor(const std::vector<vtkm::cont::internal::Buffer>& buffers)
   {
-    return buffers[0].GetMetaData<FunctorManager>().Functor;
+    return buffers[0].GetMetaDataNoConstruction<FunctorManager>().Functor;
   }
 
   VTKM_CONT static InverseFunctorType GetInverseFunctor(
     const std::vector<vtkm::cont::internal::Buffer>& buffers)
   {
-    return buffers[1].GetMetaData<InverseFunctorManager>().Functor;
+    return buffers[1].GetMetaDataNoConstruction<InverseFunctorManager>().Functor;
   }
 };
 

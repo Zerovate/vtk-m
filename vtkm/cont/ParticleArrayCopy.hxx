@@ -26,13 +26,6 @@ namespace detail
 {
 
 template <typename ParticleType>
-struct ExtractPositionFunctor
-{
-  VTKM_EXEC_CONT
-  vtkm::Vec3f operator()(const ParticleType& p) const { return p.GetPosition(); }
-};
-
-template <typename ParticleType>
 struct ExtractTerminatedFunctor
 {
   VTKM_EXEC_CONT
@@ -73,13 +66,13 @@ VTKM_ALWAYS_EXPORT inline void ParticleArrayCopy(
   vtkm::cont::ArrayHandle<vtkm::Vec3f, vtkm::cont::StorageTagBasic>& outPos,
   bool CopyTerminatedOnly)
 {
-  auto posTrn =
-    vtkm::cont::make_ArrayHandleTransform(inP, detail::ExtractPositionFunctor<ParticleType>());
+  auto posTrn = vtkm::cont::make_ArrayHandleTransform(
+    inP, VTKM_LAMBDA(const ParticleType& p) { return p.GetPosition(); });
 
   if (CopyTerminatedOnly)
   {
-    auto termTrn =
-      vtkm::cont::make_ArrayHandleTransform(inP, detail::ExtractTerminatedFunctor<ParticleType>());
+    auto termTrn = vtkm::cont::make_ArrayHandleTransform(
+      inP, VTKM_LAMBDA(const ParticleType& p) { return p.GetStatus().CheckTerminate(); });
     vtkm::cont::Algorithm::CopyIf(posTrn, termTrn, outPos);
   }
   else
@@ -100,8 +93,8 @@ VTKM_ALWAYS_EXPORT inline void ParticleArrayCopy(
   vtkm::Id idx = 0;
   for (const auto& v : inputs)
   {
-    auto posTrn =
-      vtkm::cont::make_ArrayHandleTransform(v, detail::ExtractPositionFunctor<ParticleType>());
+    auto posTrn = vtkm::cont::make_ArrayHandleTransform(
+      v, VTKM_LAMBDA(const ParticleType& p) { return p.GetPosition(); });
     vtkm::Id n = posTrn.GetNumberOfValues();
     vtkm::cont::Algorithm::CopySubRange(posTrn, 0, n, outPos, idx);
     idx += n;

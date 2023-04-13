@@ -330,11 +330,6 @@ public:
   }
 };
 
-struct DimensionsToCount
-{
-  VTKM_EXEC vtkm::Id operator()(const DimVec3& dim) const { return dim[0] * dim[1] * dim[2]; }
-};
-
 } // anonymous namespace
 
 namespace vtkm
@@ -409,7 +404,9 @@ VTKM_CONT void CellLocatorTwoLevel::Build()
 
   // 7: Compute number of level-2 bins
   vtkm::Id numberOfLeaves = vtkm::cont::Algorithm::ScanExclusive(
-    vtkm::cont::make_ArrayHandleTransform(this->LeafDimensions, DimensionsToCount()),
+    vtkm::cont::make_ArrayHandleTransform(
+      this->LeafDimensions,
+      VTKM_LAMBDA(const DimVec3& dim)->vtkm::Id { return dim[0] * dim[1] * dim[2]; }),
     this->LeafStartIndex);
 
 

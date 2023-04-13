@@ -75,38 +75,22 @@ VTKM_CONT void CheckControlPortals(const OriginalArrayHandleType& originalArray,
   }
 }
 
-struct ValueScale
+template <typename ValueType>
+VTKM_EXEC_CONT ValueType ValueScale(const ValueType& v, vtkm::Float64 factor)
 {
-  ValueScale()
-    : Factor(1.0)
+  using Traits = vtkm::VecTraits<ValueType>;
+  using TTraits = vtkm::TypeTraits<ValueType>;
+  using ComponentType = typename Traits::ComponentType;
+
+  ValueType result = TTraits::ZeroInitialization();
+  for (vtkm::IdComponent i = 0; i < Traits::GetNumberOfComponents(v); ++i)
   {
+    vtkm::Float64 vi = static_cast<vtkm::Float64>(Traits::GetComponent(v, i));
+    vtkm::Float64 ri = vi * factor;
+    Traits::SetComponent(result, i, static_cast<ComponentType>(ri));
   }
-
-  ValueScale(vtkm::Float64 factor)
-    : Factor(factor)
-  {
-  }
-
-  template <typename ValueType>
-  VTKM_EXEC_CONT ValueType operator()(const ValueType& v) const
-  {
-    using Traits = vtkm::VecTraits<ValueType>;
-    using TTraits = vtkm::TypeTraits<ValueType>;
-    using ComponentType = typename Traits::ComponentType;
-
-    ValueType result = TTraits::ZeroInitialization();
-    for (vtkm::IdComponent i = 0; i < Traits::GetNumberOfComponents(v); ++i)
-    {
-      vtkm::Float64 vi = static_cast<vtkm::Float64>(Traits::GetComponent(v, i));
-      vtkm::Float64 ri = vi * this->Factor;
-      Traits::SetComponent(result, i, static_cast<ComponentType>(ri));
-    }
-    return result;
-  }
-
-private:
-  vtkm::Float64 Factor;
-};
+  return result;
+}
 
 struct PassThrough : public vtkm::worklet::WorkletMapField
 {
@@ -181,8 +165,8 @@ struct TransformTests
 
     std::cout << "Write to a transformed array with an inverse transform" << std::endl;
     {
-      ValueScale scaleUp(2.0);
-      ValueScale scaleDown(1.0 / 2.0);
+      auto scaleUp = VTKM_LAMBDA(const InputValueType& value) { return ValueScale(value, 2.0); };
+      auto scaleDown = VTKM_LAMBDA(const InputValueType& value) { return ValueScale(value, 0.5); };
 
       input.Allocate(ARRAY_SIZE);
       SetPortal(input.WritePortal());
