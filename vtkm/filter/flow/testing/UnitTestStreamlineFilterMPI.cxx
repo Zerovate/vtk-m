@@ -444,6 +444,7 @@ void TestPartitionedDataSet(vtkm::Id nPerRank,
     std::cout << " - on a partitioned data set" << std::endl;
   }
 
+
   std::vector<vtkm::Id> blockIds;
   //Uniform assignment.
   for (vtkm::Id i = 0; i < nPerRank; i++)
