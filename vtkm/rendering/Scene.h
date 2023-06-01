@@ -15,6 +15,7 @@
 #include <vtkm/rendering/Actor.h>
 #include <vtkm/rendering/Camera.h>
 #include <vtkm/rendering/Canvas.h>
+#include <vtkm/rendering/LightCollection.h>
 #include <vtkm/rendering/Mapper.h>
 
 #include <memory>
@@ -34,6 +35,10 @@ public:
   const vtkm::rendering::Actor& GetActor(vtkm::IdComponent index) const;
 
   vtkm::IdComponent GetNumberOfActors() const;
+
+  const vtkm::rendering::LightCollection& GetLights() const;
+
+  void SetLights(const vtkm::rendering::LightCollection& lights);
 
   void Render(vtkm::rendering::Mapper& mapper,
               vtkm::rendering::Canvas& canvas,

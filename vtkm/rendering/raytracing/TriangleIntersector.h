@@ -46,11 +46,13 @@ public:
 
   VTKM_CONT void IntersectionData(Ray<vtkm::Float32>& rays,
                                   const vtkm::cont::Field scalarField,
-                                  const vtkm::Range& scalarRange = vtkm::Range()) override;
+                                  const vtkm::Range& scalarRange = vtkm::Range(),
+                                  const vtkm::cont::Field nomals = vtkm::cont::Field()) override;
 
   VTKM_CONT void IntersectionData(Ray<vtkm::Float64>& rays,
                                   const vtkm::cont::Field scalarField,
-                                  const vtkm::Range& scalarRange = vtkm::Range()) override;
+                                  const vtkm::Range& scalarRange = vtkm::Range(),
+                                  const vtkm::cont::Field nomals = vtkm::cont::Field()) override;
 
   template <typename Precision>
   VTKM_CONT void IntersectRaysImp(Ray<Precision>& rays, bool returnCellIndex);
@@ -58,7 +60,8 @@ public:
   template <typename Precision>
   VTKM_CONT void IntersectionDataImp(Ray<Precision>& rays,
                                      const vtkm::cont::Field scalarField,
-                                     const vtkm::Range& scalarRange);
+                                     const vtkm::Range& scalarRange,
+                                     const vtkm::cont::Field normals);
 
 }; // class intersector
 }

@@ -36,7 +36,9 @@ class VTKM_RENDERING_EXPORT Canvas
 public:
   using ColorBufferType = vtkm::cont::ArrayHandle<vtkm::Vec4f_32>;
   using DepthBufferType = vtkm::cont::ArrayHandle<vtkm::Float32>;
-  using FontTextureType = vtkm::rendering::Texture2D<1>;
+  using FontPixelInputFormat = vtkm::Vec<vtkm::UInt8, 1>;
+  using FontPixelOutputFormat = vtkm::Vec<vtkm::Float32, 1>;
+  using FontTextureType = vtkm::rendering::Texture2D<FontPixelInputFormat, FontPixelOutputFormat>;
 
   Canvas(vtkm::Id width = 1024, vtkm::Id height = 1024);
   virtual ~Canvas();

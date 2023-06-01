@@ -38,99 +38,79 @@ public:
   class Shade : public vtkm::worklet::WorkletMapField
   {
   private:
-    vtkm::Vec3f_32 LightPosition;
-    vtkm::Vec3f_32 LightAbmient;
-    vtkm::Vec3f_32 LightDiffuse;
-    vtkm::Vec3f_32 LightSpecular;
-    vtkm::Float32 SpecularExponent;
     vtkm::Vec3f_32 CameraPosition;
     vtkm::Vec3f_32 LookAt;
 
   public:
     VTKM_CONT
-    Shade(const vtkm::Vec3f_32& lightPosition,
-          const vtkm::Vec3f_32& cameraPosition,
-          const vtkm::Vec3f_32& lookAt)
-      : LightPosition(lightPosition)
-      , CameraPosition(cameraPosition)
+    Shade(const vtkm::Vec3f_32& cameraPosition, const vtkm::Vec3f_32& lookAt)
+      : CameraPosition(cameraPosition)
       , LookAt(lookAt)
     {
-      //Set up some default lighting parameters for now
-      LightAbmient[0] = .5f;
-      LightAbmient[1] = .5f;
-      LightAbmient[2] = .5f;
-      LightDiffuse[0] = .7f;
-      LightDiffuse[1] = .7f;
-      LightDiffuse[2] = .7f;
-      LightSpecular[0] = .7f;
-      LightSpecular[1] = .7f;
-      LightSpecular[2] = .7f;
-      SpecularExponent = 20.f;
     }
 
-    using ControlSignature =
-      void(FieldIn, FieldIn, FieldIn, FieldIn, WholeArrayInOut, WholeArrayIn);
-    using ExecutionSignature = void(_1, _2, _3, _4, _5, _6, WorkIndex);
+    using ControlSignature = void(FieldIn hitIdx,
+                                  FieldIn dir,
+                                  FieldIn scalar,
+                                  FieldIn normal,
+                                  FieldIn intersection,
+                                  WholeArrayInOut colors,
+                                  WholeArrayIn colorMap,
+                                  ExecObject lightCollection,
+                                  ExecObject material,
+                                  ExecObject cubeMap);
+    using ExecutionSignature = void(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, WorkIndex);
 
-    template <typename ColorPortalType, typename Precision, typename ColorMapPortalType>
+    template <typename ColorPortalType,
+              typename Precision,
+              typename ColorMapPortalType,
+              typename LightCollectionExecObject,
+              typename MaterialExecObject,
+              typename CubeMapExecObject>
     VTKM_EXEC void operator()(const vtkm::Id& hitIdx,
+                              const vtkm::Vec<Precision, 3>& vtkmNotUsed(dir),
                               const Precision& scalar,
                               const vtkm::Vec<Precision, 3>& normal,
                               const vtkm::Vec<Precision, 3>& intersection,
                               ColorPortalType& colors,
                               ColorMapPortalType colorMap,
+                              const LightCollectionExecObject lightCollection,
+                              const MaterialExecObject material,
+                              const CubeMapExecObject& cubeMap,
                               const vtkm::Id& idx) const
     {
-      vtkm::Vec<Precision, 4> color;
+      using Vec3 = vtkm::Vec<Precision, 3>;
+      using Vec4 = vtkm::Vec<Precision, 4>;
+
+      Vec4 color;
       vtkm::Id offset = idx * 4;
-
-      if (hitIdx < 0)
-      {
-        return;
-      }
-
       color[0] = colors.Get(offset + 0);
       color[1] = colors.Get(offset + 1);
       color[2] = colors.Get(offset + 2);
       color[3] = colors.Get(offset + 3);
 
-      vtkm::Vec<Precision, 3> lightDir = LightPosition - intersection;
-      vtkm::Vec<Precision, 3> viewDir = CameraPosition - LookAt;
-      vtkm::Normalize(lightDir);
-      vtkm::Normalize(viewDir);
-      //Diffuse lighting
-      Precision cosTheta = vtkm::dot(normal, lightDir);
-      //clamp tp [0,1]
-      const Precision zero = 0.f;
-      const Precision one = 1.f;
-      cosTheta = vtkm::Min(vtkm::Max(cosTheta, zero), one);
-      //Specular lighting
-      vtkm::Vec<Precision, 3> reflect = 2.f * vtkm::dot(lightDir, normal) * normal - lightDir;
-      vtkm::Normalize(reflect);
-      Precision cosPhi = vtkm::dot(reflect, viewDir);
-      Precision specularConstant =
-        vtkm::Pow(vtkm::Max(cosPhi, zero), static_cast<Precision>(SpecularExponent));
-      vtkm::Int32 colorMapSize = static_cast<vtkm::Int32>(colorMap.GetNumberOfValues());
-      vtkm::Int32 colorIdx = vtkm::Int32(scalar * Precision(colorMapSize - 1));
-
-      // clamp color index
-      colorIdx = vtkm::Max(0, colorIdx);
-      colorIdx = vtkm::Min(colorMapSize - 1, colorIdx);
-      color = colorMap.Get(colorIdx);
-
-      color[0] *= vtkm::Min(
-        LightAbmient[0] + LightDiffuse[0] * cosTheta + LightSpecular[0] * specularConstant, one);
-      color[1] *= vtkm::Min(
-        LightAbmient[1] + LightDiffuse[1] * cosTheta + LightSpecular[1] * specularConstant, one);
-      color[2] *= vtkm::Min(
-        LightAbmient[2] + LightDiffuse[2] * cosTheta + LightSpecular[2] * specularConstant, one);
+      if (hitIdx < 0)
+      {
+        return;
+      }
+      else
+      {
+        vtkm::Int32 colorMapSize = static_cast<vtkm::Int32>(colorMap.GetNumberOfValues());
+        vtkm::Int32 colorIdx = vtkm::Int32(scalar * Precision(colorMapSize - 1));
+        colorIdx = vtkm::Max(0, colorIdx);
+        colorIdx = vtkm::Min(colorMapSize - 1, colorIdx);
+        Vec4 baseColor = colorMap.Get(colorIdx);
+        Vec3 N = vtkm::Normal(normal);
+        Vec3 V = vtkm::Normal(this->CameraPosition - intersection);
+        color = material.template Evaluate<Precision>(
+          baseColor, intersection, N, V, lightCollection, cubeMap);
+      }
 
       colors.Set(offset + 0, color[0]);
       colors.Set(offset + 1, color[1]);
       colors.Set(offset + 2, color[2]);
       colors.Set(offset + 3, color[3]);
     }
-
   }; //class Shade
 
   class MapScalarToColor : public vtkm::worklet::WorkletMapField
@@ -175,24 +155,28 @@ public:
   }; //class MapScalarToColor
 
   template <typename Precision>
-  VTKM_CONT void run(Ray<Precision>& rays,
+  VTKM_CONT void Run(Ray<Precision>& rays,
                      vtkm::cont::ArrayHandle<vtkm::Vec4f_32>& colorMap,
                      const vtkm::rendering::raytracing::Camera& camera,
-                     bool shade)
+                     bool shade,
+                     vtkm::rendering::MaterialGeneral& material,
+                     const vtkm::rendering::LightCollection& lights,
+                     const vtkm::rendering::CubeMap& cubeMap)
   {
     if (shade)
     {
-      // TODO: support light positions
-      vtkm::Vec3f_32 scale(2, 2, 2);
-      vtkm::Vec3f_32 lightPosition = camera.GetPosition() + scale * camera.GetUp();
-      vtkm::worklet::DispatcherMapField<Shade>(
-        Shade(lightPosition, camera.GetPosition(), camera.GetLookAt()))
+      material.Preprocess(camera);
+      vtkm::worklet::DispatcherMapField<Shade>(Shade(camera.GetPosition(), camera.GetLookAt()))
         .Invoke(rays.HitIdx,
+                rays.Dir,
                 rays.Scalar,
                 rays.Normal,
                 rays.Intersection,
                 rays.Buffers.at(0).Buffer,
-                colorMap);
+                colorMap,
+                lights,
+                material,
+                cubeMap);
     }
     else
     {
@@ -263,6 +247,26 @@ void RayTracer::Clear()
   Intersectors.clear();
 }
 
+void RayTracer::SetNormals(const vtkm::cont::Field& normals)
+{
+  this->Normals = normals;
+}
+
+void RayTracer::SetLights(const vtkm::rendering::LightCollection& lights)
+{
+  this->Lights = lights;
+}
+
+void RayTracer::SetCubeMap(const vtkm::rendering::CubeMap& cubeMap)
+{
+  this->CubeMap = cubeMap;
+}
+
+void RayTracer::SetMaterial(const vtkm::rendering::MaterialGeneral& material)
+{
+  this->Material = material;
+}
+
 template <typename Precision>
 void RayTracer::RenderOnDevice(Ray<Precision>& rays)
 {
@@ -291,14 +295,15 @@ void RayTracer::RenderOnDevice(Ray<Precision>& rays)
       logger->AddLogData("intersect", time);
 
       timer.Start();
-      Intersectors[i]->IntersectionData(rays, ScalarField, ScalarRange);
+      Intersectors[i]->IntersectionData(rays, ScalarField, ScalarRange, Normals);
       time = timer.GetElapsedTime();
       logger->AddLogData("intersection_data", time);
       timer.Start();
 
       // Calculate the color at the intersection  point
       detail::SurfaceColor surfaceColor;
-      surfaceColor.run(rays, ColorMap, camera, this->Shade);
+      surfaceColor.Run(
+        rays, ColorMap, camera, this->Shade, this->Material, this->Lights, this->CubeMap);
 
       time = timer.GetElapsedTime();
       logger->AddLogData("shade", time);
@@ -308,6 +313,7 @@ void RayTracer::RenderOnDevice(Ray<Precision>& rays)
   time = renderTimer.GetElapsedTime();
   logger->CloseLogEntry(time);
 } // RenderOnDevice
+
 }
 }
 } // namespace vtkm::rendering::raytracing

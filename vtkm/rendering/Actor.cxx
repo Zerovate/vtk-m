@@ -25,6 +25,8 @@ struct Actor::InternalsType
   vtkm::cont::CoordinateSystem Coordinates;
   vtkm::cont::Field ScalarField;
   vtkm::cont::ColorTable ColorTable;
+  vtkm::cont::Field Normals;
+  vtkm::rendering::MaterialGeneral Material;
 
   vtkm::Range ScalarRange;
   vtkm::Bounds SpatialBounds;
@@ -83,16 +85,21 @@ Actor::Actor(const vtkm::cont::UnknownCellSet& cells,
 void Actor::Init(const vtkm::cont::CoordinateSystem& coordinates,
                  const vtkm::cont::Field& scalarField)
 {
+  this->Internals->Material = vtkm::rendering::PhongMaterial();
   scalarField.GetRange(&this->Internals->ScalarRange);
   this->Internals->SpatialBounds = coordinates.GetBounds();
 }
 
 void Actor::Render(vtkm::rendering::Mapper& mapper,
                    vtkm::rendering::Canvas& canvas,
-                   const vtkm::rendering::Camera& camera) const
+                   const vtkm::rendering::Camera& camera,
+                   const vtkm::rendering::LightCollection& lights) const
 {
   mapper.SetCanvas(&canvas);
   mapper.SetActiveColorTable(this->Internals->ColorTable);
+  mapper.SetNormals(this->Internals->Normals);
+  mapper.SetMaterial(this->Internals->Material);
+  mapper.SetLights(lights);
   mapper.RenderCells(this->Internals->Cells,
                      this->Internals->Coordinates,
                      this->Internals->ScalarField,
@@ -135,5 +142,26 @@ void Actor::SetScalarRange(const vtkm::Range& scalarRange)
 {
   this->Internals->ScalarRange = scalarRange;
 }
+
+const vtkm::cont::Field& Actor::GetNormals() const
+{
+  return this->Internals->Normals;
+}
+
+void Actor::SetNormals(const vtkm::cont::Field& normals)
+{
+  this->Internals->Normals = normals;
+}
+
+const vtkm::rendering::MaterialGeneral& Actor::GetMaterial() const
+{
+  return this->Internals->Material;
+}
+
+void Actor::SetMaterial(const vtkm::rendering::MaterialGeneral& material)
+{
+  this->Internals->Material = material;
+}
+
 }
 } // namespace vtkm::rendering

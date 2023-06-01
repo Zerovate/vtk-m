@@ -14,7 +14,9 @@
 
 #include <vtkm/rendering/Camera.h>
 #include <vtkm/rendering/Canvas.h>
+#include <vtkm/rendering/LightCollection.h>
 #include <vtkm/rendering/Mapper.h>
+#include <vtkm/rendering/MaterialGeneral.h>
 
 #include <memory>
 
@@ -42,7 +44,8 @@ public:
 
   void Render(vtkm::rendering::Mapper& mapper,
               vtkm::rendering::Canvas& canvas,
-              const vtkm::rendering::Camera& camera) const;
+              const vtkm::rendering::Camera& camera,
+              const vtkm::rendering::LightCollection& lights) const;
 
   const vtkm::cont::UnknownCellSet& GetCells() const;
 
@@ -57,6 +60,14 @@ public:
   const vtkm::Bounds& GetSpatialBounds() const;
 
   void SetScalarRange(const vtkm::Range& scalarRange);
+
+  const vtkm::cont::Field& GetNormals() const;
+
+  void SetNormals(const vtkm::cont::Field& normals);
+
+  const vtkm::rendering::MaterialGeneral& GetMaterial() const;
+
+  void SetMaterial(const vtkm::rendering::MaterialGeneral& material);
 
 private:
   struct InternalsType;

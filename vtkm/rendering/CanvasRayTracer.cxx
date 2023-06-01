@@ -106,6 +106,45 @@ public:
   }
 }; //class SurfaceConverter
 
+class SkyboxBlender : public vtkm::worklet::WorkletMapField
+{
+public:
+  using ControlSignature = void(FieldIn, FieldIn, WholeArrayInOut, ExecObject);
+  using ExecutionSignature = void(_1, _2, _3, _4);
+
+  VTKM_CONT
+  SkyboxBlender() = default;
+
+  template <typename Precision, typename ColorBufferPortalType, typename CubeMapExecObject>
+  VTKM_EXEC void operator()(const vtkm::Id& pixelIndex,
+                            const vtkm::Vec<Precision, 3>& rayDir,
+                            ColorBufferPortalType& colorBuffer,
+                            const CubeMapExecObject& cubeMap) const
+  {
+    vtkm::Vec4f_32 inColor = colorBuffer.Get(pixelIndex);
+    vtkm::Vec3f_32 skyboxColor = cubeMap.GetColor(rayDir);
+
+    if (inColor[3] >= 1.f)
+      return;
+
+    vtkm::Float32 alpha = 1.f - inColor[3];
+    vtkm::Vec4f_32 color;
+    color[0] = inColor[0] + skyboxColor[0] * alpha;
+    color[1] = inColor[1] + skyboxColor[1] * alpha;
+    color[2] = inColor[2] + skyboxColor[2] * alpha;
+    color[3] = alpha + inColor[3];
+    colorBuffer.Set(pixelIndex, color);
+
+    // Tonemap and gamma correct
+    vtkm::Float32 gammaFactor = 1.0f / 2.2f;
+    for (vtkm::IdComponent i = 0; i < 3; i++)
+    {
+      color[i] = color[i] / (color[i] + 1.0f);
+      color[i] = vtkm::Pow(color[i], gammaFactor);
+    }
+  }
+}; //class SkyboxBlender
+
 template <typename Precision>
 VTKM_CONT void WriteToCanvas(const vtkm::rendering::raytracing::Ray<Precision>& rays,
                              const vtkm::cont::ArrayHandle<Precision>& colors,
@@ -130,6 +169,18 @@ VTKM_CONT void WriteToCanvas(const vtkm::rendering::raytracing::Ray<Precision>& 
   canvas->GetDepthBuffer().WritePortal().Get(0);
 }
 
+template <typename Precision>
+VTKM_CONT void BlendSkybox(const vtkm::rendering::raytracing::Ray<Precision>& rays,
+                           const vtkm::rendering::CubeMap& cubeMap,
+                           vtkm::rendering::CanvasRayTracer* canvas)
+{
+  vtkm::worklet::DispatcherMapField<SkyboxBlender>(SkyboxBlender())
+    .Invoke(rays.PixelIdx, rays.Dir, canvas->GetColorBuffer(), cubeMap);
+
+  //Force the transfer so the vectors contain data from device
+  canvas->GetColorBuffer().WritePortal().Get(0);
+}
+
 } // namespace internal
 
 CanvasRayTracer::CanvasRayTracer(vtkm::Id width, vtkm::Id height)
@@ -151,6 +202,17 @@ void CanvasRayTracer::WriteToCanvas(const vtkm::rendering::raytracing::Ray<vtkm:
                                     const vtkm::rendering::Camera& camera)
 {
   internal::WriteToCanvas(rays, colors, camera, this);
+}
+void CanvasRayTracer::BlendSkybox(const vtkm::rendering::raytracing::Ray<vtkm::Float32>& rays,
+                                  const vtkm::rendering::CubeMap& cubeMap)
+{
+  internal::BlendSkybox(rays, cubeMap, this);
+}
+
+void CanvasRayTracer::BlendSkybox(const vtkm::rendering::raytracing::Ray<vtkm::Float64>& rays,
+                                  const vtkm::rendering::CubeMap& cubeMap)
+{
+  internal::BlendSkybox(rays, cubeMap, this);
 }
 
 vtkm::rendering::Canvas* CanvasRayTracer::NewCopy() const

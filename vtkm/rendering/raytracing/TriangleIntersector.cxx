@@ -237,6 +237,56 @@ public:
     }
   }; //class CalculateNormals
 
+  // Worklet to interpolate normals at point of intersection using vertex normals
+  class CalculateSmoothNormals : public vtkm::worklet::WorkletMapField
+  {
+  public:
+    using ControlSignature = void(FieldIn hitIndex,
+                                  FieldIn rayDir,
+                                  FieldOut normalX,
+                                  FieldOut normalY,
+                                  FieldOut normalZ,
+                                  FieldIn u,
+                                  FieldIn v,
+                                  WholeArrayIn indices,
+                                  WholeArrayIn normals);
+    using ExecutionSignature = void(_1, _2, _3, _4, _5, _6, _7, _8, _9);
+
+    VTKM_CONT
+    CalculateSmoothNormals() {}
+
+    template <typename Precision, typename IndicesPortalType, typename NormalsPortalType>
+    VTKM_EXEC inline void operator()(const vtkm::Id& hitIndex,
+                                     const vtkm::Vec<Precision, 3>& rayDir,
+                                     Precision& normalX,
+                                     Precision& normalY,
+                                     Precision& normalZ,
+                                     const Precision& u,
+                                     const Precision& v,
+                                     const IndicesPortalType& indicesPortal,
+                                     const NormalsPortalType& normals) const
+    {
+      if (hitIndex < 0)
+        return;
+
+      vtkm::Vec<Id, 4> indices = indicesPortal.Get(hitIndex);
+      vtkm::Vec<Precision, 3> aN = normals.Get(indices[1]);
+      vtkm::Vec<Precision, 3> bN = normals.Get(indices[2]);
+      vtkm::Vec<Precision, 3> cN = normals.Get(indices[3]);
+
+      Precision w = 1.0f - u - v;
+      vtkm::Vec<Precision, 3> normal = w * aN + u * bN + v * cN;
+      vtkm::Normalize(normal);
+
+      //flip the normal if its pointing the wrong way
+      if (vtkm::dot(normal, rayDir) > 0.f)
+        normal = -normal;
+      normalX = normal[0];
+      normalY = normal[1];
+      normalZ = normal[2];
+    }
+  }; //class CalculateSmoothNormals
+
   template <typename Precision>
   class LerpScalar : public vtkm::worklet::WorkletMapField
   {
@@ -354,7 +404,8 @@ public:
                      vtkm::cont::ArrayHandle<vtkm::Id4> triangles,
                      vtkm::cont::CoordinateSystem coordsHandle,
                      const vtkm::cont::Field scalarField,
-                     const vtkm::Range& scalarRange)
+                     const vtkm::Range& scalarRange,
+                     const vtkm::cont::Field normals)
   {
     const bool isSupportedField = scalarField.IsCellField() || scalarField.IsPointField();
     if (!isSupportedField)
@@ -363,10 +414,28 @@ public:
     }
     const bool isAssocPoints = scalarField.IsPointField();
 
-    // Find the triangle normal
-    vtkm::worklet::DispatcherMapField<CalculateNormals>(CalculateNormals())
-      .Invoke(
-        rays.HitIdx, rays.Dir, rays.NormalX, rays.NormalY, rays.NormalZ, coordsHandle, triangles);
+    const bool hasNormals = normals.GetNumberOfValues() > 0;
+    if (hasNormals)
+    {
+      // Calculate smooth normals at intersection points, interpolated using the given vertex normals
+      vtkm::worklet::DispatcherMapField<CalculateSmoothNormals>(CalculateSmoothNormals())
+        .Invoke(rays.HitIdx,
+                rays.Dir,
+                rays.NormalX,
+                rays.NormalY,
+                rays.NormalZ,
+                rays.U,
+                rays.V,
+                triangles,
+                vtkm::rendering::raytracing::GetVec3FieldArray(normals));
+    }
+    else
+    {
+      // Calculate face normals at intersection points
+      vtkm::worklet::DispatcherMapField<CalculateNormals>(CalculateNormals())
+        .Invoke(
+          rays.HitIdx, rays.Dir, rays.NormalX, rays.NormalY, rays.NormalZ, coordsHandle, triangles);
+    }
 
     // Calculate scalar value at intersection point
     if (isAssocPoints)
@@ -539,26 +608,29 @@ VTKM_CONT void TriangleIntersector::IntersectRaysImp(Ray<Precision>& rays, bool 
 
 VTKM_CONT void TriangleIntersector::IntersectionData(Ray<vtkm::Float32>& rays,
                                                      const vtkm::cont::Field scalarField,
-                                                     const vtkm::Range& scalarRange)
+                                                     const vtkm::Range& scalarRange,
+                                                     const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, scalarField, scalarRange);
+  IntersectionDataImp(rays, scalarField, scalarRange, normals);
 }
 
 VTKM_CONT void TriangleIntersector::IntersectionData(Ray<vtkm::Float64>& rays,
                                                      const vtkm::cont::Field scalarField,
-                                                     const vtkm::Range& scalarRange)
+                                                     const vtkm::Range& scalarRange,
+                                                     const vtkm::cont::Field normals)
 {
-  IntersectionDataImp(rays, scalarField, scalarRange);
+  IntersectionDataImp(rays, scalarField, scalarRange, normals);
 }
 
 template <typename Precision>
 VTKM_CONT void TriangleIntersector::IntersectionDataImp(Ray<Precision>& rays,
                                                         const vtkm::cont::Field scalarField,
-                                                        const vtkm::Range& scalarRange)
+                                                        const vtkm::Range& scalarRange,
+                                                        const vtkm::cont::Field normals)
 {
   ShapeIntersector::IntersectionPoint(rays);
   detail::TriangleIntersectionData intData;
-  intData.Run(rays, this->Triangles, this->CoordsHandle, scalarField, scalarRange);
+  intData.Run(rays, this->Triangles, this->CoordsHandle, scalarField, scalarRange, normals);
 }
 
 vtkm::Id TriangleIntersector::GetNumberOfShapes() const

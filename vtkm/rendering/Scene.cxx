@@ -8,9 +8,8 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include <vtkm/rendering/Scene.h>
-
 #include <vector>
+#include <vtkm/rendering/Scene.h>
 
 namespace vtkm
 {
@@ -20,6 +19,7 @@ namespace rendering
 struct Scene::InternalsType
 {
   std::vector<vtkm::rendering::Actor> Actors;
+  vtkm::rendering::LightCollection Lights;
 };
 
 Scene::Scene()
@@ -42,6 +42,16 @@ vtkm::IdComponent Scene::GetNumberOfActors() const
   return static_cast<vtkm::IdComponent>(this->Internals->Actors.size());
 }
 
+const vtkm::rendering::LightCollection& Scene::GetLights() const
+{
+  return this->Internals->Lights;
+}
+
+void Scene::SetLights(const vtkm::rendering::LightCollection& lights)
+{
+  this->Internals->Lights = lights;
+}
+
 void Scene::Render(vtkm::rendering::Mapper& mapper,
                    vtkm::rendering::Canvas& canvas,
                    const vtkm::rendering::Camera& camera) const
@@ -49,7 +59,7 @@ void Scene::Render(vtkm::rendering::Mapper& mapper,
   for (vtkm::IdComponent actorIndex = 0; actorIndex < this->GetNumberOfActors(); actorIndex++)
   {
     const vtkm::rendering::Actor& actor = this->GetActor(actorIndex);
-    actor.Render(mapper, canvas, camera);
+    actor.Render(mapper, canvas, camera, this->Internals->Lights);
   }
 }
 

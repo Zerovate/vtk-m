@@ -16,11 +16,14 @@
 #include <vtkm/cont/UnknownCellSet.h>
 #include <vtkm/rendering/Camera.h>
 #include <vtkm/rendering/Canvas.h>
+#include <vtkm/rendering/CubeMap.h>
+#include <vtkm/rendering/LightCollection.h>
+#include <vtkm/rendering/MaterialGeneral.h>
+
 namespace vtkm
 {
 namespace rendering
 {
-
 class VTKM_RENDERING_EXPORT Mapper
 {
 public:
@@ -46,10 +49,30 @@ public:
   virtual void SetLogarithmX(bool l);
   virtual void SetLogarithmY(bool l);
 
+  const vtkm::cont::Field& GetNormals() const;
+
+  void SetNormals(const vtkm::cont::Field& normals);
+
+  const vtkm::rendering::MaterialGeneral& GetMaterial() const;
+
+  void SetMaterial(const vtkm::rendering::MaterialGeneral& material);
+
+  const vtkm::rendering::LightCollection& GetLights() const;
+
+  void SetLights(const vtkm::rendering::LightCollection& lights);
+
+  const vtkm::rendering::CubeMap& GetCubeMap() const;
+
+  void SetCubeMap(const vtkm::rendering::CubeMap& cubeMap);
+
 protected:
   vtkm::cont::ArrayHandle<vtkm::Vec4f_32> ColorMap;
   bool LogarithmX = false;
   bool LogarithmY = false;
+  vtkm::cont::Field Normals;
+  vtkm::rendering::MaterialGeneral Material;
+  vtkm::rendering::LightCollection Lights;
+  vtkm::rendering::CubeMap CubeMap;
 };
 }
 } //namespace vtkm::rendering
