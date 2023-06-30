@@ -26,8 +26,8 @@ int main(int argc, char** argv)
   vtkm::cont::DataSet Data = reader.ReadDataSet();
 
   vtkm::filter::uncertainty::Fiber filter;
-  std::vector<std::pair<double, double>> minAxisValues = { { 0.0, 0.0 } };
-  std::vector<std::pair<double, double>> maxAxisValues = { { 0.2, 0.2 } };
+  std::vector<std::pair<double, double>> minAxisValues = { { 0, 0 } };
+  std::vector<std::pair<double, double>> maxAxisValues = { { 0.7, 0.8 } };
 
   filter.SetMaxAxis(maxAxisValues);
   filter.SetMinAxis(minAxisValues);

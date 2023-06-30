@@ -53,11 +53,13 @@ public:
                             OutCellFieldType1& OutputArea,
                             OutCellFieldType2& OutputProbablity) const
   {
-    vtkm::FloatDefault X1 = 0;   //static_cast<vtkm::FloatDefault>(InputMinAxis[0].first); //(x1)
-    vtkm::FloatDefault Y1 = 0;   //static_cast<vtkm::FloatDefault>(InputMinAxis[1].second); //(y1)
-    vtkm::FloatDefault X2 = 0.5; //static_cast<vtkm::FloatDefault>(InputMaxAxis[0].first); //(x2)
-    vtkm::FloatDefault Y2 = 0.5; //static_cast<vtkm::FloatDefault>(InputMaxAxis[1].second); //(y2)
+    vtkm::FloatDefault X1 = static_cast<vtkm::FloatDefault>(InputMinAxis[0].first);  //(x1)
+    vtkm::FloatDefault Y1 = static_cast<vtkm::FloatDefault>(InputMinAxis[0].second); //(y1)
+    vtkm::FloatDefault X2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].first);  //(x2)
+    vtkm::FloatDefault Y2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].second); //(y2)
+    //std::cout << X1 << "," << Y1 << "," << X2 << "," << Y2 << std::endl;
     vtkm::FloatDefault TraitArea = fabs((X2 - X1) * (Y2 - Y1));
+    //std::cout << X2-X1 << "," << Y2-Y1 << ","<< TraitArea << std::endl;
     vtkm::FloatDefault X5 = 0.0;
     vtkm::FloatDefault X6 = 0.0;
     vtkm::FloatDefault Y5 = 0.0;
@@ -84,6 +86,7 @@ public:
 
     IntersectionHeight = fabs(Y6 - Y5);
     IntersectionWidth = fabs(X6 - X5);
+
     if ((IntersectionHeight > 0) and (IntersectionWidth > 0) and (X5 < X6) and (Y5 < Y6))
     {
       IntersectionArea = IntersectionHeight * IntersectionWidth;

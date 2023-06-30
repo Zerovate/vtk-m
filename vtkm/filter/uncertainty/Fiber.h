@@ -34,7 +34,6 @@ public:
   {
     this->maxAxis = maxCoordinate;
   }
-
   VTKM_CONT void SetMinOne(const std::string& fieldName)
   {
     this->SetActiveField(0, fieldName, vtkm::cont::Field::Association::Points);

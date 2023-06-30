@@ -70,8 +70,8 @@ VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
   this->CastAndCallScalarField(EnsembleMinOne, resolveType);
   // Creating Result
   vtkm::cont::DataSet result = this->CreateResult(input);
-  result.AddCellField("OutputArea", OutputArea);
-  result.AddCellField("OutputProbablity", OutputProbablity);
+  result.AddPointField("OutputArea", OutputArea);
+  result.AddPointField("OutputProbablity", OutputProbablity);
   return result;
 }
 }
