@@ -22,9 +22,7 @@ namespace uncertainty
 {
 class VTKM_FILTER_UNCERTAINTY_EXPORT Fiber : public vtkm::filter::FilterField
 {
-  std::vector<std::pair<double, double>> minAxis = {
-    { 0, 0 }
-  }; // Change --> Default value is set here
+  std::vector<std::pair<double, double>> minAxis = { { 0, 0 } };
   std::vector<std::pair<double, double>> maxAxis = { { 1, 1 } };
 
 public:
@@ -37,7 +35,6 @@ public:
     this->maxAxis = maxCoordinate;
   }
 
-  // Change -> Field functinos are added
   VTKM_CONT void SetMinOne(const std::string& fieldName)
   {
     this->SetActiveField(0, fieldName, vtkm::cont::Field::Association::Points);
