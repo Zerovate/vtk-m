@@ -58,7 +58,7 @@ public:
     vtkm::FloatDefault X2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].first);  //(x2)
     vtkm::FloatDefault Y2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].second); //(y2)
     //std::cout << X1 << "," << Y1 << "," << X2 << "," << Y2 << std::endl;
-    vtkm::FloatDefault TraitArea = fabs((X2 - X1) * (Y2 - Y1));
+    vtkm::FloatDefault TraitArea = (X2 - X1) * (Y2 - Y1);
     //std::cout << X2-X1 << "," << Y2-Y1 << ","<< TraitArea << std::endl;
     vtkm::FloatDefault X5 = 0.0;
     vtkm::FloatDefault X6 = 0.0;
@@ -84,8 +84,8 @@ public:
     X6 = std::min(X2, X4);                                //(X2,X4)
     Y6 = std::min(Y2, Y4);                                //(y2,y4)
 
-    IntersectionHeight = fabs(Y6 - Y5);
-    IntersectionWidth = fabs(X6 - X5);
+    IntersectionHeight = Y6 - Y5;
+    IntersectionWidth = X6 - X5;
 
     if ((IntersectionHeight > 0) and (IntersectionWidth > 0) and (X5 < X6) and (Y5 < Y6))
     {

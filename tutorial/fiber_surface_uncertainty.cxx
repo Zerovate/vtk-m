@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 
   vtkm::filter::uncertainty::Fiber filter;
   std::vector<std::pair<double, double>> minAxisValues = { { 0, 0 } };
-  std::vector<std::pair<double, double>> maxAxisValues = { { 0.7, 0.8 } };
+  std::vector<std::pair<double, double>> maxAxisValues = { { 0.5, 0.5 } };
 
   filter.SetMaxAxis(maxAxisValues);
   filter.SetMinAxis(minAxisValues);
