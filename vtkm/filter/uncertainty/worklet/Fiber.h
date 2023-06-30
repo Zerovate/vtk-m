@@ -53,10 +53,14 @@ public:
                             OutCellFieldType1& OutputArea,
                             OutCellFieldType2& OutputProbablity) const
   {
-    vtkm::FloatDefault X1 = static_cast<vtkm::FloatDefault>(InputMinAxis[0].first);  //(x1)
-    vtkm::FloatDefault Y1 = static_cast<vtkm::FloatDefault>(InputMinAxis[0].second); //(y1)
-    vtkm::FloatDefault X2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].first);  //(x2)
-    vtkm::FloatDefault Y2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].second); //(y2)
+    vtkm::FloatDefault X1 = 0.0;
+    X1 = static_cast<vtkm::FloatDefault>(InputMinAxis[0].first);
+    vtkm::FloatDefault Y1 = 0.0;
+    Y1 = static_cast<vtkm::FloatDefault>(InputMinAxis[0].second);
+    vtkm::FloatDefault X2 = 0.0;
+    X2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].first);
+    vtkm::FloatDefault Y2 = 0.0;
+    Y2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].second);
     //std::cout << X1 << "," << Y1 << "," << X2 << "," << Y2 << std::endl;
     vtkm::FloatDefault TraitArea = (X2 - X1) * (Y2 - Y1);
     //std::cout << X2-X1 << "," << Y2-Y1 << ","<< TraitArea << std::endl;
@@ -75,14 +79,14 @@ public:
     vtkm::FloatDefault IntersectionHeight = 0.0;
     vtkm::FloatDefault IntersectionWidth = 0.0;
 
-    X3 = static_cast<vtkm::FloatDefault>(EnsembleMinOne); //(x3)
-    X4 = static_cast<vtkm::FloatDefault>(EnsembleMaxOne); //(x4)
-    Y3 = static_cast<vtkm::FloatDefault>(EnsembleMinTwo); //(y3)
-    Y4 = static_cast<vtkm::FloatDefault>(EnsembleMaxTwo); //(y4)
-    X5 = std::max(X1, X3);                                //(X1,X3)
-    Y5 = std::max(Y1, Y3);                                //(y1,y3)
-    X6 = std::min(X2, X4);                                //(X2,X4)
-    Y6 = std::min(Y2, Y4);                                //(y2,y4)
+    X3 = static_cast<vtkm::FloatDefault>(EnsembleMinOne);
+    X4 = static_cast<vtkm::FloatDefault>(EnsembleMaxOne);
+    Y3 = static_cast<vtkm::FloatDefault>(EnsembleMinTwo);
+    Y4 = static_cast<vtkm::FloatDefault>(EnsembleMaxTwo);
+    X5 = std::max(X1, X3);
+    Y5 = std::max(Y1, Y3);
+    X6 = std::min(X2, X4);
+    Y6 = std::min(Y2, Y4);
 
     IntersectionHeight = Y6 - Y5;
     IntersectionWidth = X6 - X5;

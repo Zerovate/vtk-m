@@ -26,17 +26,10 @@
 //   std::vector<std::pair<double, double>> maxAxis = {{1,1}};
 
 // public:
-//   // VTKM_CONT void SetMinAxis(const std::vector<std::pair<double, double>>& minCoordinate)
-//   // {
-//   //   this->minAxis = minCoordinate;
-//   // }
-//   VTKM_CONT void SetMinAxis(const vtkm::cont::ArrayHandle<vtkm::Pair<double, double>>& minCoordinate)
+//   VTKM_CONT void SetMinAxis(const std::vector<std::pair<double, double>>& minCoordinate)
 //   {
 //     this->minAxis = minCoordinate;
 //   }
-
-
-
 //   VTKM_CONT void SetMaxAxis(const std::vector<std::pair<double, double>>& maxCoordinate)
 //   {
 //     this->maxAxis = maxCoordinate;
@@ -102,7 +95,6 @@ public:
   {
     this->minAxis = minCoordinate;
   }
-
   VTKM_CONT void SetMaxAxis(const std::vector<std::pair<double, double>>& maxCoordinate)
   {
     this->maxAxis = maxCoordinate;
