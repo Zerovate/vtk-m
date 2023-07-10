@@ -21,13 +21,16 @@ int main(int argc, char** argv)
   auto opts = vtkm::cont::InitializeOptions::DefaultAnyDevice;
   vtkm::cont::InitializeResult config = vtkm::cont::Initialize(argc, argv, opts);
 
-  vtkm::io::VTKDataSetReader reader(
-    "/Users/n5j/Desktop/supernova_visit_400_400_400_ReduceMinMax_Two_Variables.vtk");
+  std::string fileName = argv[1];
+  std::string outputName = argv[2];
+  std::cout << "File Path/File Name" << fileName << std::endl;
+
+  vtkm::io::VTKDataSetReader reader(fileName);
   vtkm::cont::DataSet Data = reader.ReadDataSet();
 
   vtkm::filter::uncertainty::Fiber filter;
-  std::vector<std::pair<double, double>> minAxisValues = { { 0, 0 } };
-  std::vector<std::pair<double, double>> maxAxisValues = { { 0.5, 0.5 } };
+  std::vector<std::pair<double, double>> minAxisValues = { { 0.2, 0.2 } };
+  std::vector<std::pair<double, double>> maxAxisValues = { { 0.205, 0.205 } };
 
   filter.SetMaxAxis(maxAxisValues);
   filter.SetMinAxis(minAxisValues);
@@ -38,7 +41,7 @@ int main(int argc, char** argv)
   filter.SetMaxTwo("Nickel_ensemble_max");
 
   vtkm::cont::DataSet Output = filter.Execute(Data);
-  vtkm::io::VTKDataSetWriter writer("/Users/n5j/Desktop/out_fiber_Two_Variable_supernova.vtk");
+  vtkm::io::VTKDataSetWriter writer(outputName);
   writer.WriteDataSet(Output);
 
   return 0;
