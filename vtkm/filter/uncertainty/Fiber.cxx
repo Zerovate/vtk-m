@@ -9,6 +9,7 @@
 //============================================================================
 
 #include <vtkm/cont/DataSet.h>
+#include <vtkm/cont/Timer.h>
 #include <vtkm/filter/uncertainty/Fiber.h>
 #include <vtkm/filter/uncertainty/worklet/Fiber.h>
 
@@ -20,6 +21,9 @@ namespace uncertainty
 {
 VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
 {
+  vtkm::cont::Timer timer;
+  timer.Start();
+
   // Input Field
   vtkm::cont::Field EnsembleMinOne = this->GetFieldFromDataSet(0, input);
   vtkm::cont::Field EnsembleMaxOne = this->GetFieldFromDataSet(1, input);
@@ -72,6 +76,9 @@ VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
   vtkm::cont::DataSet result = this->CreateResult(input);
   result.AddPointField("OutputArea", OutputArea);
   result.AddPointField("OutputProbablity", OutputProbablity);
+  timer.Stop();
+  vtkm::Float64 elapsedTime = timer.GetElapsedTime();
+  std::cout << elapsedTime << std::endl;
   return result;
 }
 }
