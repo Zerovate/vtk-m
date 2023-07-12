@@ -33,8 +33,9 @@ class AdvectAlgorithmThreaded : public AdvectAlgorithm<DSIType, ResultType, Part
 {
 public:
   AdvectAlgorithmThreaded(const vtkm::filter::flow::internal::BoundsMap& bm,
-                          std::vector<DSIType>& blocks)
-    : AdvectAlgorithm<DSIType, ResultType, ParticleType>(bm, blocks)
+                          std::vector<DSIType>& blocks,
+                          bool useAsyncComm)
+    : AdvectAlgorithm<DSIType, ResultType, ParticleType>(bm, blocks, useAsyncComm)
     , Done(false)
     , WorkerActivate(false)
   {
@@ -47,8 +48,7 @@ public:
 
   void Go() override
   {
-    vtkm::Id nLocal = static_cast<vtkm::Id>(this->Active.size() + this->Inactive.size());
-    this->ComputeTotalNumParticles(nLocal);
+    this->ComputeTotalNumParticles();
 
     std::vector<std::thread> workerThreads;
     workerThreads.emplace_back(std::thread(AdvectAlgorithmThreaded::Worker, this));
@@ -123,7 +123,7 @@ protected:
         auto& block = this->GetDataSet(blockId);
         DSIHelperInfoType bb =
           DSIHelperInfo<ParticleType>(v, this->BoundsMap, this->ParticleBlockIDsMap);
-        block.Advect(bb, this->StepSize, this->NumberOfSteps);
+        block.Advect(bb, this->StepSize, this->MaxNumberOfSteps);
         this->UpdateWorkerResult(blockId, bb);
       }
       else
@@ -133,11 +133,20 @@ protected:
 
   void Manage()
   {
+    if (!this->UseAsynchronousCommunication)
+    {
+      VTKM_LOG_S(vtkm::cont::LogLevel::Info,
+                 "Synchronous communication not supported for AdvectAlgorithmThreaded."
+                 "Forcing asynchronous communication.");
+    }
+
+    bool useAsync = true;
     vtkm::filter::flow::internal::ParticleMessenger<ParticleType> messenger(
-      this->Comm, this->BoundsMap, 1, 128);
+      this->Comm, useAsync, this->BoundsMap, 1, 128);
 
     while (this->TotalNumTerminatedParticles < this->TotalNumParticles)
     {
+
       std::unordered_map<vtkm::Id, std::vector<DSIHelperInfoType>> workerResults;
       this->GetWorkerResults(workerResults);
 
@@ -145,7 +154,9 @@ protected:
       for (auto& it : workerResults)
       {
         for (auto& r : it.second)
+        {
           numTerm += this->UpdateResult(r.Get<DSIHelperInfo<ParticleType>>());
+        }
       }
 
       vtkm::Id numTermMessages = 0;
@@ -160,13 +171,15 @@ protected:
     this->SetDone();
   }
 
-  bool GetBlockAndWait(const vtkm::Id& numLocalTerm) override
+  bool GetBlockAndWait(const bool& syncComm, const vtkm::Id& numLocalTerm) override
   {
     std::lock_guard<std::mutex> lock(this->Mutex);
+    if (this->Done)
+      return true;
 
-    return (
-      this->AdvectAlgorithm<DSIType, ResultType, ParticleType>::GetBlockAndWait(numLocalTerm) &&
-      !this->WorkerActivate && this->WorkerResults.empty());
+    return (this->AdvectAlgorithm<DSIType, ResultType, ParticleType>::GetBlockAndWait(
+              syncComm, numLocalTerm) &&
+            !this->WorkerActivate && this->WorkerResults.empty());
   }
 
   void GetWorkerResults(std::unordered_map<vtkm::Id, std::vector<DSIHelperInfoType>>& results)

@@ -16,6 +16,8 @@
 #include <vtkm/cont/TryExecute.h>
 #include <vtkm/cont/UnknownCellSet.h>
 
+#include <utility>
+
 namespace vtkm
 {
 namespace rendering
@@ -58,21 +60,21 @@ struct Actor::InternalsType
                 const vtkm::cont::CoordinateSystem& coordinates,
                 const vtkm::cont::Field& scalarField,
                 const vtkm::rendering::Color& color)
-    : Cells(cells)
-    , Coordinates(coordinates)
-    , ScalarField(scalarField)
+    : Cells(std::move(cells))
+    , Coordinates(std::move(coordinates))
+    , ScalarField(std::move(scalarField))
     , ColorTable(vtkm::Range{ 0, 1 }, color.Components, color.Components)
   {
   }
 
   VTKM_CONT
-  InternalsType(const vtkm::cont::UnknownCellSet& cells,
-                const vtkm::cont::CoordinateSystem& coordinates,
-                const vtkm::cont::Field& scalarField,
+  InternalsType(vtkm::cont::UnknownCellSet cells,
+                vtkm::cont::CoordinateSystem coordinates,
+                vtkm::cont::Field scalarField,
                 const vtkm::cont::ColorTable& colorTable = vtkm::cont::ColorTable::Preset::Default)
-    : Cells(cells)
-    , Coordinates(coordinates)
-    , ScalarField(scalarField)
+    : Cells(std::move(cells))
+    , Coordinates(std::move(coordinates))
+    , ScalarField(std::move(scalarField))
     , ColorTable(colorTable)
   {
   }
@@ -139,7 +141,7 @@ Actor::Actor(const vtkm::cont::PartitionedDataSet dataSet,
 Actor::Actor(const vtkm::cont::UnknownCellSet& cells,
              const vtkm::cont::CoordinateSystem& coordinates,
              const vtkm::cont::Field& scalarField)
-  : Internals(new InternalsType(cells, coordinates, scalarField))
+  : Internals(std::make_unique<InternalsType>(cells, coordinates, scalarField))
 {
   this->Init(coordinates, scalarField);
 }
@@ -148,7 +150,7 @@ Actor::Actor(const vtkm::cont::UnknownCellSet& cells,
              const vtkm::cont::CoordinateSystem& coordinates,
              const vtkm::cont::Field& scalarField,
              const vtkm::rendering::Color& color)
-  : Internals(new InternalsType(cells, coordinates, scalarField, color))
+  : Internals(std::make_unique<InternalsType>(cells, coordinates, scalarField, color))
 {
   this->Init(coordinates, scalarField);
 }
@@ -157,10 +159,41 @@ Actor::Actor(const vtkm::cont::UnknownCellSet& cells,
              const vtkm::cont::CoordinateSystem& coordinates,
              const vtkm::cont::Field& scalarField,
              const vtkm::cont::ColorTable& colorTable)
-  : Internals(new InternalsType(cells, coordinates, scalarField, colorTable))
+  : Internals(std::make_unique<InternalsType>(cells, coordinates, scalarField, colorTable))
 {
   this->Init(coordinates, scalarField);
 }
+
+Actor::Actor(const Actor& rhs)
+  : Internals(nullptr)
+{
+  // rhs might have been moved, its Internal would be nullptr
+  if (rhs.Internals)
+    Internals = std::make_unique<InternalsType>(*rhs.Internals);
+}
+
+Actor& Actor::operator=(const Actor& rhs)
+{
+  // both *this and rhs might have been moved.
+  if (!rhs.Internals)
+  {
+    Internals.reset();
+  }
+  else if (!Internals)
+  {
+    Internals = std::make_unique<InternalsType>(*rhs.Internals);
+  }
+  else
+  {
+    *Internals = *rhs.Internals;
+  }
+
+  return *this;
+}
+
+Actor::Actor(vtkm::rendering::Actor&&) noexcept = default;
+Actor& Actor::operator=(Actor&&) noexcept = default;
+Actor::~Actor() = default;
 
 void Actor::Init(const vtkm::cont::CoordinateSystem& coordinates,
                  const vtkm::cont::Field& scalarField)
