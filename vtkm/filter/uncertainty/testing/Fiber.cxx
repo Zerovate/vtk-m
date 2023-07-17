@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <random>
+#include <vtkm/Pair.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DataSetBuilderUniform.h>
 #include <vtkm/cont/testing/Testing.h>
@@ -37,7 +38,7 @@ vtkm::cont::DataSet MakeLogValuesTestDataSet()
   std::mt19937 gen(rd());
 
   std::uniform_real_distribution<double> minValue(-20, -1);
-  std::uniform_real_distribution<double> maxValue(-1.1, 20);
+  std::uniform_real_distribution<double> maxValue(0, 20);
   for (vtkm::Id i = 0; i < numPoints; ++i)
   {
     double randomMinValueOne = minValue(gen);
@@ -63,11 +64,12 @@ void TestUncertaintyGeneral()
 
   vtkm::cont::DataSet input = MakeLogValuesTestDataSet<vtkm::FloatDefault>();
   vtkm::filter::uncertainty::Fiber filter;
-  std::vector<std::pair<double, double>> minAxisValues = { { 0.0, 0.0 } };
-  std::vector<std::pair<double, double>> maxAxisValues = { { 0.01, 0.05 } };
 
-  filter.SetMaxAxis(maxAxisValues);
-  filter.SetMinAxis(minAxisValues);
+  vtkm::Pair<vtkm::Float64, vtkm::Float64> minAxisValue(0.2, 0.2);
+  vtkm::Pair<vtkm::Float64, vtkm::Float64> maxAxisValue(0.3, 0.3);
+  filter.SetMaxAxis(maxAxisValue);
+  filter.SetMinAxis(minAxisValue);
+
 
   filter.SetMinOne("ensemble_min_one");
   filter.SetMaxOne("ensemble_max_one");

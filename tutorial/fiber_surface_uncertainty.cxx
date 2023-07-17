@@ -10,6 +10,7 @@
 // Example: uniform uncertainty visualization
 //
 
+#include <vtkm/Pair.h>
 #include <vtkm/cont/Initialize.h>
 #include <vtkm/filter/uncertainty/Fiber.h>
 #include <vtkm/io/VTKDataSetReader.h>
@@ -29,11 +30,11 @@ int main(int argc, char** argv)
   vtkm::cont::DataSet Data = reader.ReadDataSet();
 
   vtkm::filter::uncertainty::Fiber filter;
-  std::vector<std::pair<double, double>> minAxisValues = { { 0.2, 0.2 } };
-  std::vector<std::pair<double, double>> maxAxisValues = { { 0.205, 0.205 } };
+  vtkm::Pair<vtkm::Float64, vtkm::Float64> minAxisValue(0.2, 0.2);
+  vtkm::Pair<vtkm::Float64, vtkm::Float64> maxAxisValue(0.3, 0.3);
 
-  filter.SetMaxAxis(maxAxisValues);
-  filter.SetMinAxis(minAxisValues);
+  filter.SetMaxAxis(maxAxisValue);
+  filter.SetMinAxis(minAxisValue);
 
   filter.SetMinOne("Iron_ensemble_min");
   filter.SetMaxOne("Iron_ensemble_max");

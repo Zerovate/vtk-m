@@ -37,6 +37,7 @@ VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
   vtkm::cont::CellSetStructured<3> cellSet;
   input.GetCellSet().AsCellSet(cellSet);
 
+
   // For Invoker
   auto resolveType = [&](auto ConcreteEnsembleMinOne) {
     // Obtaining Type

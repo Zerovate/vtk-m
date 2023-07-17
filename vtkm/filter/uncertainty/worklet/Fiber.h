@@ -27,8 +27,11 @@ class VTKM_FILTER_UNCERTAINTY_EXPORT Fiber : public vtkm::worklet::WorkletPointN
 {
 public:
   // Worklet Input
-  Fiber(const std::vector<std::pair<double, double>>& minAxis,
-        const std::vector<std::pair<double, double>>& maxAxis)
+  //Fiber(const std::vector<std::pair<double, double>>& minAxis,
+  //      const std::vector<std::pair<double, double>>& maxAxis)
+  //  : InputMinAxis(minAxis), InputMaxAxis(maxAxis){};
+  Fiber(const vtkm::Pair<vtkm::Float64, vtkm::Float64>& minAxis,
+        const vtkm::Pair<vtkm::Float64, vtkm::Float64>& maxAxis)
     : InputMinAxis(minAxis)
     , InputMaxAxis(maxAxis){};
 
@@ -54,13 +57,13 @@ public:
                             OutCellFieldType2& OutputProbablity) const
   {
     vtkm::FloatDefault X1 = 0.0;
-    X1 = static_cast<vtkm::FloatDefault>(InputMinAxis[0].first);
+    X1 = static_cast<vtkm::FloatDefault>(InputMinAxis.first);
     vtkm::FloatDefault Y1 = 0.0;
-    Y1 = static_cast<vtkm::FloatDefault>(InputMinAxis[0].second);
+    Y1 = static_cast<vtkm::FloatDefault>(InputMinAxis.second);
     vtkm::FloatDefault X2 = 0.0;
-    X2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].first);
+    X2 = static_cast<vtkm::FloatDefault>(InputMaxAxis.first);
     vtkm::FloatDefault Y2 = 0.0;
-    Y2 = static_cast<vtkm::FloatDefault>(InputMaxAxis[0].second);
+    Y2 = static_cast<vtkm::FloatDefault>(InputMaxAxis.second);
     //std::cout << X1 << "," << Y1 << "," << X2 << "," << Y2 << std::endl;
     vtkm::FloatDefault TraitArea = (X2 - X1) * (Y2 - Y1);
     //std::cout << X2-X1 << "," << Y2-Y1 << ","<< TraitArea << std::endl;
@@ -102,8 +105,8 @@ public:
   }
 
 private:
-  std::vector<std::pair<double, double>> InputMinAxis;
-  std::vector<std::pair<double, double>> InputMaxAxis;
+  vtkm::Pair<vtkm::Float64, vtkm::Float64> InputMinAxis;
+  vtkm::Pair<vtkm::Float64, vtkm::Float64> InputMaxAxis;
 };
 }
 }
