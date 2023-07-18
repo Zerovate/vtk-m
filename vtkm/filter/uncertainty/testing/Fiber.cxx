@@ -66,11 +66,10 @@ void TestUncertaintyGeneral()
   vtkm::filter::uncertainty::Fiber filter;
 
   vtkm::Pair<vtkm::Float64, vtkm::Float64> minAxisValue(0.2, 0.2);
-  vtkm::Pair<vtkm::Float64, vtkm::Float64> maxAxisValue(0.3, 0.3);
+  vtkm::Pair<vtkm::Float64, vtkm::Float64> maxAxisValue(0.205, 0.205);
+
   filter.SetMaxAxis(maxAxisValue);
   filter.SetMinAxis(minAxisValue);
-
-
   filter.SetMinOne("ensemble_min_one");
   filter.SetMaxOne("ensemble_max_one");
   filter.SetMinTwo("ensemble_max_two");
