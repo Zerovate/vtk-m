@@ -31,8 +31,8 @@ VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
   vtkm::cont::Field EnsembleMaxTwo = this->GetFieldFromDataSet(3, input);
 
   // Output Field
-  //vtkm::cont::UnknownArrayHandle OutputArea;
-  vtkm::cont::UnknownArrayHandle OutputProbablity;
+  vtkm::cont::UnknownArrayHandle OutputMonteCarloProbability;
+  vtkm::cont::UnknownArrayHandle OutputInteriorProbability;
   // CellSet
   vtkm::cont::CellSetStructured<3> cellSet;
   input.GetCellSet().AsCellSet(cellSet);
@@ -54,8 +54,8 @@ VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
     vtkm::cont::ArrayCopyShallowIfPossible(EnsembleMaxTwo.GetData(), ConcreteEnsembleMaxTwo);
 
     // Temporary Output Variable
-    //vtkm::cont::ArrayHandle<ValueType> ConcreteOutputArea;
-    vtkm::cont::ArrayHandle<ValueType> ConcreteOutputProbablity;
+    vtkm::cont::ArrayHandle<ValueType> ConcreteMonteCarloProbability;
+    vtkm::cont::ArrayHandle<ValueType> ConcreteInteriorProbability;
 
     // Invoker
     // this->IsoValue
@@ -65,18 +65,18 @@ VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
                  ConcreteEnsembleMaxOne,
                  ConcreteEnsembleMinTwo,
                  ConcreteEnsembleMaxTwo,
-                 //ConcreteOutputArea,
-                 ConcreteOutputProbablity);
+                 ConcreteMonteCarloProbability,
+                 ConcreteInteriorProbability);
 
     // From Temporary Output Variable to Output Variable
-    //OutputArea = ConcreteOutputArea;
-    OutputProbablity = ConcreteOutputProbablity;
+    OutputMonteCarloProbability = ConcreteMonteCarloProbability;
+    OutputInteriorProbability = ConcreteInteriorProbability;
   };
   this->CastAndCallScalarField(EnsembleMinOne, resolveType);
   // Creating Result
   vtkm::cont::DataSet result = this->CreateResult(input);
-  //result.AddPointField("OutputArea", OutputArea);
-  result.AddPointField("OutputProbablity", OutputProbablity);
+  result.AddPointField("OutputMonteCarloProbability", OutputMonteCarloProbability);
+  result.AddPointField("OutputInteriorProbability", OutputInteriorProbability);
   timer.Stop();
   vtkm::Float64 elapsedTime = timer.GetElapsedTime();
   std::cout << elapsedTime << std::endl;

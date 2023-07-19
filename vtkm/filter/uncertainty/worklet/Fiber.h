@@ -13,6 +13,7 @@
 #ifndef vtk_m_worklet_uncertainty_Fiber_h
 #define vtk_m_worklet_uncertainty_Fiber_h
 #include <iostream>
+#include <random>
 #include <utility>
 #include <vector>
 #include <vtkm/worklet/WorkletPointNeighborhood.h>
@@ -36,16 +37,10 @@ public:
     , InputMaxAxis(maxAxis){};
 
   // Input and Output Parameters
-  using ControlSignature = void(CellSetIn,
-                                FieldIn,
-                                FieldIn,
-                                FieldIn,
-                                FieldIn,
-                                //FieldOut,
-                                FieldOut);
+  using ControlSignature = void(CellSetIn, FieldIn, FieldIn, FieldIn, FieldIn, FieldOut, FieldOut);
 
-  //using ExecutionSignature = void(_2, _3, _4, _5, _6, _7);
-  using ExecutionSignature = void(_2, _3, _4, _5, _6);
+  using ExecutionSignature = void(_2, _3, _4, _5, _6, _7);
+  //using ExecutionSignature = void(_2, _3, _4, _5, _6);
   using InputDomain = _1;
 
   // Template
@@ -53,15 +48,15 @@ public:
             typename MaxOne,
             typename MinTwo,
             typename MaxTwo,
-            //typename OutCellFieldType1,
+            typename OutCellFieldType1,
             typename OutCellFieldType2>
   // Operator
   VTKM_EXEC void operator()(const MinOne& EnsembleMinOne,
                             const MaxOne& EnsembleMaxOne,
                             const MinTwo& EnsembleMinTwo,
                             const MaxTwo& EnsembleMaxTwo,
-                            //OutCellFieldType1& OutputArea,
-                            OutCellFieldType2& OutputProbablity) const
+                            OutCellFieldType1& MonteCarloProbability,
+                            OutCellFieldType2& InteriorProbability) const
   {
     vtkm::FloatDefault X1 = 0.0;
     X1 = static_cast<vtkm::FloatDefault>(InputMinAxis.first);
@@ -71,9 +66,8 @@ public:
     X2 = static_cast<vtkm::FloatDefault>(InputMaxAxis.first);
     vtkm::FloatDefault Y2 = 0.0;
     Y2 = static_cast<vtkm::FloatDefault>(InputMaxAxis.second);
-    //std::cout << X1 << "," << Y1 << "," << X2 << "," << Y2 << std::endl;
     vtkm::FloatDefault TraitArea = (X2 - X1) * (Y2 - Y1);
-    //std::cout << X2-X1 << "," << Y2-Y1 << ","<< TraitArea << std::endl;
+
     vtkm::FloatDefault X5 = 0.0;
     vtkm::FloatDefault X6 = 0.0;
     vtkm::FloatDefault Y5 = 0.0;
@@ -106,8 +100,36 @@ public:
       IntersectionArea = IntersectionHeight * IntersectionWidth;
       IntersectionProbablity = IntersectionArea / TraitArea;
     }
-    //OutputArea = IntersectionArea;
-    OutputProbablity = IntersectionProbablity;
+    InteriorProbability = IntersectionProbablity;
+
+    // Monte Carlo
+    vtkm::FloatDefault N1 = 0.0;
+    vtkm::FloatDefault N2 = 0.0;
+    vtkm::IdComponent NonZeroCases = 0;
+    vtkm::IdComponent NumSample = 10000;
+    vtkm::FloatDefault MCProbability = 0.0;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    // Trait Coordinates (X1,Y1) & (X2,Y2)
+    std::uniform_real_distribution<vtkm::FloatDefault> GenerateN1(X1, X2);
+    std::uniform_real_distribution<vtkm::FloatDefault> GenerateN2(Y1, Y2);
+
+    for (vtkm::IdComponent i = 0; i < NumSample; i++)
+    {
+      vtkm::FloatDefault N1 = GenerateN1(gen);
+      vtkm::FloatDefault N2 = GenerateN2(gen);
+      // EnsembleMinOne X3
+      // EnsembleMaxOne X4
+      // EnsembleMinTwo Y3
+      // EnsembleMaxTwo Y4
+      if ((N1 > X3) and (N1 < X4) and (N2 > Y3) and (N2 < Y4))
+      {
+        NonZeroCases++;
+      }
+    }
+    MCProbability = NonZeroCases / NumSample;
+    MonteCarloProbability = MCProbability;
     return;
   }
 
