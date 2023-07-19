@@ -36,9 +36,16 @@ public:
     , InputMaxAxis(maxAxis){};
 
   // Input and Output Parameters
-  using ControlSignature = void(CellSetIn, FieldIn, FieldIn, FieldIn, FieldIn, FieldOut, FieldOut);
+  using ControlSignature = void(CellSetIn,
+                                FieldIn,
+                                FieldIn,
+                                FieldIn,
+                                FieldIn,
+                                //FieldOut,
+                                FieldOut);
 
-  using ExecutionSignature = void(_2, _3, _4, _5, _6, _7);
+  //using ExecutionSignature = void(_2, _3, _4, _5, _6, _7);
+  using ExecutionSignature = void(_2, _3, _4, _5, _6);
   using InputDomain = _1;
 
   // Template
@@ -46,14 +53,14 @@ public:
             typename MaxOne,
             typename MinTwo,
             typename MaxTwo,
-            typename OutCellFieldType1,
+            //typename OutCellFieldType1,
             typename OutCellFieldType2>
   // Operator
   VTKM_EXEC void operator()(const MinOne& EnsembleMinOne,
                             const MaxOne& EnsembleMaxOne,
                             const MinTwo& EnsembleMinTwo,
                             const MaxTwo& EnsembleMaxTwo,
-                            OutCellFieldType1& OutputArea,
+                            //OutCellFieldType1& OutputArea,
                             OutCellFieldType2& OutputProbablity) const
   {
     vtkm::FloatDefault X1 = 0.0;
@@ -99,7 +106,7 @@ public:
       IntersectionArea = IntersectionHeight * IntersectionWidth;
       IntersectionProbablity = IntersectionArea / TraitArea;
     }
-    OutputArea = IntersectionArea;
+    //OutputArea = IntersectionArea;
     OutputProbablity = IntersectionProbablity;
     return;
   }

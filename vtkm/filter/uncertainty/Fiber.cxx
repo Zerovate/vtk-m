@@ -31,7 +31,7 @@ VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
   vtkm::cont::Field EnsembleMaxTwo = this->GetFieldFromDataSet(3, input);
 
   // Output Field
-  vtkm::cont::UnknownArrayHandle OutputArea;
+  //vtkm::cont::UnknownArrayHandle OutputArea;
   vtkm::cont::UnknownArrayHandle OutputProbablity;
   // CellSet
   vtkm::cont::CellSetStructured<3> cellSet;
@@ -54,7 +54,7 @@ VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
     vtkm::cont::ArrayCopyShallowIfPossible(EnsembleMaxTwo.GetData(), ConcreteEnsembleMaxTwo);
 
     // Temporary Output Variable
-    vtkm::cont::ArrayHandle<ValueType> ConcreteOutputArea;
+    //vtkm::cont::ArrayHandle<ValueType> ConcreteOutputArea;
     vtkm::cont::ArrayHandle<ValueType> ConcreteOutputProbablity;
 
     // Invoker
@@ -65,17 +65,17 @@ VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
                  ConcreteEnsembleMaxOne,
                  ConcreteEnsembleMinTwo,
                  ConcreteEnsembleMaxTwo,
-                 ConcreteOutputArea,
+                 //ConcreteOutputArea,
                  ConcreteOutputProbablity);
 
     // From Temporary Output Variable to Output Variable
-    OutputArea = ConcreteOutputArea;
+    //OutputArea = ConcreteOutputArea;
     OutputProbablity = ConcreteOutputProbablity;
   };
   this->CastAndCallScalarField(EnsembleMinOne, resolveType);
   // Creating Result
   vtkm::cont::DataSet result = this->CreateResult(input);
-  result.AddPointField("OutputArea", OutputArea);
+  //result.AddPointField("OutputArea", OutputArea);
   result.AddPointField("OutputProbablity", OutputProbablity);
   timer.Stop();
   vtkm::Float64 elapsedTime = timer.GetElapsedTime();
