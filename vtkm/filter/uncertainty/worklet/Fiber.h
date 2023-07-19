@@ -119,10 +119,6 @@ public:
     {
       vtkm::FloatDefault N1 = GenerateN1(gen);
       vtkm::FloatDefault N2 = GenerateN2(gen);
-      // EnsembleMinOne X3
-      // EnsembleMaxOne X4
-      // EnsembleMinTwo Y3
-      // EnsembleMaxTwo Y4
       if ((N1 > X3) and (N1 < X4) and (N2 > Y3) and (N2 < Y4))
       {
         NonZeroCases++;
