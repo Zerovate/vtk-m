@@ -18,10 +18,9 @@
 #include <vtkm/worklet/WorkletPointNeighborhood.h>
 
 #ifdef VTKM_CUDA
-#include <vtkm/cont/ArrayHandle.h>
-#include <vtkm/cont/ArrayHandleRandomUniform.h>
-#include <vtkm/cont/DeviceAdapterAlgorithm.h>
-#include <vtkm/cont/Logging.h>
+#include <thrust/device_vector.h>
+#include <thrust/random/linear_congruential_engine.h>
+#include <thrust/random/uniform_real_distribution.h>
 #else
 #include <random>
 #endif
@@ -121,24 +120,27 @@ public:
     // Trait Coordinates (X1,Y1) & (X2,Y2)
 
 #ifdef VTKM_CUDA
-    thrust::minstd_rand rng;
-    vtkm::cont::ArrayHandleRandomUniform<vtkm::FloatDefault> GenerateN1(X1, X2);
-    vtkm::cont::ArrayHandleRandomUniform<vtkm::FloatDefault> GenerateN2(Y1, Y2);
+    thrust::default_random_engine rng;
+    thrust::uniform_real_distribution<vtkm::FloatDefault> distX(X1, X2);
+    thrust::uniform_real_distribution<vtkm::FloatDefault> distY(Y1, Y2);
 
-    vtkm::cont::ArrayHandle<vtkm::FloatDefault> samplesN1;
-    vtkm::cont::ArrayHandle<vtkm::FloatDefault> samplesN2;
+    thrust::device_vector<vtkm::FloatDefault> samplesX(NumSample);
+    thrust::device_vector<vtkm::FloatDefault> samplesY(NumSample);
 
-    GenerateN1.Generate(samplesN1, NumSample);
-    GenerateN2.Generate(samplesN2, NumSample);
+    // Generate random samples on the device
+    for (vtkm::IdComponent i = 0; i < NumSample; i++)
+    {
+      samplesX[i] = distX(rng);
+      samplesY[i] = distY(rng);
+    }
 
-    auto portalN1 = samplesN1.ReadPortal();
-    auto portalN2 = samplesN2.ReadPortal();
+    auto portalX = samplesX.data();
+    auto portalY = samplesY.data();
 
     for (vtkm::IdComponent i = 0; i < NumSample; i++)
     {
-      vtkm::FloatDefault N1 = portalN1.Get(i);
-      vtkm::FloatDefault N2 = portalN2.Get(i);
-
+      vtkm::FloatDefault N1 = portalX[i];
+      vtkm::FloatDefault N2 = portalY[i];
       if ((N1 > X3) && (N1 < X4) && (N2 > Y3) && (N2 < Y4))
       {
         NonZeroCases++;
