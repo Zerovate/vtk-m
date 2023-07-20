@@ -120,7 +120,8 @@ public:
     // Trait Coordinates (X1,Y1) & (X2,Y2)
 
 #ifdef VTKM_CUDA
-    thrust::minstd_rand rng thrust::uniform_real_distribution<vtkm::FloatDefault> distX(X1, X2);
+    thrust::minstd_rand rng;
+    thrust::uniform_real_distribution<vtkm::FloatDefault> distX(X1, X2);
     thrust::uniform_real_distribution<vtkm::FloatDefault> distY(Y1, Y2);
 
     thrust::device_vector<vtkm::FloatDefault> samplesX(NumSample);
