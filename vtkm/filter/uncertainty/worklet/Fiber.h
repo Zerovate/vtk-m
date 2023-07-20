@@ -13,10 +13,17 @@
 #ifndef vtk_m_worklet_uncertainty_Fiber_h
 #define vtk_m_worklet_uncertainty_Fiber_h
 #include <iostream>
-#include <random>
 #include <utility>
 #include <vector>
 #include <vtkm/worklet/WorkletPointNeighborhood.h>
+
+#ifdef VTKM_CUDA
+#include <thrust/random/linear_congruential_engine.h>
+#include <thrust/random/normal_distribution.h>
+#else
+#include <random>
+#endif
+
 
 namespace vtkm
 {
@@ -106,14 +113,21 @@ public:
     vtkm::FloatDefault N1 = 0.0;
     vtkm::FloatDefault N2 = 0.0;
     vtkm::IdComponent NonZeroCases = 0;
-    vtkm::IdComponent NumSample = 10000;
+    vtkm::IdComponent NumSample = 2;
     vtkm::FloatDefault MCProbability = 0.0;
 
+    // Trait Coordinates (X1,Y1) & (X2,Y2)
+
+#ifdef VTKM_CUDA
+    thrust::minstd_rand rng;
+    thrust::random::normal_distribution<vtkm::FloatDefault> GenerateN1(X1, X2);
+    thrust::random::normal_distribution<vtkm::FloatDefault> GenerateN2(Y1, Y2);
+#else
     std::random_device rd;
     std::mt19937 gen(rd());
-    // Trait Coordinates (X1,Y1) & (X2,Y2)
     std::uniform_real_distribution<vtkm::FloatDefault> GenerateN1(X1, X2);
     std::uniform_real_distribution<vtkm::FloatDefault> GenerateN2(Y1, Y2);
+#endif
 
     for (vtkm::IdComponent i = 0; i < NumSample; i++)
     {
