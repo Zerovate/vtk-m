@@ -94,7 +94,7 @@ public:
     vtkm::FloatDefault N1 = 0.0;
     vtkm::FloatDefault N2 = 0.0;
     vtkm::IdComponent NonZeroCases = 0;
-    vtkm::IdComponent NumSample = 10;
+    vtkm::IdComponent NumSample = 10000;
     vtkm::FloatDefault MCProbability = 0.0;
 
     X3 = static_cast<vtkm::FloatDefault>(EnsembleMinOne);
