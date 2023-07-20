@@ -91,6 +91,12 @@ public:
     vtkm::FloatDefault IntersectionHeight = 0.0;
     vtkm::FloatDefault IntersectionWidth = 0.0;
 
+    vtkm::FloatDefault N1 = 0.0;
+    vtkm::FloatDefault N2 = 0.0;
+    vtkm::IdComponent NonZeroCases = 0;
+    vtkm::IdComponent NumSample = 10000;
+    vtkm::FloatDefault MCProbability = 0.0;
+
     X3 = static_cast<vtkm::FloatDefault>(EnsembleMinOne);
     X4 = static_cast<vtkm::FloatDefault>(EnsembleMaxOne);
     Y3 = static_cast<vtkm::FloatDefault>(EnsembleMinTwo);
@@ -111,17 +117,10 @@ public:
     InteriorProbability = IntersectionProbablity;
 
     // Monte Carlo
-    vtkm::FloatDefault N1 = 0.0;
-    vtkm::FloatDefault N2 = 0.0;
-    vtkm::IdComponent NonZeroCases = 0;
-    vtkm::IdComponent NumSample = 2;
-    vtkm::FloatDefault MCProbability = 0.0;
-
     // Trait Coordinates (X1,Y1) & (X2,Y2)
 
 #ifdef VTKM_CUDA
-    thrust::default_random_engine rng;
-    thrust::uniform_real_distribution<vtkm::FloatDefault> distX(X1, X2);
+    thrust::minstd_rand rng thrust::uniform_real_distribution<vtkm::FloatDefault> distX(X1, X2);
     thrust::uniform_real_distribution<vtkm::FloatDefault> distY(Y1, Y2);
 
     thrust::device_vector<vtkm::FloatDefault> samplesX(NumSample);
@@ -139,8 +138,8 @@ public:
 
     for (vtkm::IdComponent i = 0; i < NumSample; i++)
     {
-      vtkm::FloatDefault N1 = portalX[i];
-      vtkm::FloatDefault N2 = portalY[i];
+      N1 = portalX[i];
+      N2 = portalY[i];
       if ((N1 > X3) && (N1 < X4) && (N2 > Y3) && (N2 < Y4))
       {
         NonZeroCases++;
@@ -155,8 +154,8 @@ public:
 
     for (vtkm::IdComponent i = 0; i < NumSample; i++)
     {
-      vtkm::FloatDefault N1 = GenerateN1(gen);
-      vtkm::FloatDefault N2 = GenerateN2(gen);
+      N1 = GenerateN1(gen);
+      N2 = GenerateN2(gen);
       if ((N1 > X3) and (N1 < X4) and (N2 > Y3) and (N2 < Y4))
       {
         NonZeroCases++;
