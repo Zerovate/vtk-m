@@ -122,12 +122,36 @@ public:
     thrust::minstd_rand rng;
     thrust::random::normal_distribution<vtkm::FloatDefault> GenerateN1(X1, X2);
     thrust::random::normal_distribution<vtkm::FloatDefault> GenerateN2(Y1, Y2);
+
+    vtkm::cont::ArrayHandle<vtkm::FloatDefault> samplesX;
+    vtkm::cont::ArrayHandle<vtkm::FloatDefault> samplesY;
+
+    randomGenX.Generate(samplesX, NumSample);
+    randomGenY.Generate(samplesY, NumSample);
+
+    auto portalX = samplesX.ReadPortal();
+    auto portalY = samplesY.ReadPortal();
+
+    for (vtkm::IdComponent i = 0; i < NumSample; i++)
+    {
+      vtkm::FloatDefault N1 = portalX.Get(i);
+      vtkm::FloatDefault N2 = portalY.Get(i);
+
+      if ((N1 > X3) && (N1 < X4) && (N2 > Y3) && (N2 < Y4))
+      {
+        NonZeroCases++;
+      }
+    }
+
+    MCProbability =
+      static_cast<vtkm::FloatDefault>(NonZeroCases) / static_cast<vtkm::FloatDefault>(NumSample);
+    MonteCarloProbability = MCProbability;
+
 #else
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<vtkm::FloatDefault> GenerateN1(X1, X2);
     std::uniform_real_distribution<vtkm::FloatDefault> GenerateN2(Y1, Y2);
-#endif
 
     for (vtkm::IdComponent i = 0; i < NumSample; i++)
     {
@@ -140,6 +164,8 @@ public:
     }
     MCProbability = NonZeroCases / NumSample;
     MonteCarloProbability = MCProbability;
+
+#endif
     return;
   }
 
