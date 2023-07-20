@@ -18,8 +18,10 @@
 #include <vtkm/worklet/WorkletPointNeighborhood.h>
 
 #ifdef VTKM_CUDA
-#include <thrust/random/linear_congruential_engine.h>
-#include <thrust/random/normal_distribution.h>
+#include <vtkm/cont/ArrayHandle.h>
+#include <vtkm/cont/ArrayHandleRandomUniform.h>
+#include <vtkm/cont/DeviceAdapterAlgorithm.h>
+#include <vtkm/cont/Logging.h>
 #else
 #include <random>
 #endif
@@ -120,32 +122,28 @@ public:
 
 #ifdef VTKM_CUDA
     thrust::minstd_rand rng;
-    thrust::random::normal_distribution<vtkm::FloatDefault> GenerateN1(X1, X2);
-    thrust::random::normal_distribution<vtkm::FloatDefault> GenerateN2(Y1, Y2);
+    vtkm::cont::ArrayHandleRandomUniform<vtkm::FloatDefault> GenerateN1(X1, X2);
+    vtkm::cont::ArrayHandleRandomUniform<vtkm::FloatDefault> GenerateN2(Y1, Y2);
 
-    vtkm::cont::ArrayHandle<vtkm::FloatDefault> samplesX;
-    vtkm::cont::ArrayHandle<vtkm::FloatDefault> samplesY;
+    vtkm::cont::ArrayHandle<vtkm::FloatDefault> samplesN1;
+    vtkm::cont::ArrayHandle<vtkm::FloatDefault> samplesN2;
 
-    randomGenX.Generate(samplesX, NumSample);
-    randomGenY.Generate(samplesY, NumSample);
+    GenerateN1.Generate(samplesN1, NumSample);
+    GenerateN2.Generate(samplesN2, NumSample);
 
-    auto portalX = samplesX.ReadPortal();
-    auto portalY = samplesY.ReadPortal();
+    auto portalN1 = samplesN1.ReadPortal();
+    auto portalN2 = samplesN2.ReadPortal();
 
     for (vtkm::IdComponent i = 0; i < NumSample; i++)
     {
-      vtkm::FloatDefault N1 = portalX.Get(i);
-      vtkm::FloatDefault N2 = portalY.Get(i);
+      vtkm::FloatDefault N1 = portalN1.Get(i);
+      vtkm::FloatDefault N2 = portalN2.Get(i);
 
       if ((N1 > X3) && (N1 < X4) && (N2 > Y3) && (N2 < Y4))
       {
         NonZeroCases++;
       }
     }
-
-    MCProbability =
-      static_cast<vtkm::FloatDefault>(NonZeroCases) / static_cast<vtkm::FloatDefault>(NumSample);
-    MonteCarloProbability = MCProbability;
 
 #else
     std::random_device rd;
@@ -162,10 +160,12 @@ public:
         NonZeroCases++;
       }
     }
+
+#endif
+
     MCProbability = NonZeroCases / NumSample;
     MonteCarloProbability = MCProbability;
 
-#endif
     return;
   }
 
