@@ -94,7 +94,7 @@ public:
     vtkm::FloatDefault N1 = 0.0;
     vtkm::FloatDefault N2 = 0.0;
     vtkm::IdComponent NonZeroCases = 0;
-    vtkm::IdComponent NumSample = 10000;
+    vtkm::IdComponent NumSample = 10;
     vtkm::FloatDefault MCProbability = 0.0;
 
     X3 = static_cast<vtkm::FloatDefault>(EnsembleMinOne);
@@ -124,23 +124,10 @@ public:
     thrust::uniform_real_distribution<vtkm::FloatDefault> distX(X1, X2);
     thrust::uniform_real_distribution<vtkm::FloatDefault> distY(Y1, Y2);
 
-    thrust::device_vector<vtkm::FloatDefault> samplesX(NumSample);
-    thrust::device_vector<vtkm::FloatDefault> samplesY(NumSample);
-
-    // Generate random samples on the device
     for (vtkm::IdComponent i = 0; i < NumSample; i++)
     {
-      samplesX[i] = distX(rng);
-      samplesY[i] = distY(rng);
-    }
-
-    auto portalX = samplesX.data();
-    auto portalY = samplesY.data();
-
-    for (vtkm::IdComponent i = 0; i < NumSample; i++)
-    {
-      N1 = portalX[i];
-      N2 = portalY[i];
+      N1 = distX(rng);
+      N2 = distY(rng);
       if ((N1 > X3) && (N1 < X4) && (N2 > Y3) && (N2 < Y4))
       {
         NonZeroCases++;
