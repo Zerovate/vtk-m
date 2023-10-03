@@ -203,15 +203,6 @@ public:
     T M4_;
   }; // StatState
 
-  struct MakeStatState
-  {
-    template <typename T>
-    VTKM_EXEC_CONT vtkm::worklet::DescriptiveStatistics::StatState<T> operator()(T value) const
-    {
-      return vtkm::worklet::DescriptiveStatistics::StatState<T>{ value };
-    }
-  };
-
   /// \brief Calculate various summary statistics for the input ArrayHandle
   ///
   /// Reference:
@@ -228,7 +219,10 @@ public:
     using Algorithm = vtkm::cont::Algorithm;
 
     // Essentially a TransformReduce. Do we have that convenience in VTKm?
-    auto states = vtkm::cont::make_ArrayHandleTransform(field, MakeStatState{});
+    auto states = vtkm::cont::make_ArrayHandleTransform(
+      field, VTKM_LAMBDA(const FieldType& value) {
+        return vtkm::worklet::DescriptiveStatistics::StatState<FieldType>{ value };
+      });
     return Algorithm::Reduce(states, StatState<FieldType>{});
   }
 
@@ -250,7 +244,10 @@ public:
     // Gather values of the same key by sorting them according to keys
     Algorithm::SortByKey(keys_copy, values_copy);
 
-    auto states = vtkm::cont::make_ArrayHandleTransform(values_copy, MakeStatState{});
+    auto states = vtkm::cont::make_ArrayHandleTransform(
+      values_copy, VTKM_LAMBDA(const ValueType& value) {
+        return vtkm::worklet::DescriptiveStatistics::StatState<ValueType>{ value };
+      });
     vtkm::cont::ArrayHandle<KeyType> keys_out;
 
     vtkm::cont::ArrayHandle<StatState<ValueType>> results;

@@ -60,7 +60,8 @@ void BasicSwitch()
   using ArrayType2 = vtkm::cont::ArrayHandleCounting<ValueType>;
   ArrayType2 array2(TestValue(1, vtkm::FloatDefault{}), 1.0f, ARRAY_SIZE);
 
-  auto array3 = vtkm::cont::make_ArrayHandleImplicit(TestValueFunctor<ValueType>{}, ARRAY_SIZE);
+  auto array3 = vtkm::cont::make_ArrayHandleImplicit(
+    VTKM_LAMBDA(vtkm::Id index) { return TestValue(index, ValueType{}); }, ARRAY_SIZE);
   using ArrayType3 = decltype(array3);
 
   vtkm::cont::ArrayHandleMultiplexer<ArrayType1, ArrayType2, ArrayType3> multiplexer;

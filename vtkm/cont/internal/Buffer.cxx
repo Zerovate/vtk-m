@@ -798,6 +798,10 @@ void Buffer::SetMetaData(void* data,
 
 void* Buffer::GetMetaData(const std::string& type) const
 {
+  if (!this->HasMetaData())
+  {
+    throw vtkm::cont::ErrorBadValue("Requesting Buffer meta data that has no meta data.");
+  }
   if (type != this->Internals->MetaData.Type)
   {
     throw vtkm::cont::ErrorBadType("Requesting Buffer meta data that is the wrong type.");

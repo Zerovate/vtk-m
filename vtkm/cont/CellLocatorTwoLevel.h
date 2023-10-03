@@ -90,7 +90,9 @@ public:
   ExecObjType PrepareForExecution(vtkm::cont::DeviceAdapterId device,
                                   vtkm::cont::Token& token) const;
 
+#ifndef VTKM_CUDA
 private:
+#endif
   friend Superclass;
   VTKM_CONT void Build();
 

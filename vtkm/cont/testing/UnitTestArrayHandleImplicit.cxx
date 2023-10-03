@@ -60,36 +60,64 @@ struct ImplicitTests
     ImplicitHandle implicit = vtkm::cont::make_ArrayHandleImplicit(functor, ARRAY_SIZE);
 
     std::cout << "verify that the control portal works" << std::endl;
-    auto implicitPortal = implicit.ReadPortal();
-    for (int i = 0; i < ARRAY_SIZE; ++i)
     {
-      const ValueType v = implicitPortal.Get(i);
-      const ValueType correct_value = functor(i);
-      VTKM_TEST_ASSERT(v == correct_value, "Implicit Handle Failed");
+      auto implicitPortal = implicit.ReadPortal();
+      for (int i = 0; i < ARRAY_SIZE; ++i)
+      {
+        const ValueType v = implicitPortal.Get(i);
+        const ValueType correct_value = functor(i);
+        VTKM_TEST_ASSERT(v == correct_value, "Implicit Handle Failed");
+      }
     }
 
     std::cout << "verify that the execution portal works" << std::endl;
-    vtkm::cont::Token token;
-    using Device = vtkm::cont::DeviceAdapterTagSerial;
-    using CEPortal = typename ImplicitHandle::ReadPortalType;
-    CEPortal execPortal = implicit.PrepareForInput(Device(), token);
-    for (int i = 0; i < ARRAY_SIZE; ++i)
     {
-      const ValueType v = execPortal.Get(i);
-      const ValueType correct_value = functor(i);
-      VTKM_TEST_ASSERT(v == correct_value, "Implicit Handle Failed");
+      vtkm::cont::Token token;
+      using Device = vtkm::cont::DeviceAdapterTagSerial;
+      using CEPortal = typename ImplicitHandle::ReadPortalType;
+      CEPortal execPortal = implicit.PrepareForInput(Device(), token);
+      for (int i = 0; i < ARRAY_SIZE; ++i)
+      {
+        const ValueType v = execPortal.Get(i);
+        const ValueType correct_value = functor(i);
+        VTKM_TEST_ASSERT(v == correct_value, "Implicit Handle Failed");
+      }
     }
 
     std::cout << "verify that the array handle works in a worklet on the device" << std::endl;
     vtkm::cont::Invoker invoke;
-    vtkm::cont::ArrayHandle<ValueType> result;
-    invoke(PassThrough{}, implicit, result);
-    auto resultPortal = result.ReadPortal();
-    for (int i = 0; i < ARRAY_SIZE; ++i)
     {
-      const ValueType value = resultPortal.Get(i);
-      const ValueType correctValue = functor(i);
-      VTKM_TEST_ASSERT(test_equal(value, correctValue));
+      vtkm::cont::ArrayHandle<ValueType> result;
+      invoke(PassThrough{}, implicit, result);
+      auto resultPortal = result.ReadPortal();
+      for (int i = 0; i < ARRAY_SIZE; ++i)
+      {
+        const ValueType value = resultPortal.Get(i);
+        const ValueType correctValue = functor(i);
+        VTKM_TEST_ASSERT(test_equal(value, correctValue));
+      }
+    }
+
+    std::cout << "verify that an implicit array can be created from a lambda function" << std::endl;
+    {
+      auto lambda = VTKM_LAMBDA(vtkm::Id index) { return TestValue(index, ValueType{}); };
+      auto array = vtkm::cont::make_ArrayHandleImplicit(lambda, ARRAY_SIZE);
+      vtkm::cont::ArrayHandle<ValueType> result;
+      invoke(PassThrough{}, array, result);
+      CheckPortal(result.ReadPortal());
+    }
+
+    std::cout << "verify implicit array with lambda with capture" << std::endl;
+    {
+      ValueType offset{ 4 };
+      auto lambda = VTKM_LAMBDA(vtkm::Id index)->ValueType
+      {
+        return static_cast<ValueType>(TestValue(index, offset) + offset);
+      };
+      auto array = vtkm::cont::make_ArrayHandleImplicit(lambda, ARRAY_SIZE);
+      vtkm::cont::ArrayHandle<ValueType> result;
+      invoke(PassThrough{}, array, result);
+      CheckPortal(result.ReadPortal(), offset);
     }
   }
 };

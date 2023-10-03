@@ -104,7 +104,8 @@ if(VTKm_ENABLE_CUDA)
       requires_static_builds TRUE
     )
 
-    target_compile_options(vtkm_cuda INTERFACE $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>)
+    target_compile_options(vtkm_cuda INTERFACE
+      $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr;--expt-extended-lambda>)
 
     if(CMAKE_CUDA_COMPILER_ID STREQUAL "NVIDIA" AND
       CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL 11.0)

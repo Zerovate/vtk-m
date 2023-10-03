@@ -181,20 +181,14 @@ VTKM_CONT void FillTestValue(ArrayT& array, vtkm::Id numValues)
     vtkm::cont::make_ArrayHandleImplicit(TestValueFunctor<T>{}, numValues), array);
 }
 
-template <typename T>
-struct ModuloTestValueFunctor
-{
-  vtkm::Id Mod;
-  VTKM_EXEC_CONT
-  T operator()(vtkm::Id i) const { return TestValue<T>(i % this->Mod); }
-};
-
 template <typename ArrayT>
 VTKM_CONT void FillModuloTestValue(ArrayT& array, vtkm::Id mod, vtkm::Id numValues)
 {
   using T = typename ArrayT::ValueType;
   vtkm::cont::Algorithm::Copy(
-    vtkm::cont::make_ArrayHandleImplicit(ModuloTestValueFunctor<T>{ mod }, numValues), array);
+    vtkm::cont::make_ArrayHandleImplicit(
+      VTKM_LAMBDA(vtkm::Id i) { return TestValue<T>(i % mod); }, numValues),
+    array);
 }
 
 template <typename T>

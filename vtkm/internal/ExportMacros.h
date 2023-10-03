@@ -21,12 +21,14 @@
 #include "hip/hip_runtime.h"
 #define VTKM_EXEC __device__ __host__
 #define VTKM_EXEC_CONT __device__ __host__
+#define VTKM_LAMBDA_CAPTURES(...) [__VA_ARGS__] VTKM_EXEC_CONT
 #define VTKM_SUPPRESS_EXEC_WARNINGS
 
 #elif defined(VTKM_CUDA)
 
 #define VTKM_EXEC __device__ __host__
 #define VTKM_EXEC_CONT __device__ __host__
+#define VTKM_LAMBDA_CAPTURES(...) [__VA_ARGS__] VTKM_EXEC_CONT
 
 #ifdef VTKM_MSVC
 
@@ -50,11 +52,13 @@
 
 #define VTKM_EXEC
 #define VTKM_EXEC_CONT
+#define VTKM_LAMBDA_CAPTURES(...) [__VA_ARGS__]
 #define VTKM_SUPPRESS_EXEC_WARNINGS
 
 #endif // !VTKM_CUDA
 
 #define VTKM_CONT
+#define VTKM_LAMBDA VTKM_LAMBDA_CAPTURES(=)
 
 // Background:
 // VTK-m libraries are built with the hidden symbol visibility by default.

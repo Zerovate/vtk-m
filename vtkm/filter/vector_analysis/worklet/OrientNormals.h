@@ -87,15 +87,6 @@ public:
     OrientPointAndCellNormals::Run(cells, coords, pointNormals, cellNormals);
   }
 
-  struct NegateFunctor
-  {
-    template <typename T>
-    VTKM_EXEC_CONT T operator()(const T& val) const
-    {
-      return -val;
-    }
-  };
-
   ///
   /// Reverse the normals to point in the opposite direction.
   ///
@@ -103,7 +94,8 @@ public:
   VTKM_CONT static void RunFlipNormals(
     vtkm::cont::ArrayHandle<vtkm::Vec<NormalCompType, 3>, NormalStorageType>& normals)
   {
-    const auto flippedAlias = vtkm::cont::make_ArrayHandleTransform(normals, NegateFunctor{});
+    const auto flippedAlias = vtkm::cont::make_ArrayHandleTransform(
+      normals, VTKM_LAMBDA(const vtkm::Vec<NormalCompType, 3>& val) { return -val; });
     vtkm::cont::Algorithm::Copy(flippedAlias, normals);
   }
 };

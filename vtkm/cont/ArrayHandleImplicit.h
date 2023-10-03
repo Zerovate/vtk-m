@@ -11,6 +11,7 @@
 #define vtk_m_cont_ArrayHandleImplicit_h
 
 #include <vtkm/cont/ArrayHandle.h>
+#include <vtkm/cont/ErrorBadType.h>
 
 #include <vtkmstd/is_trivial.h>
 
@@ -34,19 +35,11 @@ class VTKM_ALWAYS_EXPORT ArrayPortalImplicit
 {
 public:
   using FunctorType = FunctorType_;
-  using ValueType = decltype(FunctorType{}(vtkm::Id{}));
+  using ValueType = decltype(std::declval<FunctorType>()(vtkm::Id{}));
 
   VTKM_SUPPRESS_EXEC_WARNINGS
   VTKM_EXEC_CONT
-  ArrayPortalImplicit()
-    : Functor()
-    , NumberOfValues(0)
-  {
-  }
-
-  VTKM_SUPPRESS_EXEC_WARNINGS
-  VTKM_EXEC_CONT
-  ArrayPortalImplicit(FunctorType f, vtkm::Id numValues)
+  ArrayPortalImplicit(FunctorType f = FunctorType{}, vtkm::Id numValues = 0)
     : Functor(f)
     , NumberOfValues(numValues)
   {
@@ -124,15 +117,28 @@ struct VTKM_ALWAYS_EXPORT
 
   using ReadPortalType = ArrayPortalType;
 
-  VTKM_CONT static std::vector<vtkm::cont::internal::Buffer> CreateBuffers()
+private:
+  VTKM_CONT static std::vector<vtkm::cont::internal::Buffer> CreateBuffers(std::true_type)
   {
     return vtkm::cont::internal::PortalToArrayHandleImplicitBuffers(ArrayPortalType{});
+  }
+
+  VTKM_CONT static std::vector<vtkm::cont::internal::Buffer> CreateBuffers(std::false_type)
+  {
+    throw vtkm::cont::ErrorBadType("Cannot default construct ArrayHandleImplicit with this functor "
+                                   "type. You must provide a functor object.");
+  }
+
+public:
+  VTKM_CONT static std::vector<vtkm::cont::internal::Buffer> CreateBuffers()
+  {
+    return CreateBuffers(std::is_default_constructible<ArrayPortalType>{});
   }
 
   VTKM_CONT static vtkm::Id GetNumberOfValues(
     const std::vector<vtkm::cont::internal::Buffer>& buffers)
   {
-    return buffers[0].GetMetaData<ArrayPortalType>().GetNumberOfValues();
+    return buffers[0].GetMetaDataNoConstruction<ArrayPortalType>().GetNumberOfValues();
   }
 
   VTKM_CONT static ReadPortalType CreateReadPortal(
@@ -140,7 +146,7 @@ struct VTKM_ALWAYS_EXPORT
     vtkm::cont::DeviceAdapterId,
     vtkm::cont::Token&)
   {
-    return buffers[0].GetMetaData<ArrayPortalType>();
+    return buffers[0].GetMetaDataNoConstruction<ArrayPortalType>();
   }
 };
 
@@ -154,7 +160,7 @@ namespace detail
 template <typename FunctorType>
 struct ArrayHandleImplicitTraits
 {
-  using ValueType = decltype(FunctorType{}(vtkm::Id{}));
+  using ValueType = decltype(std::declval<FunctorType>()(vtkm::Id{}));
   using PortalType = vtkm::internal::ArrayPortalImplicit<FunctorType>;
   using StorageTag = vtkm::cont::StorageTagImplicit<PortalType>;
   using Superclass = vtkm::cont::ArrayHandle<ValueType, StorageTag>;

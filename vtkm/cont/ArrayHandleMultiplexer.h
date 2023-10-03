@@ -31,26 +31,6 @@ namespace internal
 namespace detail
 {
 
-struct ArrayPortalMultiplexerGetNumberOfValuesFunctor
-{
-  template <typename PortalType>
-  VTKM_EXEC_CONT vtkm::Id operator()(const PortalType& portal) const noexcept
-  {
-    return portal.GetNumberOfValues();
-  }
-};
-
-struct ArrayPortalMultiplexerGetFunctor
-{
-  VTKM_SUPPRESS_EXEC_WARNINGS
-  template <typename PortalType>
-  VTKM_EXEC_CONT typename PortalType::ValueType operator()(const PortalType& portal,
-                                                           vtkm::Id index) const noexcept
-  {
-    return portal.Get(index);
-  }
-};
-
 struct ArrayPortalMultiplexerSetFunctor
 {
   template <typename PortalType>
@@ -117,13 +97,12 @@ struct ArrayPortalMultiplexer
 
   VTKM_EXEC_CONT vtkm::Id GetNumberOfValues() const noexcept
   {
-    return this->PortalVariant.CastAndCall(
-      detail::ArrayPortalMultiplexerGetNumberOfValuesFunctor{});
+    return this->PortalVariant.CastAndCall([](auto& portal) { return portal.GetNumberOfValues(); });
   }
 
   VTKM_EXEC_CONT ValueType Get(vtkm::Id index) const noexcept
   {
-    return this->PortalVariant.CastAndCall(detail::ArrayPortalMultiplexerGetFunctor{}, index);
+    return this->PortalVariant.CastAndCall([index](auto& portal) { return portal.Get(index); });
   }
 
   VTKM_EXEC_CONT void Set(vtkm::Id index, const ValueType& value) const noexcept
