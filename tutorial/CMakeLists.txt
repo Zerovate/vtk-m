@@ -48,6 +48,12 @@ target_link_libraries(io vtkm::io)
 add_executable(contour contour.cxx)
 target_link_libraries(contour vtkm::filter_core vtkm::filter_contour vtkm::io)
 
+add_executable(fiber_surface_uncertainty fiber_surface_uncertainty.cxx)
+target_link_libraries(fiber_surface_uncertainty vtkm::filter_core vtkm::filter_uncertainty vtkm::io)
+
+#add_executable(iso_surface_uncertainty iso_surface_uncertainty.cxx)
+#target_link_libraries(iso_surface_uncertainty vtkm::io vtkm::filter_core vtkm::filter_uncertainty)
+
 add_executable(contour_two_fields contour_two_fields.cxx)
 target_link_libraries(contour_two_fields vtkm::filter_core vtkm::filter_contour vtkm::io)
 
