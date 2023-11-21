@@ -13,6 +13,7 @@
 #include <vtkm/cont/ColorTable.h>
 #include <vtkm/cont/CoordinateSystem.h>
 #include <vtkm/cont/Field.h>
+#include <vtkm/cont/PartitionedDataSet.h>
 #include <vtkm/cont/UnknownCellSet.h>
 #include <vtkm/rendering/Camera.h>
 #include <vtkm/rendering/Canvas.h>
@@ -35,6 +36,12 @@ public:
                            const vtkm::cont::ColorTable& colorTable,
                            const vtkm::rendering::Camera& camera,
                            const vtkm::Range& scalarRange) = 0;
+
+  virtual void RenderCellsPartitioned(const vtkm::cont::PartitionedDataSet partitionedData,
+                                      const std::string fieldName,
+                                      const vtkm::cont::ColorTable& colorTable,
+                                      const vtkm::rendering::Camera& camera,
+                                      const vtkm::Range& scalarRange);
 
   virtual void SetActiveColorTable(const vtkm::cont::ColorTable& ct);
 
