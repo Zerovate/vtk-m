@@ -85,6 +85,24 @@ public:
   VTKM_CONT
   void AppendPartitions(const std::vector<vtkm::cont::DataSet>& partitions);
 
+  /// Get the bounding box for partitions.
+  VTKM_CONT
+  vtkm::Bounds GetBounds(vtkm::Id coordinateIndex = 0) const;
+
+  /// Get the bounding box for partitions over all ranks.
+  /// @warning This method requires global communication (MPI_Allreduce) if MPI is enabled.
+  VTKM_CONT
+  vtkm::Bounds GetGlobalBounds(vtkm::Id coordinateIndex = 0) const;
+
+  /// Get the scalar field range for partitions.
+  VTKM_CONT
+  vtkm::Range GetScalarFieldRange(const std::string& fieldName) const;
+
+  /// Get the scalar field range for partitions over all ranks.
+  /// @warning This method requires global communication (MPI_Allreduce) if MPI is enabled.
+  VTKM_CONT
+  vtkm::Range GetGlobalScalarFieldRange(const std::string& fieldName) const;
+
   ///@{
   /// Methods to Add and Get fields on a PartitionedDataSet
   VTKM_CONT
@@ -200,6 +218,15 @@ public:
     return (this->Fields.GetFieldIndex(name, vtkm::cont::Field::Association::Partitions) != -1);
   }
   ///@}
+
+  /// Get numbers of cells.
+  VTKM_CONT
+  vtkm::Id GetNumberOfCells() const;
+
+  /// Get number of cells across all MPI ranks.
+  /// @warning This method requires global communication (MPI_Allreduce) if MPI is enabled.
+  VTKM_CONT
+  vtkm::Id GetGlobalNumberOfCells() const;
 
   /// Copies the partitions from the source. The fields on the PartitionedDataSet are not copied.
   VTKM_CONT

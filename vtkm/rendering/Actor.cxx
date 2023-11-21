@@ -10,10 +10,10 @@
 
 #include <vtkm/rendering/Actor.h>
 
+#include <vtkm/Assert.h>
+#include <vtkm/cont/FieldRangeGlobalCompute.h>
 #include <vtkm/cont/TryExecute.h>
 #include <vtkm/cont/UnknownCellSet.h>
-
-#include <utility>
 
 namespace vtkm
 {
@@ -22,101 +22,80 @@ namespace rendering
 
 struct Actor::InternalsType
 {
-  vtkm::cont::UnknownCellSet Cells;
-  vtkm::cont::CoordinateSystem Coordinates;
-  vtkm::cont::Field ScalarField;
   vtkm::cont::ColorTable ColorTable;
-
-  vtkm::Range ScalarRange;
+  vtkm::cont::PartitionedDataSet DataSet;
   vtkm::Bounds SpatialBounds;
+  std::string ScalarFieldName;
+  vtkm::Range ScalarRange;
 
   VTKM_CONT
-  InternalsType(vtkm::cont::UnknownCellSet cells,
-                vtkm::cont::CoordinateSystem coordinates,
-                vtkm::cont::Field scalarField,
+  InternalsType(const vtkm::cont::PartitionedDataSet& dataSet,
+                const std::string& scalarFieldName,
                 const vtkm::rendering::Color& color)
-    : Cells(std::move(cells))
-    , Coordinates(std::move(coordinates))
-    , ScalarField(std::move(scalarField))
-    , ColorTable(vtkm::Range{ 0, 1 }, color.Components, color.Components)
+    : ColorTable(vtkm::Range{ 0, 1 }, color.Components, color.Components)
+    , DataSet(dataSet)
+    , ScalarFieldName(scalarFieldName)
   {
+    this->Init();
   }
 
   VTKM_CONT
-  InternalsType(vtkm::cont::UnknownCellSet cells,
-                vtkm::cont::CoordinateSystem coordinates,
-                vtkm::cont::Field scalarField,
+  InternalsType(const vtkm::cont::PartitionedDataSet& dataSet,
+                const std::string& scalarFieldName,
                 const vtkm::cont::ColorTable& colorTable = vtkm::cont::ColorTable::Preset::Default)
-    : Cells(std::move(cells))
-    , Coordinates(std::move(coordinates))
-    , ScalarField(std::move(scalarField))
-    , ColorTable(colorTable)
+    : ColorTable(colorTable)
+    , DataSet(dataSet)
+    , ScalarFieldName(scalarFieldName)
   {
+    this->Init();
+  }
+
+  void Init()
+  {
+    std::cout << __FILE__ << " " << __LINE__ << " Should this be global bounds/range??"
+              << std::endl;
+    this->SpatialBounds = this->DataSet.GetGlobalBounds();
+
+    for (const auto& ds : this->DataSet.GetPartitions())
+    {
+      if (!ds.HasField(this->ScalarFieldName))
+        throw vtkm::cont::ErrorBadValue("Field name not on data set.");
+    }
+
+    auto ranges = vtkm::cont::FieldRangeGlobalCompute(this->DataSet, this->ScalarFieldName);
+    if (ranges.GetNumberOfValues() != 1)
+      throw vtkm::cont::ErrorBadValue("Can only render scalar fields");
+
+    this->ScalarRange = ranges.ReadPortal().Get(0);
   }
 };
 
-Actor::Actor(const vtkm::cont::UnknownCellSet& cells,
-             const vtkm::cont::CoordinateSystem& coordinates,
-             const vtkm::cont::Field& scalarField)
-  : Internals(std::make_unique<InternalsType>(cells, coordinates, scalarField))
-{
-  this->Init(coordinates, scalarField);
-}
-
-Actor::Actor(const vtkm::cont::UnknownCellSet& cells,
-             const vtkm::cont::CoordinateSystem& coordinates,
-             const vtkm::cont::Field& scalarField,
+Actor::Actor(const vtkm::cont::PartitionedDataSet& dataSet,
+             const std::string& scalarFieldName,
              const vtkm::rendering::Color& color)
-  : Internals(std::make_unique<InternalsType>(cells, coordinates, scalarField, color))
+  : Internals(new InternalsType(dataSet, scalarFieldName, color))
 {
-  this->Init(coordinates, scalarField);
 }
 
-Actor::Actor(const vtkm::cont::UnknownCellSet& cells,
-             const vtkm::cont::CoordinateSystem& coordinates,
-             const vtkm::cont::Field& scalarField,
+Actor::Actor(const vtkm::cont::DataSet& dataSet,
+             const std::string& scalarFieldName,
+             const vtkm::rendering::Color& color)
+  : Internals(new InternalsType({ dataSet }, scalarFieldName, color))
+{
+}
+
+Actor::Actor(const vtkm::cont::PartitionedDataSet& dataSet,
+             const std::string& scalarFieldName,
              const vtkm::cont::ColorTable& colorTable)
-  : Internals(std::make_unique<InternalsType>(cells, coordinates, scalarField, colorTable))
+  : Internals(new InternalsType(dataSet, scalarFieldName, colorTable))
 {
-  this->Init(coordinates, scalarField);
 }
 
-Actor::Actor(const Actor& rhs)
-  : Internals(nullptr)
+Actor::Actor(const vtkm::cont::DataSet& dataSet,
+             const std::string& scalarFieldName,
+             const vtkm::cont::ColorTable& colorTable)
+  : Internals(new InternalsType({ dataSet }, scalarFieldName, colorTable))
 {
-  // rhs might have been moved, its Internal would be nullptr
-  if (rhs.Internals)
-    Internals = std::make_unique<InternalsType>(*rhs.Internals);
-}
-
-Actor& Actor::operator=(const Actor& rhs)
-{
-  // both *this and rhs might have been moved.
-  if (!rhs.Internals)
-  {
-    Internals.reset();
-  }
-  else if (!Internals)
-  {
-    Internals = std::make_unique<InternalsType>(*rhs.Internals);
-  }
-  else
-  {
-    *Internals = *rhs.Internals;
-  }
-
-  return *this;
-}
-
-Actor::Actor(vtkm::rendering::Actor&&) noexcept = default;
-Actor& Actor::operator=(Actor&&) noexcept = default;
-Actor::~Actor() = default;
-
-void Actor::Init(const vtkm::cont::CoordinateSystem& coordinates,
-                 const vtkm::cont::Field& scalarField)
-{
-  scalarField.GetRange(&this->Internals->ScalarRange);
-  this->Internals->SpatialBounds = coordinates.GetBounds();
 }
 
 void Actor::Render(vtkm::rendering::Mapper& mapper,
@@ -125,32 +104,44 @@ void Actor::Render(vtkm::rendering::Mapper& mapper,
 {
   mapper.SetCanvas(&canvas);
   mapper.SetActiveColorTable(this->Internals->ColorTable);
-  mapper.RenderCells(this->Internals->Cells,
-                     this->Internals->Coordinates,
-                     this->Internals->ScalarField,
-                     this->Internals->ColorTable,
-                     camera,
-                     this->Internals->ScalarRange);
+  for (const auto& ds : this->Internals->DataSet)
+  {
+    const auto& cells = ds.GetCellSet();
+    const auto& coords = ds.GetCoordinateSystem();
+    const auto& field = ds.GetField(this->Internals->ScalarFieldName);
+    mapper.RenderCells(
+      cells, coords, field, this->Internals->ColorTable, camera, this->Internals->ScalarRange);
+  }
 }
 
-const vtkm::cont::UnknownCellSet& Actor::GetCells() const
+const vtkm::cont::PartitionedDataSet& Actor::GetDataSet() const
 {
-  return this->Internals->Cells;
+  return this->Internals->DataSet;
 }
 
-const vtkm::cont::CoordinateSystem& Actor::GetCoordinates() const
+void Actor::SetDataSet(const vtkm::cont::PartitionedDataSet& pds)
 {
-  return this->Internals->Coordinates;
+  this->Internals->DataSet = pds;
 }
 
-const vtkm::cont::Field& Actor::GetScalarField() const
+std::string Actor::GetScalarFieldName() const
 {
-  return this->Internals->ScalarField;
+  return this->Internals->ScalarFieldName;
+}
+
+void Actor::SetScalarFieldName(const std::string& fieldName)
+{
+  this->Internals->ScalarFieldName = fieldName;
 }
 
 const vtkm::cont::ColorTable& Actor::GetColorTable() const
 {
   return this->Internals->ColorTable;
+}
+
+void Actor::SetColorTable(const vtkm::cont::ColorTable& colorTable)
+{
+  this->Internals->ColorTable = colorTable;
 }
 
 const vtkm::Range& Actor::GetScalarRange() const
@@ -167,5 +158,6 @@ void Actor::SetScalarRange(const vtkm::Range& scalarRange)
 {
   this->Internals->ScalarRange = scalarRange;
 }
+
 }
 } // namespace vtkm::rendering
