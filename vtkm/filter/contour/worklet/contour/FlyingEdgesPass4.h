@@ -13,6 +13,7 @@
 #ifndef vtk_m_worklet_contour_flyingedges_pass4_h
 #define vtk_m_worklet_contour_flyingedges_pass4_h
 
+#include <vtkm/filter/contour/worklet/contour/CommonState.h>
 #include <vtkm/filter/contour/worklet/contour/FlyingEdgesPass4Common.h>
 #include <vtkm/filter/contour/worklet/contour/FlyingEdgesPass4X.h>
 #include <vtkm/filter/contour/worklet/contour/FlyingEdgesPass4XWithNormals.h>
@@ -79,6 +80,7 @@ struct launchComputePass4
              edgeCases,
              coordinateSystem,
              inputField,
+             data::FlyingEdgesTablesExecObject{},
              triangle_topology,
              sharedState.InterpolationEdgeIds,
              sharedState.InterpolationWeights,
@@ -99,6 +101,7 @@ struct launchComputePass4
              edgeCases,
              coordinateSystem,
              inputField,
+             data::FlyingEdgesTablesExecObject{},
              triangle_topology,
              sharedState.InterpolationEdgeIds,
              sharedState.InterpolationWeights,
@@ -145,6 +148,7 @@ struct launchComputePass4
            metaDataNumTris,
            edgeCases,
            inputField,
+           data::FlyingEdgesTablesExecObject{},
            triangle_topology,
            sharedState.InterpolationEdgeIds,
            sharedState.InterpolationWeights,

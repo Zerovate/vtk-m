@@ -15,10 +15,12 @@
 
 
 #include <vtkm/filter/contour/worklet/contour/FlyingEdgesHelpers.h>
+#include <vtkm/filter/contour/worklet/contour/FlyingEdgesPass4Common.h>
 #include <vtkm/filter/contour/worklet/contour/FlyingEdgesTables.h>
 
 #include <vtkm/VectorAnalysis.h>
 #include <vtkm/filter/vector_analysis/worklet/gradient/StructuredPointGradient.h>
+#include <vtkm/worklet/WorkletMapTopology.h>
 
 namespace vtkm
 {
@@ -58,12 +60,13 @@ struct ComputePass4Y : public vtkm::worklet::WorkletVisitCellsWithPoints
                                 WholeArrayIn cell_tri_count,
                                 WholeArrayIn edgeData,
                                 WholeArrayIn data,
+                                ExecObject tables,
                                 WholeArrayOut connectivity,
                                 WholeArrayOut edgeIds,
                                 WholeArrayOut weights,
                                 WholeArrayOut inputCellIds);
   using ExecutionSignature =
-    void(ThreadIndices, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, WorkIndex);
+    void(ThreadIndices, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, WorkIndex);
 
   template <typename ThreadIndices,
             typename FieldInPointId3,
@@ -82,6 +85,7 @@ struct ComputePass4Y : public vtkm::worklet::WorkletVisitCellsWithPoints
                             const WholeTriField& cellTriCount,
                             const WholeEdgeField& edges,
                             const WholeDataField& field,
+                            const data::FlyingEdgesTables& tables,
                             const WholeConnField& conn,
                             const WholeEdgeIdField& interpolatedEdgeIds,
                             const WholeWeightField& weights,
@@ -112,20 +116,20 @@ struct ComputePass4Y : public vtkm::worklet::WorkletVisitCellsWithPoints
     vtkm::Id edgeIds[12];
 
     auto edgeCase = getEdgeCase(edges, state.startPos, (state.axis_inc * state.left));
-    init_voxelIds(AxisToSum{}, this->PointWriteOffset, edgeCase, axis_sums, edgeIds);
+    init_voxelIds(AxisToSum{}, this->PointWriteOffset, edgeCase, axis_sums, tables, edgeIds);
     for (vtkm::Id i = state.left; i < state.right; ++i) // run along the trimmed voxels
     {
       edgeCase = getEdgeCase(edges, state.startPos, (state.axis_inc * i));
-      vtkm::UInt8 numTris = data::GetNumberOfPrimitives(edgeCase);
+      vtkm::UInt8 numTris = tables.GetNumberOfPrimitives(edgeCase);
       if (numTris > 0)
       {
         // Start by generating triangles for this case
         generate_tris(
-          state.cellId, edgeCase, numTris, edgeIds, cell_tri_offset, conn, inputCellIds);
+          state.cellId, edgeCase, numTris, edgeIds, cell_tri_offset, tables, conn, inputCellIds);
 
         // Now generate edgeIds and weights along voxel axes if needed. Remember to take
         // boundary into account.
-        auto* edgeUses = data::GetEdgeUses(edgeCase);
+        const vtkm::Vec<vtkm::UInt8, 12>& edgeUses = tables.GetEdgeUses(edgeCase);
         if (!fully_interior(state.boundaryStatus) || case_includes_axes(edgeUses))
         {
           this->Generate(state.boundaryStatus,
@@ -136,6 +140,7 @@ struct ComputePass4Y : public vtkm::worklet::WorkletVisitCellsWithPoints
                          increments,
                          (state.axis_inc * i),
                          edgeUses,
+                         tables,
                          edgeIds);
         }
         advance_voxelIds(edgeUses, edgeIds);
@@ -153,7 +158,8 @@ struct ComputePass4Y : public vtkm::worklet::WorkletVisitCellsWithPoints
                                  const vtkm::Id4& startPos,
                                  const vtkm::Id3& incs,
                                  vtkm::Id offset,
-                                 vtkm::UInt8 const* const edgeUses,
+                                 const vtkm::Vec<vtkm::UInt8, 12>& edgeUses,
+                                 const data::FlyingEdgesTables& tables,
                                  vtkm::Id* edgeIds) const
   {
     using AxisToSum = SumYAxis;
@@ -207,30 +213,30 @@ struct ComputePass4Y : public vtkm::worklet::WorkletVisitCellsWithPoints
     const bool onZ = boundaryStatus[AxisToSum::zindex] & FlyingEdges3D::MaxBoundary;
     if (onX) //+x boundary
     {
-      this->InterpolateEdge(pos[0], incs, 5, edgeUses, edgeIds, field, interpolatedEdgeIds, weights);
-      this->InterpolateEdge(pos[0], incs, 9, edgeUses, edgeIds, field, interpolatedEdgeIds, weights);
+      this->InterpolateEdge(pos[0], incs, 5, edgeUses, edgeIds, field, interpolatedEdgeIds, weights, tables);
+      this->InterpolateEdge(pos[0], incs, 9, edgeUses, edgeIds, field, interpolatedEdgeIds, weights, tables);
       if (onY) //+x +y
       {
-        this->InterpolateEdge(pos[0], incs, 11, edgeUses, edgeIds, field, interpolatedEdgeIds, weights);
+        this->InterpolateEdge(pos[0], incs, 11, edgeUses, edgeIds, field, interpolatedEdgeIds, weights, tables);
       }
       if (onZ) //+x +z
       {
-        this->InterpolateEdge(pos[0], incs, 7, edgeUses, edgeIds, field, interpolatedEdgeIds, weights);
+        this->InterpolateEdge(pos[0], incs, 7, edgeUses, edgeIds, field, interpolatedEdgeIds, weights, tables);
       }
     }
     if (onY) //+y boundary
     {
-      this->InterpolateEdge(pos[0], incs, 1, edgeUses, edgeIds, field, interpolatedEdgeIds, weights);
-      this->InterpolateEdge(pos[0], incs, 10, edgeUses, edgeIds, field, interpolatedEdgeIds, weights);
+      this->InterpolateEdge(pos[0], incs, 1, edgeUses, edgeIds, field, interpolatedEdgeIds, weights, tables);
+      this->InterpolateEdge(pos[0], incs, 10, edgeUses, edgeIds, field, interpolatedEdgeIds, weights, tables);
       if (onZ) //+y +z boundary
       {
-        this->InterpolateEdge(pos[0], incs, 3, edgeUses, edgeIds, field, interpolatedEdgeIds, weights);
+        this->InterpolateEdge(pos[0], incs, 3, edgeUses, edgeIds, field, interpolatedEdgeIds, weights, tables);
       }
     }
     if (onZ) //+z boundary
     {
-      this->InterpolateEdge(pos[0], incs, 2, edgeUses, edgeIds, field, interpolatedEdgeIds, weights);
-      this->InterpolateEdge(pos[0], incs, 6, edgeUses, edgeIds, field, interpolatedEdgeIds, weights);
+      this->InterpolateEdge(pos[0], incs, 2, edgeUses, edgeIds, field, interpolatedEdgeIds, weights, tables);
+      this->InterpolateEdge(pos[0], incs, 6, edgeUses, edgeIds, field, interpolatedEdgeIds, weights, tables);
     }
     // clang-format on
   }
@@ -240,12 +246,13 @@ struct ComputePass4Y : public vtkm::worklet::WorkletVisitCellsWithPoints
   template <typename WholeField, typename WholeIEdgeField, typename WholeWeightField>
   VTKM_EXEC inline void InterpolateEdge(vtkm::Id currentIdx,
                                         const vtkm::Id3& incs,
-                                        vtkm::Id edgeNum,
-                                        vtkm::UInt8 const* const edgeUses,
+                                        vtkm::IdComponent edgeNum,
+                                        const vtkm::Vec<vtkm::UInt8, 12>& edgeUses,
                                         vtkm::Id* edgeIds,
                                         const WholeField& field,
                                         const WholeIEdgeField& interpolatedEdgeIds,
-                                        const WholeWeightField& weights) const
+                                        const WholeWeightField& weights,
+                                        const data::FlyingEdgesTables& tables) const
   {
     using AxisToSum = SumYAxis;
 
@@ -257,10 +264,10 @@ struct ComputePass4Y : public vtkm::worklet::WorkletVisitCellsWithPoints
     const vtkm::Id writeIndex = edgeIds[edgeNum];
 
     // build the edge information
-    vtkm::Vec<vtkm::UInt8, 2> verts = data::GetVertMap(edgeNum);
+    vtkm::Vec2ui_8 verts = tables.GetVertMap(edgeNum);
 
-    vtkm::Id3 offsets1 = data::GetVertOffsets(AxisToSum{}, verts[0]);
-    vtkm::Id3 offsets2 = data::GetVertOffsets(AxisToSum{}, verts[1]);
+    vtkm::Id3 offsets1 = tables.GetVertOffsets(AxisToSum{}, verts[0]);
+    vtkm::Id3 offsets2 = tables.GetVertOffsets(AxisToSum{}, verts[1]);
 
     vtkm::Id2 iEdge(currentIdx + vtkm::Dot(offsets1, incs), currentIdx + vtkm::Dot(offsets2, incs));
 
