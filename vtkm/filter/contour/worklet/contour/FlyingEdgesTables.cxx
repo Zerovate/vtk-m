@@ -31,10 +31,7 @@ VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::UInt8> GetNumberOfPrimitivesTable()
     2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 2, 3, 3, 2, 3, 4, 4, 5, 4, 3, 5, 4, 4, 5, 5, 2, 3, 2, 4, 1,
     3, 4, 4, 5, 4, 5, 5, 2, 4, 5, 3, 4, 3, 4, 2, 1, 2, 3, 3, 2, 3, 2, 4, 1, 3, 4, 2, 1, 2, 1, 1, 0
   };
-  static vtkm::cont::ArrayHandleBasic<vtkm::UInt8> numberOfPrimitivesTable =
-    vtkm::cont::make_ArrayHandle(numTris, 256, vtkm::CopyFlag::Off);
-
-  return numberOfPrimitivesTable;
+  return vtkm::cont::make_ArrayHandle(numTris, 256, vtkm::CopyFlag::Off);
 }
 
 VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Vec<vtkm::UInt8, 12>> GetEdgeUsesTable()
@@ -107,10 +104,7 @@ VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Vec<vtkm::UInt8, 12>> GetEdgeUsesTa
     { 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1 }, { 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 },
     { 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1 }, { 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1 },
   };
-  static vtkm::cont::ArrayHandleBasic<vtkm::Vec<vtkm::UInt8, 12>> edgeUsesTable =
-    vtkm::cont::make_ArrayHandle(edgeUses, 128, vtkm::CopyFlag::Off);
-
-  return edgeUsesTable;
+  return vtkm::cont::make_ArrayHandle(edgeUses, 128, vtkm::CopyFlag::Off);
 }
 
 VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Vec<vtkm::UInt8, 16>> GetTriEdgeCasesTable()
@@ -375,10 +369,7 @@ VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Vec<vtkm::UInt8, 16>> GetTriEdgeCas
     { 1, 0, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
   };
-  static vtkm::cont::ArrayHandleBasic<vtkm::Vec<vtkm::UInt8, 16>> triEdgeCasesTable =
-    vtkm::cont::make_ArrayHandle(edgeCases, 256, vtkm::CopyFlag::Off);
-
-  return triEdgeCasesTable;
+  return vtkm::cont::make_ArrayHandle(edgeCases, 256, vtkm::CopyFlag::Off);
 }
 
 VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Vec2ui_8> GetVertMapTable()
@@ -387,10 +378,7 @@ VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Vec2ui_8> GetVertMapTable()
     { 0, 1 }, { 2, 3 }, { 4, 5 }, { 6, 7 }, { 0, 2 }, { 1, 3 },
     { 4, 6 }, { 5, 7 }, { 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 },
   };
-  static vtkm::cont::ArrayHandleBasic<vtkm::Vec2ui_8> vertMapTable =
-    vtkm::cont::make_ArrayHandle(vertMap, 12, vtkm::CopyFlag::Off);
-
-  return vertMapTable;
+  return vtkm::cont::make_ArrayHandle(vertMap, 12, vtkm::CopyFlag::Off);
 }
 
 VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Id3> GetVertOffsetsXAxisTable()
@@ -399,10 +387,7 @@ VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Id3> GetVertOffsetsXAxisTable()
     { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 }, { 1, 1, 0 },
     { 0, 0, 1 }, { 1, 0, 1 }, { 0, 1, 1 }, { 1, 1, 1 },
   };
-  static vtkm::cont::ArrayHandleBasic<vtkm::Id3> offsetMapTable =
-    vtkm::cont::make_ArrayHandle(offsetMap, 8, vtkm::CopyFlag::Off);
-
-  return offsetMapTable;
+  return vtkm::cont::make_ArrayHandle(offsetMap, 8, vtkm::CopyFlag::Off);
 }
 
 VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Id3> GetVertOffsetsYAxisTable()
@@ -411,10 +396,7 @@ VTKM_CONT vtkm::cont::ArrayHandleBasic<vtkm::Id3> GetVertOffsetsYAxisTable()
     { 0, 0, 0 }, { 0, 1, 0 }, { 1, 0, 0 }, { 1, 1, 0 },
     { 0, 0, 1 }, { 0, 1, 1 }, { 1, 0, 1 }, { 1, 1, 1 },
   };
-  static vtkm::cont::ArrayHandleBasic<vtkm::Id3> offsetMapTable =
-    vtkm::cont::make_ArrayHandle(offsetMap, 8, vtkm::CopyFlag::Off);
-
-  return offsetMapTable;
+  return vtkm::cont::make_ArrayHandle(offsetMap, 8, vtkm::CopyFlag::Off);
 }
 
 VTKM_CONT FlyingEdgesTables::FlyingEdgesTables(vtkm::cont::DeviceAdapterId device,

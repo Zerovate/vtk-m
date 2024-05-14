@@ -16,10 +16,6 @@
 #include <vtkm/cont/ArrayHandleBasic.h>
 #include <vtkm/cont/ExecutionObjectBase.h>
 
-// Note that the tables are stored in singleton objects that can keep the tables
-// sitting in device memory. Because they collectively take less than 6KB, I think
-// that will be OK.
-
 namespace vtkm
 {
 namespace worklet
