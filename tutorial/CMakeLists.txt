@@ -51,6 +51,11 @@ target_link_libraries(contour vtkm::filter_core vtkm::filter_contour vtkm::io)
 add_executable(fiber_surface_uncertainty fiber_surface_uncertainty.cxx)
 target_link_libraries(fiber_surface_uncertainty vtkm::filter_core vtkm::filter_uncertainty vtkm::io)
 
+
+add_executable(fiber_multi_var fiber_multi_var.cxx)
+target_link_libraries(fiber_multi_var vtkm::filter_core vtkm::filter_uncertainty vtkm::io)
+
+
 #add_executable(iso_surface_uncertainty iso_surface_uncertainty.cxx)
 #target_link_libraries(iso_surface_uncertainty vtkm::io vtkm::filter_core vtkm::filter_uncertainty)
 
