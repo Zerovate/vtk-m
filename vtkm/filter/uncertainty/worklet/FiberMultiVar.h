@@ -1,6 +1,6 @@
 #ifndef vtk_m_worklet_uncertainty_Fiber_h
 #define vtk_m_worklet_uncertainty_Fiber_h
-
+#include <random>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -85,7 +85,28 @@ public:
       InteriorProbability = 0.0;
     }
 
-    MonteCarloProbability = 0.0;
+    vtkm::FloatDefault X = 0.0;
+    vtkm::FloatDefault Y = 0.0;
+    vtkm::FloatDefault Z = 0.0;
+    vtkm::IdComponent NumSample = 100;
+    vtkm::IdComponent NonZeroCases = 0;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<vtkm::FloatDefault> GenerateX(minX_dataset, maxX_dataset);
+    std::uniform_real_distribution<vtkm::FloatDefault> GenerateY(minY_dataset, maxY_dataset);
+    std::uniform_real_distribution<vtkm::FloatDefault> GenerateZ(minZ_dataset, maxZ_dataset);
+    for (vtkm::IdComponent i = 0; i < NumSample; i++)
+    {
+      X = GenerateX(gen);
+      Y = GenerateY(gen);
+      Z = GenerateZ(gen);
+      if ((X > minX_user) and (X < maxX_user) and (Y > minY_user) and (Y < maxY_user) and (Z > minZ_user) and (Z < maxZ_user))
+      {
+        NonZeroCases++;
+      }
+    }
+    MonteCarloProbability = NonZeroCases/NumSample;
 
     return;
   }
