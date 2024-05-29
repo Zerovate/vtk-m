@@ -59,7 +59,7 @@ VTKM_CONT vtkm::cont::DataSet FiberMultiVar::DoExecute(const vtkm::cont::DataSet
     vtkm::cont::ArrayCopyShallowIfPossible(EnsembleMaxX.GetData(), ConcreteEnsembleMaxX);
     vtkm::cont::ArrayCopyShallowIfPossible(EnsembleMinY.GetData(), ConcreteEnsembleMinY);
     vtkm::cont::ArrayCopyShallowIfPossible(EnsembleMaxY.GetData(), ConcreteEnsembleMaxY);
-    vtkm::cont::ArrayCopyShallowIfPossible(EnsembleMaxZ.GetData(), ConcreteEnsembleMaxZ);
+    vtkm::cont::ArrayCopyShallowIfPossible(EnsembleMinZ.GetData(), ConcreteEnsembleMinZ);
     vtkm::cont::ArrayCopyShallowIfPossible(EnsembleMaxZ.GetData(), ConcreteEnsembleMaxZ);
 
 
