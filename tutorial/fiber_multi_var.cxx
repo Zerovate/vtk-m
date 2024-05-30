@@ -30,8 +30,8 @@ int main(int argc, char** argv)
   vtkm::cont::DataSet Data = reader.ReadDataSet();
 
   vtkm::filter::uncertainty::FiberMultiVar filter;
-  vtkm::Vec<vtkm::Float64, 3> bottomLeftValue = {0.2, 0.2, 0.2};
-  vtkm::Vec<vtkm::Float64, 3> topRightValue = {0.3, 0.3, 0.3};
+  vtkm::Vec<vtkm::Float64, 3> bottomLeftValue = {0.02, 0.02, 0.02};
+  vtkm::Vec<vtkm::Float64, 3> topRightValue = {0.03, 0.03, 0.03};
 
   filter.SetBottomLeftAxis(bottomLeftValue);
   filter.SetTopRightAxis(topRightValue);
