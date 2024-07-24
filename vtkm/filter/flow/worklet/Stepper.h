@@ -83,7 +83,7 @@ public:
 
     vtkm::Vec3f currPos(particle.GetEvaluationPosition(this->DeltaT));
     vtkm::Vec3f currVelocity(0, 0, 0);
-    vtkm::VecVariable<vtkm::Vec3f, 2> currValue, tmp;
+    typename Particle::FlowVectorsType currValue;
     auto evalStatus = this->Evaluator.Evaluate(currPos, particle.GetTime(), currValue);
     if (evalStatus.CheckFail())
       return IntegratorStatus(evalStatus, false);
@@ -102,6 +102,7 @@ public:
       if (status.CheckOk()) //Integration step succedded.
       {
         //See if this point is in/out.
+        typename Particle::FlowVectorsType tmp;
         auto newPos = particle.GetPosition() + currStep * currVelocity;
         evalStatus = this->Evaluator.Evaluate(newPos, particle.GetTime() + currStep, tmp);
         if (evalStatus.CheckOk())

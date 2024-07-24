@@ -148,9 +148,7 @@ public:
                             vtkm::worklet::flow::GridEvaluatorStatus& status,
                             vtkm::Vec3f& pointOut) const
   {
-    vtkm::VecVariable<vtkm::Vec3f, 2> values;
-    status = evaluator.Evaluate(pointIn.GetPosition(), pointIn.GetTime(), values);
-    pointOut = values[0];
+    status = evaluator.Evaluate(pointIn.GetPosition(), pointIn.GetTime(), pointOut);
   }
 };
 

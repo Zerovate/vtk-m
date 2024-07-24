@@ -12,6 +12,7 @@
 #define vtk_m_filter_flow_worklet_GridEvaluators_h
 
 #include <vtkm/CellClassification.h>
+#include <vtkm/cont/ArrayCopy.h>
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/CellLocatorGeneral.h>
 #include <vtkm/cont/CellLocatorRectilinearGrid.h>
@@ -86,10 +87,11 @@ public:
                          : vtkm::NegativeInfinity<vtkm::FloatDefault>();
   }
 
-  template <typename Point>
+private:
+  template <typename Point, typename ForceVectors>
   VTKM_EXEC GridEvaluatorStatus HelpEvaluate(const Point& point,
                                              const vtkm::FloatDefault& time,
-                                             vtkm::VecVariable<Point, 2>& out) const
+                                             ForceVectors& out) const
   {
     vtkm::Id cellId = -1;
     Point parametric;
@@ -138,10 +140,10 @@ public:
     return status;
   }
 
-  template <typename Point>
+  template <typename Point, typename ForceVectors>
   VTKM_EXEC GridEvaluatorStatus DeligateEvaluateToField(const Point& point,
                                                         const vtkm::FloatDefault& time,
-                                                        vtkm::VecVariable<Point, 2>& out) const
+                                                        ForceVectors& out) const
   {
     GridEvaluatorStatus status;
     status.SetOk();
@@ -154,19 +156,31 @@ public:
     return status;
   }
 
-  template <typename Point>
+  template <typename Point, typename ForceVectors>
   VTKM_EXEC GridEvaluatorStatus Evaluate(const Point& point,
                                          const vtkm::FloatDefault& time,
-                                         vtkm::VecVariable<Point, 2>& out) const
+                                         ForceVectors& out,
+                                         std::false_type vtkmNotUsed(delgateToField)) const
   {
-    if (!ExecFieldType::DelegateToField::value)
-    {
-      return this->HelpEvaluate(point, time, out);
-    }
-    else
-    {
-      return this->DeligateEvaluateToField(point, time, out);
-    }
+    return this->HelpEvaluate(point, time, out);
+  }
+
+  template <typename Point, typename ForceVectors>
+  VTKM_EXEC GridEvaluatorStatus Evaluate(const Point& point,
+                                         const vtkm::FloatDefault& time,
+                                         ForceVectors& out,
+                                         std::true_type vtkmNotUsed(delgateToField)) const
+  {
+    return this->DeligateEvaluateToField(point, time, out);
+  }
+
+public:
+  template <typename Point, typename ForceVectors>
+  VTKM_EXEC GridEvaluatorStatus Evaluate(const Point& point,
+                                         const vtkm::FloatDefault& time,
+                                         ForceVectors& out) const
+  {
+    return this->Evaluate(point, time, out, typename ExecFieldType::DelegateToField{});
   }
 
 private:

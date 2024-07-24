@@ -9,7 +9,6 @@
 //============================================================================
 
 #include <typeinfo>
-#include <vtkm/VecVariable.h>
 #include <vtkm/cont/Algorithm.h>
 #include <vtkm/cont/ArrayCopy.h>
 #include <vtkm/cont/ArrayHandle.h>
@@ -56,10 +55,7 @@ public:
                             vtkm::worklet::flow::GridEvaluatorStatus& status,
                             vtkm::Vec3f& pointOut) const
   {
-    vtkm::VecVariable<vtkm::Vec3f, 2> values;
-    status = evaluator.Evaluate(pointIn.GetPosition(), 0.5f, values);
-    if (values.GetNumberOfComponents() > 0)
-      pointOut = values[0];
+    status = evaluator.Evaluate(pointIn.GetPosition(), 0.5f, pointOut);
   }
 };
 

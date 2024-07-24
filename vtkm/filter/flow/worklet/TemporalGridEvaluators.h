@@ -69,10 +69,10 @@ public:
     return direction > 0 ? this->TimeTwo : this->TimeOne;
   }
 
-  template <typename Point>
+  template <typename Point, typename ForceVectors>
   VTKM_EXEC GridEvaluatorStatus Evaluate(const Point& particle,
                                          vtkm::FloatDefault time,
-                                         vtkm::VecVariable<Point, 2>& out) const
+                                         ForceVectors& out) const
   {
     // Validate time is in bounds for the current two slices.
     GridEvaluatorStatus status;
@@ -84,7 +84,7 @@ public:
       return status;
     }
 
-    vtkm::VecVariable<Point, 2> e1, e2;
+    ForceVectors e1, e2;
     status = this->EvaluatorOne.Evaluate(particle, time, e1);
     if (status.CheckFail())
       return status;
@@ -94,11 +94,7 @@ public:
 
     // LERP between the two values of calculated fields to obtain the new value
     vtkm::FloatDefault proportion = (time - this->TimeOne) / this->TimeDiff;
-    VTKM_ASSERT(e1.GetNumberOfComponents() != 0 &&
-                e1.GetNumberOfComponents() == e2.GetNumberOfComponents());
-    out = vtkm::VecVariable<Point, 2>{};
-    for (vtkm::IdComponent index = 0; index < e1.GetNumberOfComponents(); ++index)
-      out.Append(vtkm::Lerp(e1[index], e2[index], proportion));
+    out = vtkm::Lerp(e1, e2, proportion);
 
     status.SetOk();
     return status;

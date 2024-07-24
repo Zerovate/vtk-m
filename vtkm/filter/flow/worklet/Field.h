@@ -11,11 +11,13 @@
 #ifndef vtkm_filter_flow_worklet_Field_h
 #define vtkm_filter_flow_worklet_Field_h
 
+#include <vtkm/Particle.h>
 #include <vtkm/Types.h>
-
 #include <vtkm/VecVariable.h>
+
 #include <vtkm/cont/ArrayHandle.h>
 #include <vtkm/cont/ExecutionObjectBase.h>
+#include <vtkm/cont/Field.h>
 #include <vtkm/exec/CellInterpolate.h>
 
 namespace vtkm
@@ -32,6 +34,7 @@ public:
   using FieldPortalType = typename FieldArrayType::ReadPortalType;
   using Association = vtkm::cont::Field::Association;
   using DelegateToField = std::false_type;
+  using FlowVectorsType = vtkm::Particle::FlowVectorsType;
 
   VTKM_CONT
   ExecutionVelocityField(const FieldArrayType& velocityValues,
@@ -45,39 +48,25 @@ public:
 
   VTKM_EXEC Association GetAssociation() const { return this->Assoc; }
 
-  VTKM_EXEC void GetValue(const vtkm::Id cellId, vtkm::VecVariable<vtkm::Vec3f, 2>& value) const
+  VTKM_EXEC void GetValue(const vtkm::Id cellId, FlowVectorsType& velocity) const
   {
     VTKM_ASSERT(this->Assoc == Association::Cells);
 
-    vtkm::Vec3f velocity = VelocityValues.Get(cellId);
-    value = vtkm::make_Vec(velocity);
+    velocity = VelocityValues.Get(cellId);
   }
 
   VTKM_EXEC void GetValue(const vtkm::VecVariable<vtkm::Id, 8>& indices,
                           const vtkm::Id vertices,
                           const vtkm::Vec3f& parametric,
                           const vtkm::UInt8 cellShape,
-                          vtkm::VecVariable<vtkm::Vec3f, 2>& value) const
+                          FlowVectorsType& velocity) const
   {
     VTKM_ASSERT(this->Assoc == Association::Points);
 
-    vtkm::Vec3f velocityInterp;
     vtkm::VecVariable<vtkm::Vec3f, 8> velocities;
     for (vtkm::IdComponent i = 0; i < vertices; i++)
       velocities.Append(VelocityValues.Get(indices[i]));
-    vtkm::exec::CellInterpolate(velocities, parametric, cellShape, velocityInterp);
-    value = vtkm::make_Vec(velocityInterp);
-  }
-
-  template <typename Point, typename Locator, typename Helper>
-  VTKM_EXEC bool GetValue(const Point& vtkmNotUsed(point),
-                          const vtkm::FloatDefault& vtkmNotUsed(time),
-                          vtkm::VecVariable<Point, 2>& vtkmNotUsed(out),
-                          const Locator& vtkmNotUsed(locator),
-                          const Helper& vtkmNotUsed(helper)) const
-  {
-    //TODO Raise Error : Velocity Field should not allow this path
-    return false;
+    vtkm::exec::CellInterpolate(velocities, parametric, cellShape, velocity);
   }
 
 private:
@@ -130,6 +119,7 @@ public:
   using FieldPortalType = typename FieldArrayType::ReadPortalType;
   using Association = vtkm::cont::Field::Association;
   using DelegateToField = std::false_type;
+  using FlowVectorsType = vtkm::ChargedParticle::FlowVectorsType;
 
   VTKM_CONT
   ExecutionElectroMagneticField(const FieldArrayType& electricValues,
@@ -145,24 +135,22 @@ public:
 
   VTKM_EXEC Association GetAssociation() const { return this->Assoc; }
 
-  VTKM_EXEC void GetValue(const vtkm::Id cellId, vtkm::VecVariable<vtkm::Vec3f, 2>& value) const
+  VTKM_EXEC void GetValue(const vtkm::Id cellId, FlowVectorsType& vectors) const
   {
     VTKM_ASSERT(this->Assoc == Association::Cells);
 
-    auto electric = this->ElectricValues.Get(cellId);
-    auto magnetic = this->MagneticValues.Get(cellId);
-    value = vtkm::make_Vec(electric, magnetic);
+    vectors.EField = this->ElectricValues.Get(cellId);
+    vectors.BField = this->MagneticValues.Get(cellId);
   }
 
   VTKM_EXEC void GetValue(const vtkm::VecVariable<vtkm::Id, 8>& indices,
                           const vtkm::Id vertices,
                           const vtkm::Vec3f& parametric,
                           const vtkm::UInt8 cellShape,
-                          vtkm::VecVariable<vtkm::Vec3f, 2>& value) const
+                          FlowVectorsType& vectors) const
   {
     VTKM_ASSERT(this->Assoc == Association::Points);
 
-    vtkm::Vec3f electricInterp, magneticInterp;
     vtkm::VecVariable<vtkm::Vec3f, 8> electric;
     vtkm::VecVariable<vtkm::Vec3f, 8> magnetic;
     for (vtkm::IdComponent i = 0; i < vertices; i++)
@@ -170,20 +158,8 @@ public:
       electric.Append(ElectricValues.Get(indices[i]));
       magnetic.Append(MagneticValues.Get(indices[i]));
     }
-    vtkm::exec::CellInterpolate(electric, parametric, cellShape, electricInterp);
-    vtkm::exec::CellInterpolate(magnetic, parametric, cellShape, magneticInterp);
-    value = vtkm::make_Vec(electricInterp, magneticInterp);
-  }
-
-  template <typename Point, typename Locator, typename Helper>
-  VTKM_EXEC bool GetValue(const Point& vtkmNotUsed(point),
-                          const vtkm::FloatDefault& vtkmNotUsed(time),
-                          vtkm::VecVariable<Point, 2>& vtkmNotUsed(out),
-                          const Locator& vtkmNotUsed(locator),
-                          const Helper& vtkmNotUsed(helper)) const
-  {
-    //TODO : Raise Error : Velocity Field should not allow this path
-    return false;
+    vtkm::exec::CellInterpolate(electric, parametric, cellShape, vectors.EField);
+    vtkm::exec::CellInterpolate(magnetic, parametric, cellShape, vectors.BField);
   }
 
 private:
