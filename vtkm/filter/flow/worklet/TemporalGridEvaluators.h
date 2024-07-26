@@ -21,12 +21,13 @@ namespace worklet
 namespace flow
 {
 
-template <typename FieldType>
+template <typename FieldType, typename CellSetType>
 class ExecutionTemporalGridEvaluator
 {
 private:
-  using GridEvaluator = vtkm::worklet::flow::GridEvaluator<FieldType>;
-  using ExecutionGridEvaluator = vtkm::worklet::flow::ExecutionGridEvaluator<FieldType>;
+  using GridEvaluator = vtkm::worklet::flow::GridEvaluator<FieldType, CellSetType>;
+  using ExecutionGridEvaluator =
+    vtkm::worklet::flow::ExecutionGridEvaluator<FieldType, CellSetType>;
 
 public:
   VTKM_CONT
@@ -108,11 +109,11 @@ private:
   vtkm::FloatDefault TimeDiff;
 };
 
-template <typename FieldType>
+template <typename FieldType, typename CellSetType>
 class TemporalGridEvaluator : public vtkm::cont::ExecutionObjectBase
 {
 private:
-  using GridEvaluator = vtkm::worklet::flow::GridEvaluator<FieldType>;
+  using GridEvaluator = vtkm::worklet::flow::GridEvaluator<FieldType, CellSetType>;
 
 public:
   VTKM_CONT TemporalGridEvaluator() = default;
@@ -127,7 +128,6 @@ public:
     , EvaluatorTwo(GridEvaluator(ds2, field2))
     , TimeOne(t1)
     , TimeTwo(t2)
-
   {
   }
 
@@ -158,11 +158,11 @@ public:
   {
   }
 
-  VTKM_CONT ExecutionTemporalGridEvaluator<FieldType> PrepareForExecution(
+  VTKM_CONT ExecutionTemporalGridEvaluator<FieldType, CellSetType> PrepareForExecution(
     vtkm::cont::DeviceAdapterId device,
     vtkm::cont::Token& token) const
   {
-    return ExecutionTemporalGridEvaluator<FieldType>(
+    return ExecutionTemporalGridEvaluator<FieldType, CellSetType>(
       this->EvaluatorOne, this->TimeOne, this->EvaluatorTwo, this->TimeTwo, device, token);
   }
 
@@ -172,6 +172,69 @@ private:
   vtkm::FloatDefault TimeOne;
   vtkm::FloatDefault TimeTwo;
 };
+
+// Given the information for evaluators at 2 time steps, constructs a temporal grid
+// evaluator of the appropriate type and calls the provided functor. This only
+// works if the datasets both have the same types.
+template <typename FieldType, typename Functor>
+void CastAndCallTemporalGridEvaluator(
+  Functor&& functor,
+  const vtkm::cont::CoordinateSystem& coords1,
+  const vtkm::cont::CoordinateSystem& coords2,
+  const vtkm::cont::UnknownCellSet& cells1,
+  const vtkm::cont::UnknownCellSet& cells2,
+  const FieldType& field1,
+  const FieldType& field2,
+  vtkm::FloatDefault time1,
+  vtkm::FloatDefault time2,
+  const vtkm::cont::ArrayHandle<vtkm::UInt8>& ghostCells1 = vtkm::cont::ArrayHandle<vtkm::UInt8>{},
+  const vtkm::cont::ArrayHandle<vtkm::UInt8>& ghostCells2 = vtkm::cont::ArrayHandle<vtkm::UInt8>{})
+{
+  auto constructTemporal = [&](auto steadyGridEval1) {
+    using SteadyGridEval = decltype(steadyGridEval1);
+    using UnsteadyGridEval = TemporalGridEvaluator<FieldType, typename SteadyGridEval::CellSetType>;
+    SteadyGridEval steadyGridEval2(coords2, cells2, field2, ghostCells2);
+    UnsteadyGridEval unsteadyGridEval(steadyGridEval1, time1, steadyGridEval2, time2);
+    functor(unsteadyGridEval);
+  };
+  vtkm::worklet::flow::CastAndCallGridEvaluator(
+    constructTemporal, coords1, cells1, field1, ghostCells1);
+}
+
+template <typename FieldType, typename Functor>
+void CastAndCallTemporalGridEvaluator(Functor&& functor,
+                                      const vtkm::cont::DataSet& dataset1,
+                                      const vtkm::cont::DataSet& dataset2,
+                                      const FieldType& field1,
+                                      const FieldType& field2,
+                                      vtkm::FloatDefault time1,
+                                      vtkm::FloatDefault time2,
+                                      vtkm::IdComponent activeCoordinates1 = 0,
+                                      vtkm::IdComponent activeCoordinates2 = 0)
+{
+  vtkm::cont::ArrayHandle<vtkm::UInt8> ghostArray1;
+  if (dataset1.HasGhostCellField())
+  {
+    vtkm::cont::ArrayCopyShallowIfPossible(dataset1.GetGhostCellField().GetData(), ghostArray1);
+  }
+  vtkm::cont::ArrayHandle<vtkm::UInt8> ghostArray2;
+  if (dataset2.HasGhostCellField())
+  {
+    vtkm::cont::ArrayCopyShallowIfPossible(dataset2.GetGhostCellField().GetData(), ghostArray2);
+  }
+
+  CastAndCallTemporalGridEvaluator(std::forward<Functor>(functor),
+                                   dataset1.GetCoordinateSystem(activeCoordinates1),
+                                   dataset2.GetCoordinateSystem(activeCoordinates2),
+                                   dataset1.GetCellSet(),
+                                   dataset2.GetCellSet(),
+                                   field1,
+                                   field2,
+                                   time1,
+                                   time2,
+                                   ghostArray1,
+                                   ghostArray2);
+}
 
 }
 }

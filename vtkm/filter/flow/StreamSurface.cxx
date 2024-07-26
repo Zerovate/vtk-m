@@ -49,23 +49,14 @@ VTKM_CONT vtkm::cont::DataSet StreamSurface::DoExecute(const vtkm::cont::DataSet
   if (!this->Seeds.IsBaseComponentType<vtkm::Particle>())
     throw vtkm::cont::ErrorFilterExecution("Unsupported seed type in StreamSurface filter.");
 
-  const vtkm::cont::UnknownCellSet& cells = input.GetCellSet();
-  const vtkm::cont::CoordinateSystem& coords =
-    input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex());
-
   using FieldHandle = vtkm::cont::ArrayHandle<vtkm::Vec3f>;
   using FieldType = vtkm::worklet::flow::VelocityField<FieldHandle>;
-  using GridEvalType = vtkm::worklet::flow::GridEvaluator<FieldType>;
-  using RK4Type = vtkm::worklet::flow::RK4Integrator<GridEvalType>;
-  using Stepper = vtkm::worklet::flow::Stepper<RK4Type, GridEvalType>;
 
   //compute streamlines
   const auto& field = input.GetField(this->GetActiveFieldName());
   FieldHandle arr;
   vtkm::cont::ArrayCopyShallowIfPossible(field.GetData(), arr);
   FieldType velocities(arr, field.GetAssociation());
-  GridEvalType eval(coords, cells, velocities);
-  Stepper rk4(eval, this->StepSize);
 
   using ParticleArray = vtkm::cont::ArrayHandle<vtkm::Particle>;
   vtkm::cont::ArrayHandle<vtkm::Particle> seedArray;
@@ -75,7 +66,16 @@ VTKM_CONT vtkm::cont::DataSet StreamSurface::DoExecute(const vtkm::cont::DataSet
   vtkm::worklet::flow::NormalTermination termination(this->NumberOfSteps);
   vtkm::worklet::flow::StreamlineAnalysis<vtkm::Particle> analysis(this->NumberOfSteps);
 
-  worklet.Run(rk4, seedArray, termination, analysis);
+  auto invokeAdvection = [&](auto eval) {
+    using GridEvalType = decltype(eval);
+    using RK4Type = vtkm::worklet::flow::RK4Integrator<GridEvalType>;
+    using Stepper = vtkm::worklet::flow::Stepper<RK4Type, GridEvalType>;
+
+    Stepper rk4(eval, this->StepSize);
+    worklet.Run(rk4, seedArray, termination, analysis);
+  };
+  vtkm::worklet::flow::CastAndCallGridEvaluator(
+    invokeAdvection, input, velocities, this->GetActiveCoordinateSystemIndex());
 
   //compute surface from streamlines
   vtkm::worklet::flow::StreamSurface streamSurface;

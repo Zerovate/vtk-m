@@ -25,26 +25,23 @@ namespace internal
 namespace detail
 {
 template <typename ParticleType,
-          typename FieldType,
+          typename SteadyStateGridEvalType,
           typename TerminationType,
           typename AnalysisType>
 class AdvectHelperSteadyState
 {
 public:
   using WorkletType = vtkm::worklet::flow::ParticleAdvection;
-  using SteadyStateGridEvalType = vtkm::worklet::flow::GridEvaluator<FieldType>;
 
   template <template <typename> class SolverType>
   static void DoAdvect(vtkm::cont::ArrayHandle<ParticleType>& seedArray,
-                       const FieldType& field,
-                       const vtkm::cont::DataSet& dataset,
+                       const SteadyStateGridEvalType& eval,
                        const TerminationType& termination,
                        vtkm::FloatDefault stepSize,
                        AnalysisType& analysis)
   {
     using StepperType =
       vtkm::worklet::flow::Stepper<SolverType<SteadyStateGridEvalType>, SteadyStateGridEvalType>;
-    SteadyStateGridEvalType eval(dataset, field);
     StepperType stepper(eval, stepSize);
 
     WorkletType worklet;
@@ -52,8 +49,7 @@ public:
   }
 
   static void Advect(vtkm::cont::ArrayHandle<ParticleType>& seedArray,
-                     const FieldType& field,
-                     const vtkm::cont::DataSet& dataset,
+                     const SteadyStateGridEvalType& eval,
                      const TerminationType& termination,
                      const IntegrationSolverType& solverType,
                      vtkm::FloatDefault stepSize,
@@ -62,12 +58,12 @@ public:
     if (solverType == IntegrationSolverType::RK4_TYPE)
     {
       DoAdvect<vtkm::worklet::flow::RK4Integrator>(
-        seedArray, field, dataset, termination, stepSize, analysis);
+        seedArray, eval, termination, stepSize, analysis);
     }
     else if (solverType == IntegrationSolverType::EULER_TYPE)
     {
       DoAdvect<vtkm::worklet::flow::EulerIntegrator>(
-        seedArray, field, dataset, termination, stepSize, analysis);
+        seedArray, eval, termination, stepSize, analysis);
     }
     else
       throw vtkm::cont::ErrorFilterExecution("Unsupported Integrator type");
@@ -113,20 +109,20 @@ public:
     auto copyFlag = (this->CopySeedArray ? vtkm::CopyFlag::On : vtkm::CopyFlag::Off);
     auto seedArray = vtkm::cont::make_ArrayHandle(block.Particles, copyFlag);
 
-    using AdvectionHelper =
-      detail::AdvectHelperSteadyState<ParticleType, FieldType, TerminationType, AnalysisType>;
-    AnalysisType analysis;
-    analysis.UseAsTemplate(this->Analysis);
+    auto doAdvect = [&](auto steadyGridEval) {
+      using AdvectionHelper = detail::AdvectHelperSteadyState<ParticleType,
+                                                              decltype(steadyGridEval),
+                                                              TerminationType,
+                                                              AnalysisType>;
+      AnalysisType analysis;
+      analysis.UseAsTemplate(this->Analysis);
 
-    AdvectionHelper::Advect(seedArray,
-                            this->Field,
-                            this->Dataset,
-                            this->Termination,
-                            this->SolverType,
-                            stepSize,
-                            analysis);
+      AdvectionHelper::Advect(
+        seedArray, steadyGridEval, this->Termination, this->SolverType, stepSize, analysis);
 
-    this->UpdateResult(analysis, block);
+      this->UpdateResult(analysis, block);
+    };
+    vtkm::worklet::flow::CastAndCallGridEvaluator(doAdvect, this->Dataset, this->Field);
   }
 
   VTKM_CONT void UpdateResult(AnalysisType& analysis,

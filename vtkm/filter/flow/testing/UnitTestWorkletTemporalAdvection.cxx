@@ -147,8 +147,6 @@ void TestTemporalEvaluators()
   using PointType = vtkm::Vec<ScalarType, 3>;
   using FieldHandle = vtkm::cont::ArrayHandle<PointType>;
   using FieldType = vtkm::worklet::flow::VelocityField<FieldHandle>;
-  using EvalType = vtkm::worklet::flow::GridEvaluator<FieldType>;
-  using TemporalEvalType = vtkm::worklet::flow::TemporalGridEvaluator<FieldType>;
 
   // Create Datasets
   vtkm::Id3 dims(5, 5, 5);
@@ -165,10 +163,6 @@ void TestTemporalEvaluators()
   FieldType velocityX(alongX);
   FieldType velocityZ(alongZ);
 
-  // Send them to test
-  EvalType evalOne(sliceOne.GetCoordinateSystem(), sliceOne.GetCellSet(), velocityX);
-  EvalType evalTwo(sliceTwo.GetCoordinateSystem(), sliceTwo.GetCellSet(), velocityZ);
-
   // Test data : populate with meaningful values
   vtkm::Id numValues = 10;
   vtkm::cont::ArrayHandle<vtkm::Particle> pointIns;
@@ -177,8 +171,11 @@ void TestTemporalEvaluators()
   GenerateValidity(numValues, validity, X, Z);
 
   vtkm::FloatDefault timeOne(0.0f), timeTwo(1.0f);
-  TemporalEvalType gridEval(evalOne, timeOne, evalTwo, timeTwo);
-  ValidateEvaluator(gridEval, pointIns, validity, "grid evaluator");
+  auto doValidate = [&](auto gridEval) {
+    ValidateEvaluator(gridEval, pointIns, validity, "grid evaluator");
+  };
+  vtkm::worklet::flow::CastAndCallTemporalGridEvaluator(
+    doValidate, sliceOne, sliceTwo, velocityX, velocityZ, timeOne, timeTwo);
 }
 
 void TestTemporalAdvection()

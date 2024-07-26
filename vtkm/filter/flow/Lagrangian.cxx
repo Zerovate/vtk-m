@@ -216,16 +216,10 @@ VTKM_CONT vtkm::cont::DataSet Lagrangian::DoExecute(const vtkm::cont::DataSet& i
   vtkm::cont::ArrayCopy(this->BasisParticles, basisParticleArray);
 
   this->Cycle += 1;
-  const vtkm::cont::UnknownCellSet& cells = input.GetCellSet();
-  const vtkm::cont::CoordinateSystem& coords =
-    input.GetCoordinateSystem(this->GetActiveCoordinateSystemIndex());
   vtkm::Bounds bounds = input.GetCoordinateSystem().GetBounds();
 
   using FieldHandle = vtkm::cont::ArrayHandle<vtkm::Vec3f>;
   using FieldType = vtkm::worklet::flow::VelocityField<FieldHandle>;
-  using GridEvalType = vtkm::worklet::flow::GridEvaluator<FieldType>;
-  using RK4Type = vtkm::worklet::flow::RK4Integrator<GridEvalType>;
-  using Stepper = vtkm::worklet::flow::Stepper<RK4Type, GridEvalType>;
 
   vtkm::worklet::flow::ParticleAdvection particleadvection;
 
@@ -233,11 +227,18 @@ VTKM_CONT vtkm::cont::DataSet Lagrangian::DoExecute(const vtkm::cont::DataSet& i
   FieldType velocities(field.GetData().AsArrayHandle<vtkm::cont::ArrayHandle<vtkm::Vec3f>>(),
                        field.GetAssociation());
 
-  GridEvalType gridEval(coords, cells, velocities);
-  Stepper rk4(gridEval, static_cast<vtkm::Float32>(this->StepSize));
   vtkm::worklet::flow::NormalTermination termination(1);
   vtkm::worklet::flow::NoAnalysis<vtkm::Particle> analysis;
-  particleadvection.Run(rk4, basisParticleArray, termination, analysis); // Taking a single step
+  auto invokeAdvection = [&](auto gridEval) {
+    using GridEvalType = decltype(gridEval);
+    using RK4Type = vtkm::worklet::flow::RK4Integrator<GridEvalType>;
+    using Stepper = vtkm::worklet::flow::Stepper<RK4Type, GridEvalType>;
+
+    Stepper rk4(gridEval, static_cast<vtkm::Float32>(this->StepSize));
+    particleadvection.Run(rk4, basisParticleArray, termination, analysis); // Taking a single step
+  };
+  vtkm::worklet::flow::CastAndCallGridEvaluator(
+    invokeAdvection, input, velocities, this->GetActiveCoordinateSystemIndex());
   auto particles = analysis.Particles;
 
   vtkm::cont::DataSet outputData;

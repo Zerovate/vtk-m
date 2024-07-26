@@ -55,10 +55,10 @@ public:
     velocity = VelocityValues.Get(cellId);
   }
 
-  template <typename IndexVecType>
+  template <typename IndexVecType, typename CellShape>
   VTKM_EXEC void GetValue(const IndexVecType& indices,
                           const vtkm::Vec3f& parametric,
-                          const vtkm::UInt8 cellShape,
+                          CellShape cellShape,
                           FlowVectorsType& velocity) const
   {
     VTKM_ASSERT(this->Assoc == Association::Points);
@@ -140,10 +140,10 @@ public:
     vectors.BField = this->MagneticValues.Get(cellId);
   }
 
-  template <typename IndexVecType>
+  template <typename IndexVecType, typename CellShape>
   VTKM_EXEC void GetValue(const IndexVecType& indices,
                           const vtkm::Vec3f& parametric,
-                          const vtkm::UInt8 cellShape,
+                          CellShape cellShape,
                           FlowVectorsType& vectors) const
   {
     VTKM_ASSERT(this->Assoc == Association::Points);

@@ -88,12 +88,6 @@ VTKM_CONT vtkm::cont::DataSet LagrangianStructures::DoExecute(const vtkm::cont::
   using Structured2DType = vtkm::cont::CellSetStructured<2>;
   using Structured3DType = vtkm::cont::CellSetStructured<3>;
 
-  using FieldHandle = vtkm::cont::ArrayHandle<vtkm::Vec3f>;
-  using FieldType = vtkm::worklet::flow::VelocityField<FieldHandle>;
-  using GridEvaluator = vtkm::worklet::flow::GridEvaluator<FieldType>;
-  using IntegratorType = vtkm::worklet::flow::RK4Integrator<GridEvaluator>;
-  using Stepper = vtkm::worklet::flow::Stepper<IntegratorType, GridEvaluator>;
-
   vtkm::FloatDefault stepSize = this->GetStepSize();
   vtkm::Id numberOfSteps = this->GetNumberOfSteps();
 
@@ -140,21 +134,29 @@ VTKM_CONT vtkm::cont::DataSet LagrangianStructures::DoExecute(const vtkm::cont::
   }
   else
   {
-    const auto field = input.GetField(this->GetActiveFieldName());
+    using FieldHandle = vtkm::cont::ArrayHandle<vtkm::Vec3f>;
+    using FieldType = vtkm::worklet::flow::VelocityField<FieldHandle>;
 
+    const auto field = input.GetField(this->GetActiveFieldName());
     FieldType velocities(field.GetData().AsArrayHandle<vtkm::cont::ArrayHandle<vtkm::Vec3f>>(),
                          field.GetAssociation());
-    GridEvaluator evaluator(input.GetCoordinateSystem(), input.GetCellSet(), velocities);
-    Stepper integrator(evaluator, stepSize);
-    vtkm::worklet::flow::ParticleAdvection particles;
-    vtkm::worklet::flow::NormalTermination termination(numberOfSteps);
-    vtkm::worklet::flow::NoAnalysis<vtkm::Particle> analysis;
-    vtkm::cont::ArrayHandle<vtkm::Particle> advectionPoints;
 
-    vtkm::cont::Invoker invoke;
-    invoke(detail::MakeParticles{}, lcsInputPoints, advectionPoints);
-    particles.Run(integrator, advectionPoints, termination, analysis);
-    invoke(detail::ExtractParticlePosition{}, analysis.Particles, lcsOutputPoints);
+    auto invokeAdvection = [&](auto evaluator) {
+      using GridEvaluator = decltype(evaluator);
+      using IntegratorType = vtkm::worklet::flow::RK4Integrator<GridEvaluator>;
+      using Stepper = vtkm::worklet::flow::Stepper<IntegratorType, GridEvaluator>;
+
+      Stepper integrator(evaluator, stepSize);
+      vtkm::worklet::flow::ParticleAdvection particles;
+      vtkm::worklet::flow::NormalTermination termination(numberOfSteps);
+      vtkm::worklet::flow::NoAnalysis<vtkm::Particle> analysis;
+      vtkm::cont::ArrayHandle<vtkm::Particle> advectionPoints;
+
+      this->Invoke(detail::MakeParticles{}, lcsInputPoints, advectionPoints);
+      particles.Run(integrator, advectionPoints, termination, analysis);
+      this->Invoke(detail::ExtractParticlePosition{}, analysis.Particles, lcsOutputPoints);
+    };
+    vtkm::worklet::flow::CastAndCallGridEvaluator(invokeAdvection, input, velocities);
   }
   // FTLE output field
   vtkm::cont::ArrayHandle<vtkm::FloatDefault> outputField;
