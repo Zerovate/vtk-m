@@ -128,7 +128,7 @@ private:
       if (this->Field.GetAssociation() == vtkm::cont::Field::Association::Points)
       {
         this->InterpolationHelper.GetCellInfo(cellId, cellShape, nVerts, ptIndices);
-        this->Field.GetValue(ptIndices, nVerts, parametric, cellShape, out);
+        this->Field.GetValue(ptIndices, parametric, cellShape, out);
       }
       else if (this->Field.GetAssociation() == vtkm::cont::Field::Association::Cells)
       {

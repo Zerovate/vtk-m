@@ -55,18 +55,15 @@ public:
     velocity = VelocityValues.Get(cellId);
   }
 
-  VTKM_EXEC void GetValue(const vtkm::VecVariable<vtkm::Id, 8>& indices,
-                          const vtkm::Id vertices,
+  template <typename IndexVecType>
+  VTKM_EXEC void GetValue(const IndexVecType& indices,
                           const vtkm::Vec3f& parametric,
                           const vtkm::UInt8 cellShape,
                           FlowVectorsType& velocity) const
   {
     VTKM_ASSERT(this->Assoc == Association::Points);
 
-    vtkm::VecVariable<vtkm::Vec3f, 8> velocities;
-    for (vtkm::IdComponent i = 0; i < vertices; i++)
-      velocities.Append(VelocityValues.Get(indices[i]));
-    vtkm::exec::CellInterpolate(velocities, parametric, cellShape, velocity);
+    vtkm::exec::CellInterpolate(indices, this->VelocityValues, parametric, cellShape, velocity);
   }
 
 private:
@@ -143,23 +140,18 @@ public:
     vectors.BField = this->MagneticValues.Get(cellId);
   }
 
-  VTKM_EXEC void GetValue(const vtkm::VecVariable<vtkm::Id, 8>& indices,
-                          const vtkm::Id vertices,
+  template <typename IndexVecType>
+  VTKM_EXEC void GetValue(const IndexVecType& indices,
                           const vtkm::Vec3f& parametric,
                           const vtkm::UInt8 cellShape,
                           FlowVectorsType& vectors) const
   {
     VTKM_ASSERT(this->Assoc == Association::Points);
 
-    vtkm::VecVariable<vtkm::Vec3f, 8> electric;
-    vtkm::VecVariable<vtkm::Vec3f, 8> magnetic;
-    for (vtkm::IdComponent i = 0; i < vertices; i++)
-    {
-      electric.Append(ElectricValues.Get(indices[i]));
-      magnetic.Append(MagneticValues.Get(indices[i]));
-    }
-    vtkm::exec::CellInterpolate(electric, parametric, cellShape, vectors.EField);
-    vtkm::exec::CellInterpolate(magnetic, parametric, cellShape, vectors.BField);
+    vtkm::exec::CellInterpolate(
+      indices, this->ElectricValues, parametric, cellShape, vectors.EField);
+    vtkm::exec::CellInterpolate(
+      indices, this->MagneticValues, parametric, cellShape, vectors.BField);
   }
 
 private:
