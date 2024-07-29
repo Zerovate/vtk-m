@@ -15,10 +15,7 @@
 #include <vtkm/StaticAssert.h>
 #include <vtkm/cont/ArrayCopy.h>
 #include <vtkm/cont/ArrayHandle.h>
-#include <vtkm/cont/CellLocatorGeneral.h>
-#include <vtkm/cont/CellLocatorRectilinearGrid.h>
-#include <vtkm/cont/CellLocatorTwoLevel.h>
-#include <vtkm/cont/CellLocatorUniformGrid.h>
+#include <vtkm/cont/CellLocatorChooser.h>
 #include <vtkm/cont/CellSetStructured.h>
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/DefaultTypes.h>
@@ -33,53 +30,29 @@ namespace worklet
 namespace flow
 {
 
-template <typename FieldType, typename CellSetType>
+template <typename FieldType, typename CellSetType, typename CellLocatorType>
 class ExecutionGridEvaluator
 {
-  using GhostCellArrayType = vtkm::cont::ArrayHandle<vtkm::UInt8>;
-  using ExecFieldType = typename FieldType::ExecutionType;
-  using ExecCellsType = decltype(
-    std::declval<CellSetType>().PrepareForInput(std::declval<vtkm::cont::DeviceAdapterId>(),
-                                                vtkm::TopologyElementTagCell{},
-                                                vtkm::TopologyElementTagPoint{},
-                                                std::declval<vtkm::cont::Token&>()));
+  using GhostCellType = vtkm::cont::ArrayHandle<vtkm::UInt8>::ReadPortalType;
 
 public:
   VTKM_CONT
   ExecutionGridEvaluator() = default;
 
   VTKM_CONT
-  ExecutionGridEvaluator(const vtkm::cont::CellLocatorGeneral& locator,
+  ExecutionGridEvaluator(const CellLocatorType& locator,
                          const CellSetType cells,
                          const vtkm::Bounds& bounds,
                          const FieldType& field,
-                         const GhostCellArrayType& ghostCells,
-                         vtkm::cont::DeviceAdapterId device,
-                         vtkm::cont::Token& token)
+                         const GhostCellType& ghostCells,
+                         bool haveGhostCells)
     : Bounds(bounds)
-    , Field(field.PrepareForExecution(device, token))
-    , GhostCells(ghostCells.PrepareForInput(device, token))
-    , HaveGhostCells(ghostCells.GetNumberOfValues() > 0)
-    , Cells(cells.PrepareForInput(device,
-                                  vtkm::TopologyElementTagCell{},
-                                  vtkm::TopologyElementTagPoint{},
-                                  token))
-    , Locator(locator.PrepareForExecution(device, token))
+    , Field(field)
+    , GhostCells(ghostCells)
+    , HaveGhostCells(haveGhostCells)
+    , Cells(cells)
+    , Locator(locator)
   {
-  }
-
-  template <typename Point>
-  VTKM_EXEC bool IsWithinSpatialBoundary(const Point& point) const
-  {
-    vtkm::Id cellId = -1;
-    Point parametric;
-
-    this->Locator.FindCell(point, cellId, parametric);
-
-    if (cellId == -1)
-      return false;
-    else
-      return !this->InGhostCell(cellId);
   }
 
   VTKM_EXEC
@@ -184,7 +157,7 @@ public:
                                          const vtkm::FloatDefault& time,
                                          FlowVectors& out) const
   {
-    return this->Evaluate(point, time, out, typename ExecFieldType::DelegateToField{});
+    return this->Evaluate(point, time, out, typename FieldType::DelegateToField{});
   }
 
 private:
@@ -196,25 +169,22 @@ private:
     return false;
   }
 
-  using GhostCellPortal = typename vtkm::cont::ArrayHandle<vtkm::UInt8>::ReadPortalType;
-
   vtkm::Bounds Bounds;
-  ExecFieldType Field;
-  GhostCellPortal GhostCells;
+  FieldType Field;
+  GhostCellType GhostCells;
   bool HaveGhostCells;
-  ExecCellsType Cells;
-  typename vtkm::cont::CellLocatorGeneral::ExecObjType Locator;
+  CellSetType Cells;
+  CellLocatorType Locator;
 };
 
-template <typename FieldType_, typename CellSetType_>
+template <typename FieldType_, typename CellSetType_, typename CellLocatorType_>
 class GridEvaluator : public vtkm::cont::ExecutionObjectBase
 {
 public:
   using FieldType = FieldType_;
   using CellSetType = CellSetType_;
+  using CellLocatorType = CellLocatorType_;
   using GhostCellArrayType = vtkm::cont::ArrayHandle<vtkm::UInt8>;
-
-  using ExecObjType = ExecutionGridEvaluator<FieldType, CellSetType>;
 
   VTKM_CONT
   GridEvaluator() = default;
@@ -249,11 +219,22 @@ public:
     this->InitializeLocator(coordinates, cellset);
   }
 
-  VTKM_CONT ExecObjType PrepareForExecution(vtkm::cont::DeviceAdapterId device,
-                                            vtkm::cont::Token& token) const
+  VTKM_CONT auto PrepareForExecution(vtkm::cont::DeviceAdapterId device,
+                                     vtkm::cont::Token& token) const
   {
-    return ExecObjType(
-      this->Locator, this->Cells, this->Bounds, this->Field, this->GhostCellArray, device, token);
+    auto locatorExec = this->Locator.PrepareForExecution(device, token);
+    auto cellExec = this->Cells.PrepareForInput(
+      device, vtkm::TopologyElementTagCell{}, vtkm::TopologyElementTagPoint{}, token);
+    auto fieldExec = this->Field.PrepareForExecution(device, token);
+    auto ghostExec = this->GhostCellArray.PrepareForInput(device, token);
+    using ExecObjType =
+      ExecutionGridEvaluator<decltype(fieldExec), decltype(cellExec), decltype(locatorExec)>;
+    return ExecObjType(locatorExec,
+                       cellExec,
+                       this->Bounds,
+                       fieldExec,
+                       ghostExec,
+                       this->GhostCellArray.GetNumberOfValues() > 0);
   }
 
 private:
@@ -270,7 +251,7 @@ private:
   FieldType Field;
   GhostCellArrayType GhostCellArray;
   CellSetType Cells;
-  vtkm::cont::CellLocatorGeneral Locator;
+  CellLocatorType Locator;
 };
 
 // Given coordinates, cell set, and flow field, constructs a grid evaluator of the
@@ -283,13 +264,19 @@ void CastAndCallGridEvaluator(Functor&& functor,
                               const vtkm::cont::ArrayHandle<vtkm::UInt8>& ghostCellArray =
                                 vtkm::cont::ArrayHandle<vtkm::UInt8>{})
 {
-  auto tryType = [&](auto cellSet) {
+  auto doLocator = [&](auto locator, auto cellSet) {
     using CellSetType = decltype(cellSet);
-    vtkm::worklet::flow::GridEvaluator<FieldType, CellSetType> gridEvaluator(
+    using CellLocatorType = decltype(locator);
+    vtkm::worklet::flow::GridEvaluator<FieldType, CellSetType, CellLocatorType> gridEvaluator(
       coords, cellSet, field, ghostCellArray);
     functor(gridEvaluator);
   };
-  cells.CastAndCallForTypes<VTKM_DEFAULT_CELL_SET_LIST>(tryType);
+
+  auto doType = [&](auto cellSet) {
+    vtkm::cont::CastAndCallCellLocatorChooser(cellSet, coords, doLocator, cellSet);
+  };
+
+  cells.CastAndCallForTypes<VTKM_DEFAULT_CELL_SET_LIST>(doType);
 }
 
 template <typename FieldType, typename Functor>
