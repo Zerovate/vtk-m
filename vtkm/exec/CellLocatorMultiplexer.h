@@ -44,9 +44,15 @@ struct FindCellFunctor
     using ConcreteLastCell = typename std::decay_t<Locator>::LastCell;
     if (!lastCell.template IsType<ConcreteLastCell>())
     {
-      lastCell = ConcreteLastCell{};
+      ConcreteLastCell concreteLastCell;
+      vtkm::ErrorCode status = locator.FindCell(point, cellId, parametric, concreteLastCell);
+      lastCell = concreteLastCell;
+      return status;
     }
-    return locator.FindCell(point, cellId, parametric, lastCell.template Get<ConcreteLastCell>());
+    else
+    {
+      return locator.FindCell(point, cellId, parametric, lastCell.template Get<ConcreteLastCell>());
+    }
   }
 };
 
