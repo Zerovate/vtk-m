@@ -8,18 +8,12 @@
 ##  PURPOSE.  See the above copyright notice for more information.
 ##============================================================================
 
-set(libraries
-  vtkm_filter_uncertainty
-  vtkm_filter_core
-  vtkm_filter_vector_analysis
-  )
-
 set(unit_tests
   UnitTestContourUncertainUniform.cxx
+  UnitTestStructuredReduceWithDistributionModel.cxx
   )
 
 vtkm_unit_tests(
   SOURCES ${unit_tests}
-  LIBRARIES ${libraries}
   USE_VTKM_JOB_POOL
   )

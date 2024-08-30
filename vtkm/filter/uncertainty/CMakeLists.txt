@@ -11,10 +11,12 @@
 set(uncertainty_headers
   ContourUncertainUniform.h
   ContourUncertainUniformMonteCarlo.h
+  StructuredReduceWithDistributionModel.h
   )
 set(uncertainty_sources_device
   ContourUncertainUniform.cxx
   ContourUncertainUniformMonteCarlo.cxx
+  StructuredReduceWithDistributionModel.cxx
   )
 
 vtkm_library(
