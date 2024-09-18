@@ -127,7 +127,8 @@ vtkm::cont::CellSetSingleType<> execute(
              metaDataMin,
              metaDataMax,
              metaDataNumTris,
-             edgeCases);
+             edgeCases,
+             data::FlyingEdgesTablesExecObject{});
     }
 
     //----------------------------------------------------------------------------

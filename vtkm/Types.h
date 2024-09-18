@@ -587,7 +587,6 @@ public:
   const ComponentType* GetPointer() const { return &this->Component(0); }
 };
 
-
 /// Base implementation of all Vec classes.
 ///
 template <typename T, vtkm::IdComponent Size, typename DerivedClass>
@@ -601,7 +600,6 @@ public:
 
   // The enable_if predicate will disable this constructor for Size=1 so that
   // the variadic constructor constexpr VecBase(T, Ts&&...) is called instead.
-  VTKM_SUPPRESS_EXEC_WARNINGS
   template <vtkm::IdComponent Size2 = Size, typename std::enable_if<Size2 != 1, int>::type = 0>
   VTKM_EXEC_CONT explicit VecBase(const ComponentType& value)
   {
@@ -611,37 +609,74 @@ public:
     }
   }
 
-  VTKM_SUPPRESS_EXEC_WARNINGS
+private:
+  VTKM_EXEC_CONT constexpr ComponentType&& ConvertOrForward(ComponentType&& x)
+  {
+    return std::move(x);
+  }
+  VTKM_EXEC_CONT constexpr const ComponentType& ConvertOrForward(const ComponentType& x)
+  {
+    return x;
+  }
+  template <typename OtherT>
+  VTKM_EXEC_CONT constexpr auto ConvertOrForward(const OtherT& x)
+  {
+    return static_cast<ComponentType>(x);
+  }
+
+public:
+  // Note that this constructor assumes that all the arguments are of type `ComponentType`.
+  // If they are not, this might suppress a type-conversion warning.
+  // It could also raise an error if the type is incompatible with `ComponentType`.
   template <typename... Ts>
   VTKM_EXEC_CONT constexpr VecBase(ComponentType value0, Ts&&... values)
-    : Components{ value0, values... }
+    : Components{ value0, this->ConvertOrForward(std::forward<Ts>(values))... }
   {
     VTKM_STATIC_ASSERT(sizeof...(Ts) + 1 == Size);
   }
 
-  VTKM_SUPPRESS_EXEC_WARNINGS
-  VTKM_EXEC_CONT
-  VecBase(std::initializer_list<ComponentType> values)
+  // Ideally, we want to initialize `Vec`s with brace initialization (e.g.,
+  // `Vec<...> v = { x, y, z, ... };`) with the constructor above. This allows
+  // the constructor to be `constexpr` without any iterators for setting the values.
+  // However, the above constructor fails for nested `Vec` types (e.g.,
+  // `Vec<Vec<...>, N> v = { { x, y }, { z, w }, ... };`) because the type for
+  // the internal brace initialization cannot be determined. In this case, we fall
+  // back to using `std::initializer_list`, which cannot be made constexpr.
+  //
+  // Note that we don't create a constructor with a basic
+  // 'std::initializer_list<ComponentType>` because that would take precidence over
+  // the constructor that we usually want.
+  template <typename SubT>
+  VTKM_EXEC_CONT VecBase(const std::initializer_list<std::initializer_list<SubT>>& values)
   {
+    VTKM_ASSERT((values.size() == NUM_COMPONENTS) &&
+                "Vec object initialized wrong number of components.");
     ComponentType* dest = this->Components;
-    auto src = values.begin();
-    if (values.size() == 1)
+    for (auto&& src : values)
     {
-      for (vtkm::IdComponent i = 0; i < Size; ++i)
+      VTKM_ASSERT((src.size() == ComponentType::NUM_COMPONENTS) &&
+                  "Vec component objects initialized wrong number of components.");
+      vtkm::IdComponent cIndex = 0;
+      for (auto&& srcComponent : src)
       {
-        this->Components[i] = *src;
-        ++dest;
+        (*dest)[cIndex] = static_cast<typename ComponentType::ComponentType>(srcComponent);
+        ++cIndex;
       }
+      ++dest;
     }
-    else
+  }
+  // Make sure triply nested or more also works.
+  template <typename SubT>
+  VTKM_EXEC_CONT VecBase(
+    const std::initializer_list<std::initializer_list<std::initializer_list<SubT>>>& values)
+  {
+    VTKM_ASSERT((values.size() == NUM_COMPONENTS) &&
+                "Vec object initialized wrong number of components.");
+    ComponentType* dest = this->Components;
+    for (auto&& src : values)
     {
-      VTKM_ASSERT((values.size() == NUM_COMPONENTS) &&
-                  "Vec object initialized wrong number of components.");
-      for (; src != values.end(); ++src)
-      {
-        *dest = *src;
-        ++dest;
-      }
+      *dest = ComponentType{ src };
+      ++dest;
     }
   }
 
@@ -682,7 +717,7 @@ public:
     return this->Components[idx];
   }
 
-  inline VTKM_EXEC_CONT ComponentType& operator[](vtkm::IdComponent idx)
+  inline VTKM_EXEC_CONT constexpr ComponentType& operator[](vtkm::IdComponent idx)
   {
     VTKM_ASSERT(idx >= 0);
     VTKM_ASSERT(idx < NUM_COMPONENTS);

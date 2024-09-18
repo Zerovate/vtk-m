@@ -700,7 +700,7 @@ void TypeTest(const vtkm::Vec<Scalar, 6>&)
   VTKM_TEST_ASSERT(test_equal(braceVec, madeVec), "constexpr Vec6 failed equality test.");
 
   // Check fill constructor.
-  Vector fillVec1 = { Scalar(8) };
+  Vector fillVec1{ Scalar(8) };
   Vector fillVec2 = Vector(Scalar(8), Scalar(8), Scalar(8), Scalar(8), Scalar(8), Scalar(8));
   VTKM_TEST_ASSERT(test_equal(fillVec1, fillVec2), "fill ctor Vec6 failed equality test.");
 }

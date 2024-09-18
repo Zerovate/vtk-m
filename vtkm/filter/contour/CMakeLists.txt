@@ -28,6 +28,7 @@ set(contour_sources_device
   MIRFilter.cxx
   Slice.cxx
   SliceMultiple.cxx
+  worklet/contour/FlyingEdgesTables.cxx
 )
 
 set(contour_sources

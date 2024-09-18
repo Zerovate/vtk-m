@@ -16,6 +16,8 @@
 #include <vtkm/filter/contour/worklet/contour/FlyingEdgesHelpers.h>
 #include <vtkm/filter/contour/worklet/contour/FlyingEdgesTables.h>
 
+#include <vtkm/worklet/WorkletMapTopology.h>
+
 namespace vtkm
 {
 namespace worklet
@@ -38,8 +40,9 @@ struct ComputePass2 : public vtkm::worklet::WorkletVisitCellsWithPoints
                                 FieldInPoint axis_mins,
                                 FieldInPoint axis_maxs,
                                 FieldOutCell cell_tri_count,
-                                WholeArrayIn edgeData);
-  using ExecutionSignature = void(ThreadIndices, _2, _3, _4, _5, _6, Device);
+                                WholeArrayIn edgeData,
+                                ExecObject tables);
+  using ExecutionSignature = void(ThreadIndices, _2, _3, _4, _5, _6, _7, Device);
   using InputDomain = _1;
 
   template <typename ThreadIndices,
@@ -53,6 +56,7 @@ struct ComputePass2 : public vtkm::worklet::WorkletVisitCellsWithPoints
                             const FieldInPointId& axis_maxs,
                             vtkm::Int32& cell_tri_count,
                             const WholeEdgeField& edges,
+                            const data::FlyingEdgesTables& tables,
                             Device) const
   {
     using AxisToSum = typename select_AxisToSum<Device>::type;
@@ -95,7 +99,7 @@ struct ComputePass2 : public vtkm::worklet::WorkletVisitCellsWithPoints
     for (vtkm::Id i = left; i < right; ++i) // run along the trimmed voxels
     {
       vtkm::UInt8 edgeCase = getEdgeCase(edges, startPos, (axis_inc * i));
-      vtkm::UInt8 numTris = data::GetNumberOfPrimitives(edgeCase);
+      vtkm::UInt8 numTris = tables.GetNumberOfPrimitives(edgeCase);
       if (numTris > 0)
       {
         cell_tri_count += numTris;
@@ -103,7 +107,7 @@ struct ComputePass2 : public vtkm::worklet::WorkletVisitCellsWithPoints
         // Count the number of y- and z-points to be generated. Pass# 1 counted
         // the number of x-intersections along the x-edges. Now we count all
         // intersections on the y- and z-voxel axes.
-        auto* edgeUses = data::GetEdgeUses(edgeCase);
+        const vtkm::Vec<vtkm::UInt8, 12>& edgeUses = tables.GetEdgeUses(edgeCase);
 
         onBoundary[AxisToSum::xindex] = (i >= (pdims[AxisToSum::xindex] - 2));
 
@@ -140,7 +144,7 @@ struct ComputePass2 : public vtkm::worklet::WorkletVisitCellsWithPoints
   template <typename AxisToSum>
   VTKM_EXEC inline void CountBoundaryEdgeUses(AxisToSum,
                                               vtkm::Vec<bool, 3> onBoundary,
-                                              vtkm::UInt8 const* const edgeUses,
+                                              const vtkm::Vec<vtkm::UInt8, 12>& edgeUses,
                                               vtkm::Id3& sums,
                                               vtkm::Id3& adj_row_sum,
                                               vtkm::Id3& adj_col_sum) const

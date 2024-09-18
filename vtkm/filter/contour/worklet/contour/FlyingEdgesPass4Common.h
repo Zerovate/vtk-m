@@ -43,7 +43,7 @@ VTKM_EXEC inline constexpr vtkm::Id increment_cellId(SumYAxis,
   return cellId + ((y_point_axis_inc - 1) * numToIncrement);
 }
 
-VTKM_EXEC inline bool case_includes_axes(vtkm::UInt8 const* const edgeUses)
+VTKM_EXEC inline bool case_includes_axes(const vtkm::Vec<vtkm::UInt8, 12>& edgeUses)
 {
   return (edgeUses[0] != 0 || edgeUses[4] != 0 || edgeUses[8] != 0);
 }
@@ -54,11 +54,12 @@ VTKM_EXEC inline void generate_tris(vtkm::Id inputCellId,
                                     vtkm::UInt8 numTris,
                                     vtkm::Id* edgeIds,
                                     vtkm::Id& triId,
+                                    const data::FlyingEdgesTables& tables,
                                     const WholeConnField& conn,
                                     const WholeCellIdField& cellIds)
 {
-  auto* edges = data::GetTriEdgeCases(edgeCase);
-  vtkm::Id edgeIndex = 1;
+  const vtkm::Vec<vtkm::UInt8, 16>& edges = tables.GetTriEdgeCases(edgeCase);
+  vtkm::IdComponent edgeIndex = 1;
   vtkm::Id index = static_cast<vtkm::Id>(triId) * 3;
   for (vtkm::UInt8 i = 0; i < numTris; ++i)
   {
@@ -85,9 +86,10 @@ VTKM_EXEC inline void init_voxelIds(AxisToSum,
                                     vtkm::Id writeOffset,
                                     vtkm::UInt8 edgeCase,
                                     const FieldInPointId3& axis_sums,
+                                    const data::FlyingEdgesTables& tables,
                                     vtkm::Id* edgeIds)
 {
-  auto* edgeUses = data::GetEdgeUses(edgeCase);
+  const vtkm::Vec<vtkm::UInt8, 12>& edgeUses = tables.GetEdgeUses(edgeCase);
   edgeIds[0] = writeOffset + axis_sums[0][AxisToSum::xindex]; // x-edges
   edgeIds[1] = writeOffset + axis_sums[1][AxisToSum::xindex];
   edgeIds[2] = writeOffset + axis_sums[3][AxisToSum::xindex];
@@ -104,7 +106,8 @@ VTKM_EXEC inline void init_voxelIds(AxisToSum,
 
 // Helper function to advance the point ids along voxel rows.
 //----------------------------------------------------------------------------
-VTKM_EXEC inline void advance_voxelIds(vtkm::UInt8 const* const edgeUses, vtkm::Id* edgeIds)
+VTKM_EXEC inline void advance_voxelIds(const vtkm::Vec<vtkm::UInt8, 12>& edgeUses,
+                                       vtkm::Id* edgeIds)
 {
   edgeIds[0] += edgeUses[0]; // x-edges
   edgeIds[1] += edgeUses[1];
