@@ -30,3 +30,5 @@ vtkm_library(
   DEVICE_SOURCES ${uncertainty_sources_device}
   USE_VTKM_JOB_POOL
 )
+
+add_subdirectory(worklet)
