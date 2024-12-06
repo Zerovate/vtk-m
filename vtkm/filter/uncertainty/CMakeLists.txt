@@ -20,7 +20,7 @@ set(uncertainty_sources_device
   ContourUncertainUniform.cxx
   ContourUncertainUniformMonteCarlo.cxx
 
-  #2 Variate 
+  #2 Variate
   2VariateUncertianty.cxx
   )
 
