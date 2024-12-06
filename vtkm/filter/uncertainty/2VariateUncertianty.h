@@ -8,8 +8,8 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#ifndef vtk_m_filter_uncertainty_Fiber_separate_h
-#define vtk_m_filter_uncertainty_Fiber_separate_h
+#ifndef vtk_m_filter_bivariate_uncertainty_h
+#define vtk_m_filter_bivariate_uncertainty_h
 
 #include <vtkm/filter/Filter.h>
 

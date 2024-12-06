@@ -8,8 +8,8 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#ifndef vtk_m_worklet_uncertainty_Fiber_inner_h
-#define vtk_m_worklet_uncertainty_Fiber_inner_h
+#ifndef vtk_m_filter_bivariate_uncertainty_inner_h
+#define vtk_m_filter_bivariate_uncertainty_inner_h
 #include <iostream>
 #include <utility>
 #include <vector>
