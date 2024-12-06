@@ -23,10 +23,7 @@ VTKM_CONT vtkm::cont::DataSet FiberMean::DoExecute(const vtkm::cont::DataSet& in
 {
   std::string FieldName;
 
-  // vtkm::cont::Timer timer;
-  // std::cout << "detailed timer device: " << timer.GetDevice().GetName() << std::endl;
-  // timer.Start();
-  //  Input Field
+
   vtkm::cont::Field EnsembleMinX = this->GetFieldFromDataSet(0, input);
   vtkm::cont::Field EnsembleMaxX = this->GetFieldFromDataSet(1, input);
   vtkm::cont::Field EnsembleMinY = this->GetFieldFromDataSet(2, input);
@@ -35,11 +32,9 @@ VTKM_CONT vtkm::cont::DataSet FiberMean::DoExecute(const vtkm::cont::DataSet& in
   // Output Field
   vtkm::cont::UnknownArrayHandle OutputProbability;
 
-  // timer.Stop();
-  // std::cout << "filter 1 " << timer.GetElapsedTime() << std::endl;
+
   //  For Invoker
   auto resolveType = [&](auto ConcreteEnsembleMinX) {
-    // timer.Start();
     //  Obtaining Type
     using ArrayType = std::decay_t<decltype(ConcreteEnsembleMinX)>;
     using ValueType = typename ArrayType::ValueType;
@@ -55,10 +50,6 @@ VTKM_CONT vtkm::cont::DataSet FiberMean::DoExecute(const vtkm::cont::DataSet& in
 
     // Temporary Output Variable
     vtkm::cont::ArrayHandle<ValueType> Probability;
-    // timer.Stop();
-    // std::cout << "filter 2 " << timer.GetElapsedTime() << std::endl;
-    // timer.Start();
-
     // Invoker
 
     if (this->Approach == "MonteCarlo")
@@ -114,17 +105,13 @@ VTKM_CONT vtkm::cont::DataSet FiberMean::DoExecute(const vtkm::cont::DataSet& in
 
     // From Temporary Output Variable to Output Variable
     OutputProbability = Probability;
-    // timer.Stop();
-    // std::cout << "filter 3 " << timer.GetElapsedTime() << std::endl;
   };
   this->CastAndCallScalarField(EnsembleMinX, resolveType);
 
   // Creating Result
-  // timer.Start();
   vtkm::cont::DataSet result = this->CreateResult(input);
   result.AddPointField(FieldName, OutputProbability);
-  // timer.Stop();
-  // std::cout << "filter 4 " << timer.GetElapsedTime() << std::endl;
+
 
   return result;
 }

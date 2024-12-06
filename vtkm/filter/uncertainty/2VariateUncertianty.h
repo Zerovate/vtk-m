@@ -23,7 +23,7 @@ class FiberMean : public vtkm::filter::Filter
 {
   vtkm::Pair<vtkm::Float64, vtkm::Float64> minAxis;
   vtkm::Pair<vtkm::Float64, vtkm::Float64> maxAxis;
-  std::string Approach = "ClosedForm"; //MonteCarlo or ClosedForm
+  std::string Approach = "ClosedForm"; // MonteCarlo, ClosedForm, Mean, Truth
   vtkm::Id NumSamples = 500;
 
 public:
