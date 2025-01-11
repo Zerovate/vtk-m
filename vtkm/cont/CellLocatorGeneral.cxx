@@ -64,7 +64,7 @@ VTKM_CONT void CellLocatorGeneral::Build()
   }
   else
   {
-    BuildForType<vtkm::cont::CellLocatorTwoLevel>(*this, this->LocatorImpl);
+    BuildForType<vtkm::cont::CellLocatorTwoLevel<>>(*this, this->LocatorImpl);
   }
 }
 

@@ -30,29 +30,58 @@ using vtkm::rendering::MapperRayTracer;
 using vtkm::rendering::MapperVolume;
 using vtkm::rendering::MapperWireframer;
 
+#include <vtkm/io/VTKDataSetReader.h>
+vtkm::cont::DataSet readVTKDataSet(const std::string& fname)
+{
+  vtkm::cont::DataSet ds;
+  vtkm::io::VTKDataSetReader reader(fname);
+  try
+  {
+    ds = reader.ReadDataSet();
+  }
+  catch (vtkm::io::ErrorIO& e)
+  {
+    std::string message("Error reading: ");
+    message += fname;
+    message += ", ";
+    message += e.GetMessage();
+    std::cout<<"message:"<<message<<std::endl;
+  }
+
+  return ds;
+}
+
 int main(int argc, char* argv[])
 {
   vtkm::cont::Initialize(argc, argv, vtkm::cont::InitializeOptions::Strict);
 
   vtkm::source::Tangle tangle;
   tangle.SetPointDimensions({ 50, 50, 50 });
-  vtkm::cont::DataSet tangleData = tangle.Execute();
+  //read dataset
+  // vtkm::cont::DataSet tangleData = tangle.Execute();
+  std::string testFileName = "test.vtk";
+  vtkm::cont::DataSet tangleData = readVTKDataSet(testFileName);
   std::string fieldName = "tangle";
 
   // Set up a camera for rendering the input data
   vtkm::rendering::Camera camera;
-  camera.SetLookAt(vtkm::Vec3f_32(0.5, 0.5, 0.5));
+  // camera.SetLookAt(vtkm::Vec3f_32(0.5, 0.5, 0.5));
+  // camera.SetViewUp(vtkm::make_Vec(0.f, 1.f, 0.f));
+  // camera.SetClippingRange(1.f, 10.f);
+  // camera.SetFieldOfView(60.f);
+  // camera.SetPosition(vtkm::Vec3f_32(1.5, 1.5, 1.5));
+  camera.SetLookAt(vtkm::Vec3f_32(597558.0, 2320825.0, -1000.0));
   camera.SetViewUp(vtkm::make_Vec(0.f, 1.f, 0.f));
-  camera.SetClippingRange(1.f, 10.f);
-  camera.SetFieldOfView(60.f);
-  camera.SetPosition(vtkm::Vec3f_32(1.5, 1.5, 1.5));
+  camera.SetClippingRange(36160.636719, 41904.218750);
+  camera.SetFieldOfView(30.f);
+  camera.SetPosition(vtkm::Vec3f_32(597558.0, 2320825.0, 37662.113281));
   vtkm::cont::ColorTable colorTable("inferno");
 
   // Background color:
   vtkm::rendering::Color bg(0.2f, 0.2f, 0.2f, 1.0f);
   vtkm::rendering::Actor actor(tangleData.GetCellSet(),
                                tangleData.GetCoordinateSystem(),
-                               tangleData.GetField(fieldName),
+                               tangleData.GetField(1),
                                colorTable);
   vtkm::rendering::Scene scene;
   scene.AddActor(actor);
@@ -65,30 +94,30 @@ int main(int argc, char* argv[])
   view.SaveAs("volume.png");
 
   // Compute an isosurface:
-  vtkm::filter::contour::Contour filter;
-  // [min, max] of the tangle field is [-0.887, 24.46]:
-  filter.SetIsoValue(3.0);
-  filter.SetActiveField(fieldName);
-  vtkm::cont::DataSet isoData = filter.Execute(tangleData);
-  // Render a separate image with the output isosurface
-  vtkm::rendering::Actor isoActor(
-    isoData.GetCellSet(), isoData.GetCoordinateSystem(), isoData.GetField(fieldName), colorTable);
-  // By default, the actor will automatically scale the scalar range of the color table to match
-  // that of the data. However, we are coloring by the scalar that we just extracted a contour
-  // from, so we want the scalar range to match that of the previous image.
-  isoActor.SetScalarRange(actor.GetScalarRange());
-  vtkm::rendering::Scene isoScene;
-  isoScene.AddActor(std::move(isoActor));
+  // vtkm::filter::contour::Contour filter;
+  // // [min, max] of the tangle field is [-0.887, 24.46]:
+  // filter.SetIsoValue(3.0);
+  // filter.SetActiveField(fieldName);
+  // vtkm::cont::DataSet isoData = filter.Execute(tangleData);
+  // // Render a separate image with the output isosurface
+  // vtkm::rendering::Actor isoActor(
+  //   isoData.GetCellSet(), isoData.GetCoordinateSystem(), isoData.GetField(fieldName), colorTable);
+  // // By default, the actor will automatically scale the scalar range of the color table to match
+  // // that of the data. However, we are coloring by the scalar that we just extracted a contour
+  // // from, so we want the scalar range to match that of the previous image.
+  // isoActor.SetScalarRange(actor.GetScalarRange());
+  // vtkm::rendering::Scene isoScene;
+  // isoScene.AddActor(std::move(isoActor));
 
-  // Wireframe surface:
-  vtkm::rendering::View3D isoView(isoScene, MapperWireframer(), canvas, camera, bg);
-  isoView.Paint();
-  isoView.SaveAs("isosurface_wireframer.png");
+  // // Wireframe surface:
+  // vtkm::rendering::View3D isoView(isoScene, MapperWireframer(), canvas, camera, bg);
+  // isoView.Paint();
+  // isoView.SaveAs("isosurface_wireframer.png");
 
-  // Smooth surface:
-  vtkm::rendering::View3D solidView(isoScene, MapperRayTracer(), canvas, camera, bg);
-  solidView.Paint();
-  solidView.SaveAs("isosurface_raytracer.png");
+  // // Smooth surface:
+  // vtkm::rendering::View3D solidView(isoScene, MapperRayTracer(), canvas, camera, bg);
+  // solidView.Paint();
+  // solidView.SaveAs("isosurface_raytracer.png");
 
   return 0;
 }

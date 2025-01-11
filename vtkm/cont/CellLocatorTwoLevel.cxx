@@ -345,7 +345,8 @@ namespace cont
 //----------------------------------------------------------------------------
 /// Builds the cell locator lookup structure
 ///
-VTKM_CONT void CellLocatorTwoLevel::Build()
+template <typename T>
+VTKM_CONT void CellLocatorTwoLevel<T>::Build()
 {
   VTKM_LOG_SCOPE(vtkm::cont::LogLevel::Perf, "CellLocatorTwoLevel::Build");
 
@@ -455,17 +456,18 @@ VTKM_CONT void CellLocatorTwoLevel::Build()
 }
 
 //----------------------------------------------------------------------------
-struct CellLocatorTwoLevel::MakeExecObject
+template <typename T>
+struct CellLocatorTwoLevel<T>::MakeExecObject
 {
   template <typename CellSetType>
   VTKM_CONT void operator()(const CellSetType& cellSet,
                             vtkm::cont::DeviceAdapterId device,
                             vtkm::cont::Token& token,
-                            const CellLocatorTwoLevel& self,
+                            const CellLocatorTwoLevel<T>& self,
                             ExecObjType& execObject) const
   {
     using CellStructuredType = CellSetContToExec<CellSetType>;
-    execObject = vtkm::exec::CellLocatorTwoLevel<CellStructuredType>(self.TopLevel,
+    execObject = vtkm::exec::CellLocatorTwoLevel<CellStructuredType, T>(self.TopLevel,
                                                                      self.LeafDimensions,
                                                                      self.LeafStartIndex,
                                                                      self.CellStartIndex,
@@ -478,18 +480,20 @@ struct CellLocatorTwoLevel::MakeExecObject
   }
 };
 
-CellLocatorTwoLevel::ExecObjType CellLocatorTwoLevel::PrepareForExecution(
+template <typename T>
+typename CellLocatorTwoLevel<T>::ExecObjType CellLocatorTwoLevel<T>::PrepareForExecution(
   vtkm::cont::DeviceAdapterId device,
   vtkm::cont::Token& token) const
 {
   this->Update();
   ExecObjType execObject;
-  vtkm::cont::CastAndCall(this->GetCellSet(), MakeExecObject{}, device, token, *this, execObject);
+  vtkm::cont::CastAndCall(this->GetCellSet(), CellLocatorTwoLevel<T>::MakeExecObject{}, device, token, *this, execObject);
   return execObject;
 }
 
 //----------------------------------------------------------------------------
-void CellLocatorTwoLevel::PrintSummary(std::ostream& out) const
+template <typename T>
+void CellLocatorTwoLevel<T>::PrintSummary(std::ostream& out) const
 {
   out << "DensityL1: " << this->DensityL1 << "\n";
   out << "DensityL2: " << this->DensityL2 << "\n";
@@ -513,5 +517,14 @@ void CellLocatorTwoLevel::PrintSummary(std::ostream& out) const
   out << "  CellIds:\n";
   vtkm::cont::printSummary_ArrayHandle(this->CellIds, out);
 }
+
+template class CellLocatorTwoLevel<vtkm::cont::CoordinateSystem::MultiplexerArrayType>;
+template class CellLocatorTwoLevel<vtkm::cont::ArrayHandle<vtkm::Vec<float, 3>, vtkm::cont::StorageTagBasic>>;
+template class CellLocatorTwoLevel<vtkm::cont::ArrayHandle<vtkm::Vec<float, 3>, vtkm::cont::StorageTagSOA>>;
+template class CellLocatorTwoLevel<vtkm::cont::ArrayHandle<vtkm::Vec<float, 3>, vtkm::cont::StorageTagUniformPoints>>;
+template class CellLocatorTwoLevel<vtkm::cont::ArrayHandle<vtkm::Vec<float, 3>, vtkm::cont::StorageTagCartesianProduct<vtkm::cont::StorageTagBasic, vtkm::cont::StorageTagBasic, vtkm::cont::StorageTagBasic>>>;
+template class CellLocatorTwoLevel<vtkm::cont::ArrayHandleCast<vtkm::Vec<float, 3>, vtkm::cont::ArrayHandle<vtkm::Vec<double, 3>, vtkm::cont::StorageTagBasic>>>;
+template class CellLocatorTwoLevel<vtkm::cont::ArrayHandleCast<vtkm::Vec<float, 3>, vtkm::cont::ArrayHandle<vtkm::Vec<double, 3>, vtkm::cont::StorageTagSOA>>>;
+template class CellLocatorTwoLevel<vtkm::cont::ArrayHandleCast<vtkm::Vec<float, 3>, vtkm::cont::ArrayHandle<vtkm::Vec<double, 3>, vtkm::cont::StorageTagCartesianProduct<vtkm::cont::StorageTagBasic, vtkm::cont::StorageTagBasic, vtkm::cont::StorageTagBasic>>>>;
 }
 } // vtkm::cont

@@ -88,7 +88,7 @@ namespace exec
 {
 
 //--------------------------------------------------------------------
-template <typename CellStructureType>
+template <typename CellStructureType, typename COODTYPE = vtkm::cont::CoordinateSystem::MultiplexerArrayType>
 class VTKM_ALWAYS_EXPORT CellLocatorTwoLevel
 {
 private:
@@ -99,7 +99,7 @@ private:
   using ReadPortal = typename vtkm::cont::ArrayHandle<T>::ReadPortalType;
 
   using CoordsPortalType =
-    typename vtkm::cont::CoordinateSystem::MultiplexerArrayType::ReadPortalType;
+    typename COODTYPE::ReadPortalType;
 
   // TODO: This function may return false positives for non 3D cells as the
   // tests are done on the projection of the point on the cell. Extra checks
@@ -149,7 +149,7 @@ public:
                                       vtkm::TopologyElementTagCell{},
                                       vtkm::TopologyElementTagPoint{},
                                       token))
-    , Coords(coords.GetDataAsMultiplexer().PrepareForInput(device, token))
+    , Coords(coords.GetData().AsArrayHandle<COODTYPE>().PrepareForInput(device, token))
   {
   }
 

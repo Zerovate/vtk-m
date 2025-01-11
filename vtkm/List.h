@@ -579,23 +579,37 @@ using ListHas = typename detail::ListHasImpl<List, T>::type;
 namespace detail
 {
 
-template <typename T, template <typename> class Target>
+template <typename T, template <typename...> class Target>
 struct ListTransformImpl;
-template <typename... Ts, template <typename> class Target>
+template <typename... Ts, template <typename...> class Target>
 struct ListTransformImpl<vtkm::List<Ts...>, Target>
 {
   using type = vtkm::List<Target<Ts>...>;
 };
 // Cannot transform the universal list.
-template <template <typename> class Target>
+template <template <typename...> class Target>
 struct ListTransformImpl<vtkm::ListUniversal, Target>;
+
+template <typename T, template <typename...> class Target, typename CoordType>
+struct ListTransformImplCoord;
+template <typename... Ts, template <typename...> class Target, typename CoordType>
+struct ListTransformImplCoord<vtkm::List<Ts...>, Target, CoordType>
+{
+  using type = vtkm::List<Target<Ts, CoordType>...>;
+};
+// Cannot transform the universal list.
+template <template <typename...> class Target, typename CoordType>
+struct ListTransformImplCoord<vtkm::ListUniversal, Target, CoordType>;
 
 } // namespace detail
 
 /// Constructs a list containing all types in a source list applied to a transform template.
 ///
-template <typename List, template <typename> class Transform>
+template <typename List, template <typename...> class Transform>
 using ListTransform = typename detail::ListTransformImpl<List, Transform>::type;
+
+template <typename List, template <typename...> class Transform, typename CoordType>
+using ListTransformCoord = typename detail::ListTransformImplCoord<List, Transform, CoordType>::type;
 
 namespace detail
 {

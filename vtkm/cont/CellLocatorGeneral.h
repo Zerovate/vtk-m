@@ -43,12 +43,12 @@ class VTKM_CONT_EXPORT CellLocatorGeneral : public vtkm::cont::CellLocatorBase
 public:
   using ContLocatorList = vtkm::List<vtkm::cont::CellLocatorUniformGrid,
                                      vtkm::cont::CellLocatorRectilinearGrid,
-                                     vtkm::cont::CellLocatorTwoLevel>;
+                                     vtkm::cont::CellLocatorTwoLevel<>>;
 
   using ExecLocatorList =
     vtkm::List<vtkm::cont::internal::ExecutionObjectType<vtkm::cont::CellLocatorUniformGrid>,
                vtkm::cont::internal::ExecutionObjectType<vtkm::cont::CellLocatorRectilinearGrid>,
-               vtkm::cont::internal::ExecutionObjectType<vtkm::cont::CellLocatorTwoLevel>>;
+               vtkm::cont::internal::ExecutionObjectType<vtkm::cont::CellLocatorTwoLevel<>>>;
 
   using ExecObjType = vtkm::ListApply<ExecLocatorList, vtkm::exec::CellLocatorMultiplexer>;
   using LastCell = typename ExecObjType::LastCell;

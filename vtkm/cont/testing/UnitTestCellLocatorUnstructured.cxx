@@ -295,7 +295,7 @@ void TestingCellLocatorUnstructured()
   RandomGenerator.seed(seed);
 
   //Test vtkm::cont::CellLocatorTwoLevel
-  vtkm::cont::CellLocatorTwoLevel locator2L;
+  vtkm::cont::CellLocatorTwoLevel<> locator2L;
   locator2L.SetDensityL1(64.0f);
   locator2L.SetDensityL2(1.0f);
 

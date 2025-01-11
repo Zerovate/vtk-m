@@ -203,7 +203,7 @@ void Bench2DCellLocatorTwoLevel(::benchmark::State& state)
   const vtkm::cont::DeviceAdapterId device = Config.Device;
   vtkm::cont::Timer timer{ device };
 
-  vtkm::cont::CellLocatorTwoLevel locator2L;
+  vtkm::cont::CellLocatorTwoLevel<> locator2L;
   locator2L.SetDensityL1(L1Param);
   locator2L.SetDensityL2(L2Param);
 
@@ -275,7 +275,7 @@ void Bench2DCellLocatorTwoLevelIterate(::benchmark::State& state)
   const vtkm::cont::DeviceAdapterId device = Config.Device;
   vtkm::cont::Timer timer{ device };
 
-  vtkm::cont::CellLocatorTwoLevel locator2L;
+  vtkm::cont::CellLocatorTwoLevel<> locator2L;
   locator2L.SetDensityL1(L1Param);
   locator2L.SetDensityL2(L2Param);
 
