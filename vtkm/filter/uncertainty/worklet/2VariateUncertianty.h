@@ -242,7 +242,9 @@ public:
 #endif
     // printf("NonZeroCases %d this->NumSamples %d\n", NonZeroCases, this->NumSamples);
     //  printf("minX_user %f minY_user %f maxX_user %f maxY_user %f minX_dataset %f maxX_dataset %f minY_dataset %f maxY_dataset %f NonZeroCases %d\n",minX_user,minY_user,maxX_user,maxY_user,minX_dataset,maxX_dataset,minY_dataset,maxY_dataset,NonZeroCases);
-    MCProbability = 1.0 * NonZeroCases / (1.0 * this->NumSamples);
+    //MCProbability = 1.0 * NonZeroCases / (1.0 * this->NumSamples);
+    MCProbability = static_cast<vtkm::FloatDefault>(NonZeroCases) /
+      static_cast<vtkm::FloatDefault>(this->NumSamples);
     probability = MCProbability;
 
     return;
