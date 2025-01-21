@@ -60,8 +60,7 @@ public:
                             OutCellFieldType& probability) const
   {
     // User defined rectangle(trait)
-    vtkm::FloatDefault vtkm::FloatDefault minX_user =
-      static_cast<vtkm::FloatDefault>(InputBottomLeft.first);
+    vtkm::FloatDefault minX_user = static_cast<vtkm::FloatDefault>(InputBottomLeft.first);
 
     vtkm::FloatDefault minY_user = static_cast<vtkm::FloatDefault>(InputBottomLeft.second);
 
