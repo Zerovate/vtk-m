@@ -112,6 +112,48 @@ public:
         NonZeroCases = this->NumSamples;
       }
     }
+
+    // Line
+    // Data as horizontal line
+    else if ((minX_dataset < maxX_dataset) && (minY_dataset == maxY_dataset))
+    {
+      // Check if line intersects a trait. Might need <= check here
+      if ((minX_intersection < maxX_intersection) && (minY_dataset >= minY_user) &&
+          (minY_dataset <= maxY_user))
+      {
+        for (vtkm::IdComponent i = 0; i < this->NumSamples; i++)
+        {
+          N1 = distX(rng);
+          // increase the case number when the data is located in user rectangle
+          if ((N1 > minX_user) && (N1 < maxX_user))
+          {
+            NonZeroCases++;
+          }
+        }
+      }
+    }
+
+    // Data as a vertical line
+    else if ((minX_dataset == maxX_dataset) && (minY_dataset < maxY_dataset))
+    {
+      // Check if line intersects a trait. Might need <= check here
+      if ((minY_intersection < maxY_intersection) && (minX_dataset >= minX_user) &&
+          (minX_dataset <= maxX_user))
+      {
+        for (vtkm::IdComponent i = 0; i < this->NumSamples; i++)
+        {
+
+          N2 = distY(rng);
+          // increase the case number when the data is located in user rectangle
+          if ((N2 > minY_user) && (N2 < maxY_user))
+          {
+            NonZeroCases++;
+          }
+        }
+      }
+    }
+
+
     /*
     for (vtkm::IdComponent i = 0; i < this->NumSamples; i++)
     {
