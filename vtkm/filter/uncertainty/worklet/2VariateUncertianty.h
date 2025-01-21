@@ -102,6 +102,17 @@ public:
     thrust::uniform_real_distribution<vtkm::FloatDefault> distX(minX_dataset, maxX_dataset);
     thrust::uniform_real_distribution<vtkm::FloatDefault> distY(minY_dataset, maxY_dataset);
 
+    // Point
+    if ((minX_dataset == maxX_dataset) && (minY_dataset == maxY_dataset))
+    {
+      // check if point is inside a trait
+      if ((minX_dataset <= maxX_user) && (minX_dataset >= minX_user) &&
+          (minY_dataset <= maxY_user) && (minY_dataset >= minY_user))
+      {
+        NonZeroCases = this->NumSamples;
+      }
+    }
+    /*
     for (vtkm::IdComponent i = 0; i < this->NumSamples; i++)
     {
       N1 = distX(rng);
@@ -111,6 +122,7 @@ public:
         NonZeroCases++;
       }
     }
+    */
 
 #else
     std::random_device rd;
