@@ -73,7 +73,7 @@ public:
 
     vtkm::FloatDefault N1 = 0.0;
     vtkm::FloatDefault N2 = 0.0;
-    vtkm::IdComponent NonZeroCases = 0;
+    vtkm::Id NonZeroCases = 0;
     vtkm::FloatDefault MCProbability = 0.0;
 
     // data rectangle
