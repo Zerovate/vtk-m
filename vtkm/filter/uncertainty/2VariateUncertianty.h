@@ -21,18 +21,18 @@ namespace uncertainty
 {
 class FiberMean : public vtkm::filter::Filter
 {
-  vtkm::Pair<vtkm::Float64, vtkm::Float64> minAxis;
-  vtkm::Pair<vtkm::Float64, vtkm::Float64> maxAxis;
+  vtkm::Pair<vtkm::FloatDefault, vtkm::FloatDefault> minAxis;
+  vtkm::Pair<vtkm::FloatDefault, vtkm::FloatDefault> maxAxis;
   std::string Approach = "ClosedForm"; // MonteCarlo, ClosedForm, Mean, Truth
   vtkm::Id NumSamples = 500;
 
 public:
-  VTKM_CONT void SetMinAxis(const vtkm::Pair<vtkm::Float64, vtkm::Float64>& minCoordinate)
+  VTKM_CONT void SetMinAxis(const vtkm::Pair<vtkm::FloatDefault, vtkm::FloatDefault>& minCoordinate)
   {
     this->minAxis = minCoordinate;
   }
 
-  VTKM_CONT void SetMaxAxis(const vtkm::Pair<vtkm::Float64, vtkm::Float64>& maxCoordinate)
+  VTKM_CONT void SetMaxAxis(const vtkm::Pair<vtkm::FloatDefault, vtkm::FloatDefault>& maxCoordinate)
   {
     this->maxAxis = maxCoordinate;
   }
