@@ -153,18 +153,18 @@ public:
       }
     }
 
-
-    /*
-    for (vtkm::IdComponent i = 0; i < this->NumSamples; i++)
+    else
     {
-      N1 = distX(rng);
-      N2 = distY(rng);
-      if ((N1 > minX_user) && (N1 < maxX_user) && (N2 > minY_user) && (N2 < maxY_user))
+      for (vtkm::IdComponent i = 0; i < this->NumSamples; i++)
       {
-        NonZeroCases++;
+        N1 = distX(rng);
+        N2 = distY(rng);
+        if ((N1 > minX_user) && (N1 < maxX_user) && (N2 > minY_user) && (N2 < maxY_user))
+        {
+          NonZeroCases++;
+        }
       }
     }
-    */
 
 #else
     std::random_device rd;
