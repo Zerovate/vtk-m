@@ -60,20 +60,17 @@ public:
                             OutCellFieldType& probability) const
   {
     // User defined rectangle(trait)
-    vtkm::FloatDefault minX_user = 0.0;
-    minX_user = static_cast<vtkm::FloatDefault>(InputBottomLeft.first);
-    vtkm::FloatDefault minY_user = 0.0;
-    minY_user = static_cast<vtkm::FloatDefault>(InputBottomLeft.second);
-    vtkm::FloatDefault maxX_user = 0.0;
-    maxX_user = static_cast<vtkm::FloatDefault>(InputTopRight.first);
-    vtkm::FloatDefault maxY_user = 0.0;
-    maxY_user = static_cast<vtkm::FloatDefault>(InputTopRight.second);
+    vtkm::FloatDefault vtkm::FloatDefault minX_user =
+      static_cast<vtkm::FloatDefault>(InputBottomLeft.first);
+
+    vtkm::FloatDefault minY_user = static_cast<vtkm::FloatDefault>(InputBottomLeft.second);
+
+    vtkm::FloatDefault maxX_user = static_cast<vtkm::FloatDefault>(InputTopRight.first);
+
+    vtkm::FloatDefault maxY_user = static_cast<vtkm::FloatDefault>(InputTopRight.second);
     // vtkm::FloatDefault TraitArea = (maxX_user - minX_user) * (maxY_user - minY_user);
 
-    vtkm::FloatDefault minX_dataset = 0.0;
-    vtkm::FloatDefault minY_dataset = 0.0;
-    vtkm::FloatDefault maxX_dataset = 0.0;
-    vtkm::FloatDefault maxY_dataset = 0.0;
+
 
     vtkm::FloatDefault N1 = 0.0;
     vtkm::FloatDefault N2 = 0.0;
@@ -81,20 +78,16 @@ public:
     vtkm::FloatDefault MCProbability = 0.0;
 
     // data rectangle
-    minX_dataset = static_cast<vtkm::FloatDefault>(EnsembleMinX);
-    maxX_dataset = static_cast<vtkm::FloatDefault>(EnsembleMaxX);
-    minY_dataset = static_cast<vtkm::FloatDefault>(EnsembleMinY);
-    maxY_dataset = static_cast<vtkm::FloatDefault>(EnsembleMaxY);
+    vtkm::FloatDefault minX_dataset = static_cast<vtkm::FloatDefault>(EnsembleMinX);
+    vtkm::FloatDefault maxX_dataset = static_cast<vtkm::FloatDefault>(EnsembleMaxX);
+    vtkm::FloatDefault minY_dataset = static_cast<vtkm::FloatDefault>(EnsembleMinY);
+    vtkm::FloatDefault maxY_dataset = static_cast<vtkm::FloatDefault>(EnsembleMaxY);
 
-    vtkm::FloatDefault minX_intersection = 0.0;
-    vtkm::FloatDefault maxX_intersection = 0.0;
-    vtkm::FloatDefault minY_intersection = 0.0;
-    vtkm::FloatDefault maxY_intersection = 0.0;
 
-    minX_intersection = std::max(minX_user, minX_dataset);
-    minY_intersection = std::max(minY_user, minY_dataset);
-    maxX_intersection = std::min(maxX_user, maxX_dataset);
-    maxY_intersection = std::min(maxY_user, maxY_dataset);
+    vtkm::FloatDefault minX_intersection = std::max(minX_user, minX_dataset);
+    vtkm::FloatDefault minY_intersection = std::max(minY_user, minY_dataset);
+    vtkm::FloatDefault maxX_intersection = std::min(maxX_user, maxX_dataset);
+    vtkm::FloatDefault maxY_intersection = std::min(maxY_user, maxY_dataset);
 
     // if data rectangle is zero, there is no uncertainty, return zero
     // if (abs(minX_dataset - maxX_dataset) < 0.000001 && abs(minY_dataset - maxY_dataset) < 0.000001)
