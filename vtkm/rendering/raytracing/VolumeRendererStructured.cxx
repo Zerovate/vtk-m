@@ -26,6 +26,7 @@
 #include <vtkm/rendering/raytracing/Ray.h>
 #include <vtkm/rendering/raytracing/RayTracingTypeDefs.h>
 #include <vtkm/worklet/WorkletMapField.h>
+#include <vtkm/cont/CellSetSingleType.h>
 
 namespace vtkm
 {
@@ -532,6 +533,162 @@ public:
   }
 }; //SamplerCell
 
+template <typename DeviceAdapterTag>
+class SamplerPointDataUnstructured : public vtkm::worklet::WorkletMapField
+{
+private:
+  using ColorArrayHandle = typename vtkm::cont::ArrayHandle<vtkm::Vec4f_32>;
+  using ColorArrayPortal = typename ColorArrayHandle::ReadPortalType;
+  ColorArrayPortal ColorMap;
+  vtkm::Id ColorMapSize;
+  vtkm::Float32 MinScalar;
+  vtkm::Float32 SampleDistance;
+  vtkm::Float32 InverseDeltaScalar;
+  vtkm::Float32 MeshEpsilon;
+
+public:
+  VTKM_CONT
+  SamplerPointDataUnstructured(const ColorArrayHandle& colorMap,
+                               const vtkm::Float32& minScalar,
+                               const vtkm::Float32& maxScalar,
+                               const vtkm::Float32& sampleDistance,
+                               const vtkm::Float32& meshEpsilon,
+                               vtkm::cont::Token& token)
+    : ColorMap(colorMap.PrepareForInput(DeviceAdapterTag(), token))
+    , MinScalar(minScalar)
+    , SampleDistance(sampleDistance)
+    , InverseDeltaScalar(minScalar)
+    , MeshEpsilon(meshEpsilon)
+    , ColorMapSize(colorMap.GetNumberOfValues() - 1)
+  {
+    ColorMapSize = colorMap.GetNumberOfValues() - 1;
+    if ((maxScalar - minScalar) != 0.f)
+    {
+      InverseDeltaScalar = 1.f / (maxScalar - minScalar);
+    }
+  }
+  using ControlSignature = void(FieldIn,
+                                FieldIn,
+                                FieldIn,
+                                FieldIn,
+                                WholeArrayInOut,
+                                WholeArrayIn,
+                                ExecObject,
+                                WholeCellSetIn<Cell, Point>);
+  using ExecutionSignature = void(_1, _2, _3, _4, _5, _6, _7, _8, WorkIndex);
+
+  template <typename ScalarPortalType,
+            typename ColorBufferType,
+            typename CellLocatorExecObject,
+            typename CellSet>
+  VTKM_EXEC void operator()(const vtkm::Vec3f_32& rayDir,
+                            const vtkm::Vec3f_32& rayOrigin,
+                            const vtkm::Float32& minDistance,
+                            const vtkm::Float32& maxDistance,
+                            ColorBufferType& colorBuffer,
+                            const ScalarPortalType& scalars,
+                            const CellLocatorExecObject& cellLocator,
+                            const CellSet& cellSet,
+                            const vtkm::Id& pixelIndex) const
+  {
+    vtkm::Vec4f_32 color;
+    BOUNDS_CHECK(colorBuffer, pixelIndex * 4 + 0);
+    color[0] = colorBuffer.Get(pixelIndex * 4 + 0);
+    BOUNDS_CHECK(colorBuffer, pixelIndex * 4 + 1);
+    color[1] = colorBuffer.Get(pixelIndex * 4 + 1);
+    BOUNDS_CHECK(colorBuffer, pixelIndex * 4 + 2);
+    color[2] = colorBuffer.Get(pixelIndex * 4 + 2);
+    BOUNDS_CHECK(colorBuffer, pixelIndex * 4 + 3);
+    color[3] = colorBuffer.Get(pixelIndex * 4 + 3);
+
+    if (minDistance == -1.f)
+      return; //TODO: Compact? or just image subset...
+    // find the distance to the first sample
+    vtkm::Float32 distance = minDistance + MeshEpsilon;
+    //get the initial sample position;
+    vtkm::Vec3f_32 sampleLocation = rayOrigin + distance * rayDir;
+    // since the calculations are slightly different, we could hit an
+    // edge case where the first sample location may not be in the data set.
+    // Thus, advance to the next sample location
+    vtkm::Id cellId;
+    vtkm::Vec3f parametric;
+    // vtkm::Vec3f_32 testLocation(0.f, 0.f, 0.f);
+    // vtkm::ErrorCode status = cellLocator.FindCell(testLocation, cellId, parametric);
+
+    // Use FindCell to check if the sampleLocation is inside the domain
+
+    /*
+            7----------6
+           /|         /|
+          4----------5 |
+          | |        | |
+          | 3--------|-2    z y
+          |/         |/     |/
+          0----------1      |__ x
+    */
+    // bool newCell = true;
+    vtkm::Float32 scalar0 = 0.f;
+    vtkm::Vec4f_32 sampleColor(0.f, 0.f, 0.f, 0.f);
+    while (distance < maxDistance)
+    {
+      if (cellLocator.FindCell(sampleLocation, cellId, parametric) == vtkm::ErrorCode::Success)
+      {
+        // Get shape information about the cell containing the point coordinate
+        auto cellShape = cellSet.GetCellShape(cellId);
+        auto indices = cellSet.GetIndices(cellId);
+        // Make a Vec-like containing the field data at the cell’s points
+        // auto fieldValues = vtkm::make_VecFromPortalPermute(&indices, &scalars);
+        //from worklet/particleadvection/field.h
+        vtkm::VecVariable<vtkm::FloatDefault, 10> fieldValues;
+        for (vtkm::IdComponent i = 0; i < indices.GetNumberOfComponents(); i++)
+          fieldValues.Append(scalars.Get(indices[i]));
+        // Do the interpolation
+        vtkm::exec::CellInterpolate(fieldValues, parametric, cellShape, scalar0);
+
+        // scalar0 = vtkm::Float32(scalars.Get(cellId));
+        vtkm::Float32 normalizedScalar = (scalar0 - MinScalar) * InverseDeltaScalar;
+        vtkm::Id colorIndex =
+          static_cast<vtkm::Id>(normalizedScalar * static_cast<vtkm::Float32>(ColorMapSize));
+        if (colorIndex < 0)
+          colorIndex = 0;
+        if (colorIndex > ColorMapSize)
+          colorIndex = ColorMapSize;
+        sampleColor = ColorMap.Get(colorIndex);
+        // just repeatably composite
+        vtkm::Float32 alpha = sampleColor[3] * (1.f - color[3]);
+        color[0] = color[0] + sampleColor[0] * alpha;
+        color[1] = color[1] + sampleColor[1] * alpha;
+        color[2] = color[2] + sampleColor[2] * alpha;
+        color[3] = alpha + color[3];
+      }
+      if (color[3] >= 1.f)
+        break;
+
+      //advance
+      distance += SampleDistance;
+      sampleLocation = sampleLocation + SampleDistance * rayDir;
+      // vtkm::cont::Timer timer;
+      // timer.Start();
+      // vtkm::ErrorCode status = cellLocator.FindCell(sampleLocation, cellId, parametric);
+      // timer.Stop();
+      // std::cout << "searching time: " << timer.GetElapsedTime () << std::endl;
+    }
+    color[0] = vtkm::Min(color[0], 1.f);
+    color[1] = vtkm::Min(color[1], 1.f);
+    color[2] = vtkm::Min(color[2], 1.f);
+    color[3] = vtkm::Min(color[3], 1.f);
+
+    BOUNDS_CHECK(colorBuffer, pixelIndex * 4 + 0);
+    colorBuffer.Set(pixelIndex * 4 + 0, color[0]);
+    BOUNDS_CHECK(colorBuffer, pixelIndex * 4 + 1);
+    colorBuffer.Set(pixelIndex * 4 + 1, color[1]);
+    BOUNDS_CHECK(colorBuffer, pixelIndex * 4 + 2);
+    colorBuffer.Set(pixelIndex * 4 + 2, color[2]);
+    BOUNDS_CHECK(colorBuffer, pixelIndex * 4 + 3);
+    colorBuffer.Set(pixelIndex * 4 + 3, color[3]);
+  }
+}; //SamplerPointDataUnstructured
+
 class CalcRayStart : public vtkm::worklet::WorkletMapField
 {
   vtkm::Float32 Xmin;
@@ -608,16 +765,19 @@ public:
   }
 }; //class CalcRayStart
 
-void VolumeRendererStructured::SetColorMap(const vtkm::cont::ArrayHandle<vtkm::Vec4f_32>& colorMap)
+template <typename T>
+void VolumeRendererStructured<T>::SetColorMap(const vtkm::cont::ArrayHandle<vtkm::Vec4f_32>& colorMap)
 {
   ColorMap = colorMap;
 }
 
-void VolumeRendererStructured::SetData(const vtkm::cont::CoordinateSystem& coords,
+template <typename T>
+void VolumeRendererStructured<T>::SetData(const vtkm::cont::CoordinateSystem& coords,
                                        const vtkm::cont::Field& scalarField,
                                        const vtkm::cont::CellSetStructured<3>& cellset,
                                        const vtkm::Range& scalarRange)
 {
+  IsStructuredDataSet = true;
   IsUniformDataSet = !coords.GetData().IsType<CartesianArrayHandle>();
   IsSceneDirty = true;
   SpatialExtent = coords.GetBounds();
@@ -627,7 +787,34 @@ void VolumeRendererStructured::SetData(const vtkm::cont::CoordinateSystem& coord
   ScalarRange = scalarRange;
 }
 
-void VolumeRendererStructured::Render(vtkm::rendering::raytracing::Ray<vtkm::Float32>& rays)
+template <typename T>
+void VolumeRendererStructured<T>::SetData(const vtkm::cont::CoordinateSystem& coords,
+                             const vtkm::cont::Field& scalarField,
+                             const vtkm::cont::CellSetSingleType<>& cellset,
+                             const vtkm::Range& scalarRange,
+                             const vtkm::FloatDefault L1,
+                             const vtkm::FloatDefault L2)
+{
+  IsStructuredDataSet = false;
+  IsUniformDataSet = false;
+  IsSceneDirty = true;
+  SpatialExtent = coords.GetBounds();
+  Coordinates = coords;
+  ScalarField = &scalarField;
+  CellsetUnstruct = cellset;
+  ScalarRange = scalarRange;
+
+  CellLocator.SetCellSet(cellset);
+  CellLocator.SetCoordinates(coords);
+  CellLocator.Update();
+  if (L1 > 0.f)
+    CellLocator.SetDensityL1(L1);
+  if (L2 > 0.f)
+    CellLocator.SetDensityL2(L2);
+}
+
+template <typename T>
+void VolumeRendererStructured<T>::Render(vtkm::rendering::raytracing::Ray<vtkm::Float32>& rays)
 {
   auto functor = [&](auto device) {
     using Device = typename std::decay_t<decltype(device)>;
@@ -646,8 +833,9 @@ void VolumeRendererStructured::Render(vtkm::rendering::raytracing::Ray<vtkm::Flo
 //  vtkm::cont::TryExecute(functor);
 //}
 
+template <typename T>
 template <typename Precision, typename Device>
-void VolumeRendererStructured::RenderOnDevice(vtkm::rendering::raytracing::Ray<Precision>& rays,
+void VolumeRendererStructured<T>::RenderOnDevice(vtkm::rendering::raytracing::Ray<Precision>& rays,
                                               Device)
 {
   vtkm::cont::Timer renderTimer{ Device() };
@@ -690,99 +878,133 @@ void VolumeRendererStructured::RenderOnDevice(vtkm::rendering::raytracing::Ray<P
     throw vtkm::cont::ErrorBadValue("Field not accociated with cell set or points");
   }
   const bool isAssocPoints = ScalarField->IsPointField();
-
-  if (IsUniformDataSet)
+  if (IsStructuredDataSet)
   {
-    vtkm::cont::Token token;
-    vtkm::cont::ArrayHandleUniformPointCoordinates vertices;
-    vertices =
-      Coordinates.GetData().AsArrayHandle<vtkm::cont::ArrayHandleUniformPointCoordinates>();
-    vtkm::cont::CellLocatorUniformGrid uniLocator;
-    uniLocator.SetCellSet(this->Cellset);
-    uniLocator.SetCoordinates(this->Coordinates);
-    UniformLocatorAdapter<Device> locator(vertices, this->Cellset, uniLocator, token);
-
-    if (isAssocPoints)
+    if (IsUniformDataSet)
     {
-      auto sampler = Sampler<Device, UniformLocatorAdapter<Device>>(ColorMap,
-                                                                    vtkm::Float32(ScalarRange.Min),
-                                                                    vtkm::Float32(ScalarRange.Max),
-                                                                    SampleDistance,
-                                                                    locator,
-                                                                    meshEpsilon,
-                                                                    token);
-      invoke(sampler,
-             rays.Dir,
-             rays.Origin,
-             rays.MinDistance,
-             rays.MaxDistance,
-             rays.Buffers.at(0).Buffer,
-             vtkm::rendering::raytracing::GetScalarFieldArray(*this->ScalarField));
+      vtkm::cont::Token token;
+      vtkm::cont::ArrayHandleUniformPointCoordinates vertices;
+      vertices =
+        Coordinates.GetData().AsArrayHandle<vtkm::cont::ArrayHandleUniformPointCoordinates>();
+      vtkm::cont::CellLocatorUniformGrid uniLocator;
+      uniLocator.SetCellSet(this->Cellset);
+      uniLocator.SetCoordinates(this->Coordinates);
+      UniformLocatorAdapter<Device> locator(vertices, this->Cellset, uniLocator, token);
+
+      if (isAssocPoints)
+      {
+        auto sampler = Sampler<Device, UniformLocatorAdapter<Device>>(ColorMap,
+                                                                      vtkm::Float32(ScalarRange.Min),
+                                                                      vtkm::Float32(ScalarRange.Max),
+                                                                      SampleDistance,
+                                                                      locator,
+                                                                      meshEpsilon,
+                                                                      token);
+        invoke(sampler,
+              rays.Dir,
+              rays.Origin,
+              rays.MinDistance,
+              rays.MaxDistance,
+              rays.Buffers.at(0).Buffer,
+              vtkm::rendering::raytracing::GetScalarFieldArray(*this->ScalarField));
+      }
+      else
+      {
+        auto sampler =
+          SamplerCellAssoc<Device, UniformLocatorAdapter<Device>>(ColorMap,
+                                                                  vtkm::Float32(ScalarRange.Min),
+                                                                  vtkm::Float32(ScalarRange.Max),
+                                                                  SampleDistance,
+                                                                  locator,
+                                                                  meshEpsilon,
+                                                                  token);
+        invoke(sampler,
+              rays.Dir,
+              rays.Origin,
+              rays.MinDistance,
+              rays.MaxDistance,
+              rays.Buffers.at(0).Buffer,
+              vtkm::rendering::raytracing::GetScalarFieldArray(*this->ScalarField));
+      }
     }
     else
     {
-      auto sampler =
-        SamplerCellAssoc<Device, UniformLocatorAdapter<Device>>(ColorMap,
-                                                                vtkm::Float32(ScalarRange.Min),
-                                                                vtkm::Float32(ScalarRange.Max),
-                                                                SampleDistance,
-                                                                locator,
-                                                                meshEpsilon,
-                                                                token);
-      invoke(sampler,
-             rays.Dir,
-             rays.Origin,
-             rays.MinDistance,
-             rays.MaxDistance,
-             rays.Buffers.at(0).Buffer,
-             vtkm::rendering::raytracing::GetScalarFieldArray(*this->ScalarField));
+      vtkm::cont::Token token;
+      CartesianArrayHandle vertices;
+      vertices = Coordinates.GetData().AsArrayHandle<CartesianArrayHandle>();
+      vtkm::cont::CellLocatorRectilinearGrid rectLocator;
+      rectLocator.SetCellSet(this->Cellset);
+      rectLocator.SetCoordinates(this->Coordinates);
+      RectilinearLocatorAdapter<Device> locator(vertices, Cellset, rectLocator, token);
+
+      if (isAssocPoints)
+      {
+        auto sampler =
+          Sampler<Device, RectilinearLocatorAdapter<Device>>(ColorMap,
+                                                            vtkm::Float32(ScalarRange.Min),
+                                                            vtkm::Float32(ScalarRange.Max),
+                                                            SampleDistance,
+                                                            locator,
+                                                            meshEpsilon,
+                                                            token);
+        invoke(sampler,
+              rays.Dir,
+              rays.Origin,
+              rays.MinDistance,
+              rays.MaxDistance,
+              rays.Buffers.at(0).Buffer,
+              vtkm::rendering::raytracing::GetScalarFieldArray(*this->ScalarField));
+      }
+      else
+      {
+        auto sampler =
+          SamplerCellAssoc<Device, RectilinearLocatorAdapter<Device>>(ColorMap,
+                                                                      vtkm::Float32(ScalarRange.Min),
+                                                                      vtkm::Float32(ScalarRange.Max),
+                                                                      SampleDistance,
+                                                                      locator,
+                                                                      meshEpsilon,
+                                                                      token);
+        invoke(sampler,
+              rays.Dir,
+              rays.Origin,
+              rays.MinDistance,
+              rays.MaxDistance,
+              rays.Buffers.at(0).Buffer,
+              vtkm::rendering::raytracing::GetScalarFieldArray(*this->ScalarField));
+      }
     }
   }
   else
   {
     vtkm::cont::Token token;
-    CartesianArrayHandle vertices;
-    vertices = Coordinates.GetData().AsArrayHandle<CartesianArrayHandle>();
-    vtkm::cont::CellLocatorRectilinearGrid rectLocator;
-    rectLocator.SetCellSet(this->Cellset);
-    rectLocator.SetCoordinates(this->Coordinates);
-    RectilinearLocatorAdapter<Device> locator(vertices, Cellset, rectLocator, token);
-
+    vtkm::cont::CellLocatorTwoLevel<T> locator = this->CellLocator;
     if (isAssocPoints)
     {
-      auto sampler =
-        Sampler<Device, RectilinearLocatorAdapter<Device>>(ColorMap,
-                                                           vtkm::Float32(ScalarRange.Min),
-                                                           vtkm::Float32(ScalarRange.Max),
-                                                           SampleDistance,
-                                                           locator,
-                                                           meshEpsilon,
-                                                           token);
-      invoke(sampler,
-             rays.Dir,
-             rays.Origin,
-             rays.MinDistance,
-             rays.MaxDistance,
-             rays.Buffers.at(0).Buffer,
-             vtkm::rendering::raytracing::GetScalarFieldArray(*this->ScalarField));
+      vtkm::worklet::DispatcherMapField<SamplerPointDataUnstructured<Device>> samplerDispatcher(
+        SamplerPointDataUnstructured<Device>(ColorMap,
+                                             vtkm::Float32(ScalarRange.Min),
+                                             vtkm::Float32(ScalarRange.Max),
+                                             SampleDistance,
+                                             meshEpsilon,
+                                             token));
+      samplerDispatcher.SetDevice(Device());
+
+      vtkm::cont::Timer timer2{ Device() };
+      timer2.Start();
+      samplerDispatcher.Invoke(rays.Dir,
+                               rays.Origin,
+                               rays.MinDistance,
+                               rays.MaxDistance,
+                               rays.Buffers.at(0).Buffer,
+                               vtkm::rendering::raytracing::GetScalarFieldArray(*this->ScalarField),
+                               &locator,
+                               this->CellsetUnstruct);
+      timer2.Stop();
+      std::cout << "Invoke time: " << timer2.GetElapsedTime() << std::endl;
     }
     else
     {
-      auto sampler =
-        SamplerCellAssoc<Device, RectilinearLocatorAdapter<Device>>(ColorMap,
-                                                                    vtkm::Float32(ScalarRange.Min),
-                                                                    vtkm::Float32(ScalarRange.Max),
-                                                                    SampleDistance,
-                                                                    locator,
-                                                                    meshEpsilon,
-                                                                    token);
-      invoke(sampler,
-             rays.Dir,
-             rays.Origin,
-             rays.MinDistance,
-             rays.MaxDistance,
-             rays.Buffers.at(0).Buffer,
-             vtkm::rendering::raytracing::GetScalarFieldArray(*this->ScalarField));
     }
   }
 
@@ -793,12 +1015,22 @@ void VolumeRendererStructured::RenderOnDevice(vtkm::rendering::raytracing::Ray<P
   logger->CloseLogEntry(time);
 } //Render
 
-void VolumeRendererStructured::SetSampleDistance(const vtkm::Float32& distance)
+template <typename T>
+void VolumeRendererStructured<T>::SetSampleDistance(const vtkm::Float32& distance)
 {
   if (distance <= 0.f)
     throw vtkm::cont::ErrorBadValue("Sample distance must be positive.");
   SampleDistance = distance;
 }
+template class VolumeRendererStructured<vtkm::cont::CoordinateSystem::MultiplexerArrayType>;
+template class VolumeRendererStructured<vtkm::cont::ArrayHandle<vtkm::Vec<float, 3>, vtkm::cont::StorageTagBasic>>;
+template class VolumeRendererStructured<vtkm::cont::ArrayHandle<vtkm::Vec<float, 3>, vtkm::cont::StorageTagSOA>>;
+template class VolumeRendererStructured<vtkm::cont::ArrayHandle<vtkm::Vec<float, 3>, vtkm::cont::StorageTagUniformPoints>>;
+template class VolumeRendererStructured<vtkm::cont::ArrayHandle<vtkm::Vec<float, 3>, vtkm::cont::StorageTagCartesianProduct<vtkm::cont::StorageTagBasic, vtkm::cont::StorageTagBasic, vtkm::cont::StorageTagBasic>>>;
+template class VolumeRendererStructured<vtkm::cont::ArrayHandleCast<vtkm::Vec<float, 3>, vtkm::cont::ArrayHandle<vtkm::Vec<double, 3>, vtkm::cont::StorageTagBasic>>>;
+template class VolumeRendererStructured<vtkm::cont::ArrayHandleCast<vtkm::Vec<float, 3>, vtkm::cont::ArrayHandle<vtkm::Vec<double, 3>, vtkm::cont::StorageTagSOA>>>;
+template class VolumeRendererStructured<vtkm::cont::ArrayHandleCast<vtkm::Vec<float, 3>, vtkm::cont::ArrayHandle<vtkm::Vec<double, 3>, vtkm::cont::StorageTagCartesianProduct<vtkm::cont::StorageTagBasic, vtkm::cont::StorageTagBasic, vtkm::cont::StorageTagBasic>>>>;
+
 }
 }
 } //namespace vtkm::rendering::raytracing

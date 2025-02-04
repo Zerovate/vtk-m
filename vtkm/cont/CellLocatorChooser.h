@@ -28,7 +28,7 @@ namespace detail
 template <typename CellSetType, typename CoordinateSystemArrayType>
 struct CellLocatorChooserImpl
 {
-  using type = vtkm::cont::CellLocatorTwoLevel;
+  using type = vtkm::cont::CellLocatorTwoLevel<>;
 };
 
 using UniformArray = vtkm::cont::ArrayHandleUniformPointCoordinates;
@@ -87,7 +87,7 @@ struct CastAndCallCellLocatorChooserFunctor
                   Functor&& functor,
                   Args&&... args) const
   {
-    this->CallFunctorWithLocator<vtkm::cont::CellLocatorTwoLevel>(
+    this->CallFunctorWithLocator<vtkm::cont::CellLocatorTwoLevel<>>(
       cellSet, coordinateSystem, std::forward<Functor>(functor), std::forward<Args>(args)...);
   }
 
@@ -110,7 +110,7 @@ struct CastAndCallCellLocatorChooserFunctor
     }
     else
     {
-      this->CallFunctorWithLocator<vtkm::cont::CellLocatorTwoLevel>(
+      this->CallFunctorWithLocator<vtkm::cont::CellLocatorTwoLevel<>>(
         cellSet, coordinateSystem, std::forward<Functor>(functor), std::forward<Args>(args)...);
     }
   }

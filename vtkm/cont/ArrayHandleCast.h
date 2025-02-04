@@ -138,7 +138,7 @@ struct Storage<TargetT, vtkm::cont::StorageTagCast<SourceT, SourceStorage_>>
 /// to the specified type.
 ///
 template <typename T, typename ArrayHandleType>
-class ArrayHandleCast
+class VTKM_ALWAYS_EXPORT ArrayHandleCast
   : public vtkm::cont::ArrayHandle<
       T,
       StorageTagCast<typename ArrayHandleType::ValueType, typename ArrayHandleType::StorageTag>>

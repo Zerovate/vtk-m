@@ -413,7 +413,7 @@ struct ArrayHandleMultiplexerTraits
 /// parameters are given, they are all considered possible \c ArrayHandle types.
 ///
 template <typename... ArrayHandleTypes>
-class ArrayHandleMultiplexer
+class VTKM_ALWAYS_EXPORT ArrayHandleMultiplexer
   : public vtkm::cont::ArrayHandle<
       typename detail::ArrayHandleMultiplexerTraits<ArrayHandleTypes...>::ValueType,
       typename detail::ArrayHandleMultiplexerTraits<ArrayHandleTypes...>::StorageTag>

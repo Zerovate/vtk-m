@@ -40,6 +40,7 @@ namespace cont
 /// Javor Kalojanov, Markus Billeter, and Philipp Slusallek. "Two-Level Grids for Ray Tracing
 /// on GPUs." _Computer Graphics Forum_, 2011, pages 307-314. DOI 10.1111/j.1467-8659.2011.01862.x
 ///
+template <typename CoordType = vtkm::cont::CoordinateSystem::MultiplexerArrayType>
 class VTKM_CONT_EXPORT CellLocatorTwoLevel : public vtkm::cont::CellLocatorBase
 {
   template <typename CellSetCont>
@@ -51,8 +52,8 @@ public:
   using SupportedCellSets = VTKM_DEFAULT_CELL_SET_LIST;
 
   using CellExecObjectList = vtkm::ListTransform<SupportedCellSets, CellSetContToExec>;
-  using CellLocatorExecList =
-    vtkm::ListTransform<CellExecObjectList, vtkm::exec::CellLocatorTwoLevel>;
+ using CellLocatorExecList =
+    vtkm::ListTransformCoord<CellExecObjectList, vtkm::exec::CellLocatorTwoLevel, CoordType>;
 
   using ExecObjType = vtkm::ListApply<CellLocatorExecList, vtkm::exec::CellLocatorMultiplexer>;
   using LastCell = typename ExecObjType::LastCell;
