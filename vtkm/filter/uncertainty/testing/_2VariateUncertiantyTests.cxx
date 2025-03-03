@@ -17,7 +17,6 @@
 
 namespace
 {
-// Create a test dataset with four fields for 2-variate uncertainty
 vtkm::cont::DataSet Make2VariateDataSet()
 {
   const vtkm::Id3 dims(20, 20, 20);
@@ -25,7 +24,6 @@ vtkm::cont::DataSet Make2VariateDataSet()
   vtkm::cont::DataSetBuilderUniform dsBuilder;
   vtkm::cont::DataSet ds = dsBuilder.Create(dims);
 
-  // For testing purposes, we choose constant fields
   std::vector<vtkm::FloatDefault> ensembleMinX(numPoints, 10);
   std::vector<vtkm::FloatDefault> ensembleMaxX(numPoints, 20);
   std::vector<vtkm::FloatDefault> ensembleMinY(numPoints, 10);
