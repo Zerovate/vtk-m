@@ -144,7 +144,12 @@ void Test2VariateUncertaintyComparison()
   }
 }
 
-} 
+}
+
+int _2VariateUncertiantyTests(int argc, char* argv[])
+{
+  return vtkm::cont::testing::Testing::Run(Test2VariateUncertainty, argc, argv);
+}
 
 int UnitTest2VariateUncertainty(int argc, char* argv[])
 {
