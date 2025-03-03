@@ -12,6 +12,7 @@
 #define vtk_m_filter_bivariate_uncertainty_h
 
 #include <vtkm/filter/Filter.h>
+#include <vtkm/filter/uncertainty/vtkm_filter_uncertainty_export.h>
 
 namespace vtkm
 {

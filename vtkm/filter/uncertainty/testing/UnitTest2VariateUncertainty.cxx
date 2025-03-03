@@ -47,7 +47,7 @@ void Test2VariateUncertainty()
 
   const vtkm::FloatDefault delta = 0.1f;
 
-  vtkm::filter::uncertainty::FiberMean closedFormFilter;
+  vtkm::filter::uncertainty::Fiber closedFormFilter;
   closedFormFilter.SetMinAxis(minAxis);
   closedFormFilter.SetMaxAxis(maxAxis);
   closedFormFilter.SetMinX("ensemble_min_x");
@@ -65,7 +65,7 @@ void Test2VariateUncertainty()
   auto closedPortal = closedArray.ReadPortal();
 
   // Run MonteCarlo approach
-  vtkm::filter::uncertainty::FiberMean monteCarloFilter;
+  vtkm::filter::uncertainty::Fiber monteCarloFilter;
   monteCarloFilter.SetMinAxis(minAxis);
   monteCarloFilter.SetMaxAxis(maxAxis);
   monteCarloFilter.SetMinX("ensemble_min_x");
@@ -102,7 +102,7 @@ void Test2VariateUncertaintyComparison()
   const vtkm::FloatDefault delta = 0.1f;
 
 
-  vtkm::filter::uncertainty::FiberMean closedFormFilter;
+  vtkm::filter::uncertainty::Fiber closedFormFilter;
   closedFormFilter.SetMinAxis(minAxis);
   closedFormFilter.SetMaxAxis(maxAxis);
   closedFormFilter.SetMinX("ensemble_min_x");
@@ -119,7 +119,7 @@ void Test2VariateUncertaintyComparison()
   unknownClosed.AsArrayHandle(closedArray);
   auto closedPortal = closedArray.ReadPortal();
 
-  vtkm::filter::uncertainty::FiberMean monteCarloFilter;
+  vtkm::filter::uncertainty::Fiber monteCarloFilter;
   monteCarloFilter.SetMinAxis(minAxis);
   monteCarloFilter.SetMaxAxis(maxAxis);
   monteCarloFilter.SetMinX("ensemble_min_x");
