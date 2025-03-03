@@ -8,7 +8,75 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
-#include "./2VariateUncertianty.h"
+
+
+#include <vtkm/filter/Filter.h>
+
+namespace vtkm
+{
+namespace filter
+{
+namespace uncertainty
+{
+class Fiber : public vtkm::filter::Filter
+{
+  vtkm::Pair<vtkm::FloatDefault, vtkm::FloatDefault> minAxis;
+  vtkm::Pair<vtkm::FloatDefault, vtkm::FloatDefault> maxAxis;
+  std::string Approach = "ClosedForm"; // MonteCarlo, ClosedForm, Mean, Truth
+  vtkm::Id NumSamples = 500;
+
+public:
+  VTKM_CONT void SetMinAxis(const vtkm::Pair<vtkm::FloatDefault, vtkm::FloatDefault>& minCoordinate)
+  {
+    this->minAxis = minCoordinate;
+  }
+
+  VTKM_CONT void SetMaxAxis(const vtkm::Pair<vtkm::FloatDefault, vtkm::FloatDefault>& maxCoordinate)
+  {
+    this->maxAxis = maxCoordinate;
+  }
+  VTKM_CONT void SetMinX(const std::string& fieldName)
+  {
+    this->SetActiveField(0, fieldName, vtkm::cont::Field::Association::Points);
+  }
+  VTKM_CONT void SetMaxX(const std::string& fieldName)
+  {
+    this->SetActiveField(1, fieldName, vtkm::cont::Field::Association::Points);
+  }
+  VTKM_CONT void SetMinY(const std::string& fieldName)
+  {
+    this->SetActiveField(2, fieldName, vtkm::cont::Field::Association::Points);
+  }
+  VTKM_CONT void SetMaxY(const std::string& fieldName)
+  {
+    this->SetActiveField(3, fieldName, vtkm::cont::Field::Association::Points);
+  }
+  VTKM_CONT void SetMinZ(const std::string& fieldName)
+  {
+    this->SetActiveField(4, fieldName, vtkm::cont::Field::Association::Points);
+  }
+  VTKM_CONT void SetMaxZ(const std::string& fieldName)
+  {
+    this->SetActiveField(5, fieldName, vtkm::cont::Field::Association::Points);
+  }
+
+  VTKM_CONT void SetNumSamples(const vtkm::Id& numSamples) { this->NumSamples = numSamples; }
+
+  VTKM_CONT void SetApproach(const std::string& approach) { this->Approach = approach; }
+
+
+private:
+  VTKM_CONT vtkm::cont::DataSet DoExecute(const vtkm::cont::DataSet& input) override;
+};
+}
+}
+}
+
+
+
+
+//====================================================================================================================
+//#include "./2VariateUncertianty.h"
 #include "./worklet/2VariateUncertianty.h"
 #include <vtkm/cont/DataSet.h>
 #include <vtkm/cont/Timer.h>
@@ -19,7 +87,7 @@ namespace filter
 {
 namespace uncertainty
 {
-VTKM_CONT vtkm::cont::DataSet FiberMean::DoExecute(const vtkm::cont::DataSet& input)
+VTKM_CONT vtkm::cont::DataSet Fiber::DoExecute(const vtkm::cont::DataSet& input)
 {
   std::string FieldName;
 
