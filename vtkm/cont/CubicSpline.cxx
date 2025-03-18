@@ -29,6 +29,9 @@ void CubicSpline::Update() const
 
 void CubicSpline::Build()
 {
+  //TODO: convert this a worklet.
+
+
   //Calculate the spline coeficients.
   vtkm::Id n = this->ControlPoints.GetNumberOfValues();
   if (n < 2)
