@@ -80,6 +80,7 @@ set(headers
   ColorTableSamples.h
   ConvertNumComponentsToOffsets.h
   CoordinateSystem.h
+  CubicSpline.h
   DataSet.h
   DataSetBuilderCurvilinear.h
   DataSetBuilderExplicit.h
@@ -153,6 +154,7 @@ set(sources
   CellSetStructured.cxx
   ColorTablePresets.cxx
   CoordinateSystem.cxx
+  CubicSpline.cxx
   DataSet.cxx
   DataSetBuilderCurvilinear.cxx
   DataSetBuilderExplicit.cxx

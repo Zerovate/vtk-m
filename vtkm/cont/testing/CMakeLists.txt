@@ -105,6 +105,7 @@ set(unit_tests_device
   UnitTestCellSetExplicit.cxx
   UnitTestCellSetPermutation.cxx
   UnitTestColorTable.cxx
+  UnitTestCubicSpline.cxx
   UnitTestDataSetPermutation.cxx
   UnitTestDataSetSingleType.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
