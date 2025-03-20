@@ -72,7 +72,6 @@ void CheckEvaluation(const vtkm::cont::CubicSpline& spline,
 
 void CubicSplineTest()
 {
-
   std::vector<vtkm::FloatDefault> xVals = { 0.0f, 1.0f, 1.5f, 2.0f, 3.0f, 4.0f };
   std::vector<vtkm::FloatDefault> yVals = { 0.0f, -1.0f, 2.0f, 1.0f, -1.0f, 0.0f };
 

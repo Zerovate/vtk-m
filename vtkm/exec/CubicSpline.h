@@ -50,9 +50,9 @@ public:
       return false;
 
     vtkm::FloatDefault dx = param - this->ControlPointsPortal.Get(idx);
-    auto B = this->CoefficientsBPortal.Get(idx);
-    auto C = this->CoefficientsCPortal.Get(idx);
-    auto D = this->CoefficientsDPortal.Get(idx);
+    const auto B = this->CoefficientsBPortal.Get(idx);
+    const auto C = this->CoefficientsCPortal.Get(idx);
+    const auto D = this->CoefficientsDPortal.Get(idx);
     val = this->ValuesPortal.Get(idx) + B * dx + C * dx * dx + D * dx * dx * dx;
 
     return true;
@@ -62,8 +62,6 @@ private:
   vtkm::Id FindInterval(const vtkm::FloatDefault& x) const
   {
     vtkm::Id numPoints = this->ControlPointsPortal.GetNumberOfValues();
-    auto p0 = this->ControlPointsPortal.Get(0);
-    auto p1 = this->ControlPointsPortal.Get(numPoints - 1);
     if (x < this->ControlPointsPortal.Get(0) || x > this->ControlPointsPortal.Get(numPoints - 1))
       return -1;
 

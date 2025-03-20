@@ -55,6 +55,15 @@ private:
   void SetModified() { this->Modified = true; }
   bool GetModified() const { return this->Modified; }
 
+  template <typename ArrayType>
+  void CalculateLMuZ(ArrayType& Mu, ArrayType& Z, const ArrayType& alpha, const ArrayType& h) const;
+
+  template <typename ArrayPortalType>
+  void CalculateCoefficients(vtkm::Id n,
+                             const ArrayPortalType& H,
+                             const ArrayPortalType& Mu,
+                             const ArrayPortalType& Z);
+
   void Build();
 
   vtkm::cont::ArrayHandle<vtkm::FloatDefault> ControlPoints;
