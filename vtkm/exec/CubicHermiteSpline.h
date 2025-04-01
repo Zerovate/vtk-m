@@ -11,6 +11,7 @@
 #ifndef vtk_m_exec_CubicHermiteSpline_h
 #define vtk_m_exec_CubicHermiteSpline_h
 
+#include <vtkm/ErrorCode.h>
 #include <vtkm/Types.h>
 #include <vtkm/cont/ArrayHandle.h>
 
@@ -42,13 +43,13 @@ public:
   }
 
   VTKM_EXEC
-  bool Evaluate(const vtkm::FloatDefault& tVal, vtkm::Vec3f& val) const
+  vtkm::ErrorCode Evaluate(const vtkm::FloatDefault& tVal, vtkm::Vec3f& val) const
   {
     vtkm::Id idx = this->FindInterval(tVal);
     if (idx < 0)
     {
       idx = this->FindInterval(tVal);
-      return false;
+      return vtkm::ErrorCode::ValueOutOfRange;
     }
 
     auto m0 = this->Tangents.Get(idx);
@@ -70,7 +71,7 @@ public:
     for (vtkm::Id i = 0; i < 3; ++i)
       val[i] = h00 * d0[i] + h10 * (t1 - t0) * m0[i] + h01 * d1[i] + h11 * (t1 - t0) * m1[i];
 
-    return true;
+    return vtkm::ErrorCode::Success;
   }
 
 private:
@@ -107,8 +108,6 @@ private:
   vtkm::Id FindInterval(const vtkm::FloatDefault& t) const
   {
     vtkm::Id n = this->Data.GetNumberOfValues();
-    auto k0 = this->Knots.Get(0);
-    auto k1 = this->Knots.Get(n - 1);
 
     if (t < this->Knots.Get(0) || t > this->Knots.Get(n - 1))
       return -1;

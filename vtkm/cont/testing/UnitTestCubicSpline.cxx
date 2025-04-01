@@ -36,8 +36,8 @@ public:
                             const CubicSplineType& spline,
                             ResultType& value) const
   {
-    bool valid = spline.Evaluate(param, value);
-    if (!valid)
+    auto res = spline.Evaluate(param, value);
+    if (res != vtkm::ErrorCode::Success)
       throw vtkm::cont::ErrorBadValue("Spline evaluation failed.");
   }
 };

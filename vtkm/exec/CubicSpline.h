@@ -10,6 +10,7 @@
 #ifndef vtkm_exec_cubicspline_h
 #define vtkm_exec_cubicspline_h
 
+#include <vtkm/ErrorCode.h>
 #include <vtkm/Types.h>
 #include <vtkm/cont/ArrayHandle.h>
 
@@ -41,13 +42,13 @@ public:
   }
 
   VTKM_EXEC
-  bool Evaluate(const vtkm::FloatDefault& param, vtkm::FloatDefault& val) const
+  vtkm::ErrorCode Evaluate(const vtkm::FloatDefault& param, vtkm::FloatDefault& val) const
   {
     val = 0;
 
     vtkm::Id idx = this->FindInterval(param);
     if (idx < 0)
-      return false;
+      return vtkm::ErrorCode::ValueOutOfRange;
 
     vtkm::FloatDefault dx = param - this->ControlPointsPortal.Get(idx);
     auto B = this->CoefficientsBPortal.Get(idx);
@@ -55,7 +56,7 @@ public:
     auto D = this->CoefficientsDPortal.Get(idx);
     val = this->ValuesPortal.Get(idx) + B * dx + C * dx * dx + D * dx * dx * dx;
 
-    return true;
+    return vtkm::ErrorCode::Success;
   }
 
 private:
