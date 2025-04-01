@@ -203,7 +203,7 @@ set(device_sources
   CellSetExtrude.cxx
   ColorTable.cxx
   ConvertNumComponentsToOffsets.cxx
-  CubicHermiteSpline.cxx  
+  CubicHermiteSpline.cxx
   CubicSpline.cxx
   Field.cxx
   internal/ArrayCopyUnknown.cxx
