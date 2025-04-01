@@ -67,11 +67,23 @@ private:
     if (x < this->ControlPointsPortal.Get(0) || x > this->ControlPointsPortal.Get(numPoints - 1))
       return -1;
 
-    for (vtkm::Id i = 0; i < numPoints - 1; ++i)
+    //Binary search for the interval
+    vtkm::Id left = 0;
+    vtkm::Id right = numPoints - 1;
+
+    while (left < right)
     {
-      if (x >= this->ControlPointsPortal.Get(i) && x <= this->ControlPointsPortal.Get(i + 1))
-        return i;
+      vtkm::Id mid = left + (right - left) / 2;
+
+      if (x >= this->ControlPointsPortal.Get(mid) && x <= this->ControlPointsPortal.Get(mid + 1))
+        return mid;
+      else if (x < this->ControlPointsPortal.Get(mid))
+        right = mid;
+      else
+        left = mid;
     }
+
+    // x not within the interval. We should not get here.
     return -1;
   }
 

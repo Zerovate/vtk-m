@@ -75,50 +75,30 @@ public:
   }
 
 private:
-  vtkm::Vec3f ComputeTangent(vtkm::Id idx) const
-  {
-    const vtkm::Id n = this->Data.GetNumberOfValues();
-    vtkm::Id idx0, idx1;
-    if (idx == 0) // Forward difference
-    {
-      idx0 = 0;
-      idx1 = 1;
-    }
-    else if (idx == n - 1) // Backward difference
-    {
-      idx0 = n - 2;
-      idx1 = n - 1;
-    }
-    else // central difference
-    {
-      idx0 = idx - 1;
-      idx1 = idx + 1;
-    }
-
-    auto dX = this->Data.Get(idx1) - this->Data.Get(idx0);
-    auto dT = this->Knots.Get(idx1) - this->Knots.Get(idx0);
-    std::cout << "dX= " << dX << std::endl;
-    std::cout << "dT= " << dT << std::endl;
-
-    vtkm::Vec3f tanVec = dX / dT;
-    std::cout << "tanVec= " << tanVec << std::endl;
-    return tanVec;
-  }
-
   vtkm::Id FindInterval(const vtkm::FloatDefault& t) const
   {
-    vtkm::Id n = this->Data.GetNumberOfValues();
+    vtkm::Id n = this->Knots.GetNumberOfValues();
 
     if (t < this->Knots.Get(0) || t > this->Knots.Get(n - 1))
       return -1;
-    if (t == this->Knots.Get(n - 1))
-      return n - 2;
 
-    for (vtkm::Id i = 0; i < n - 1; ++i)
+    //Binary search for the interval
+    vtkm::Id left = 0;
+    vtkm::Id right = n - 1;
+
+    while (left < right)
     {
-      if (t >= this->Knots.Get(i) && t < this->Knots.Get(i + 1))
-        return i;
+      vtkm::Id mid = left + (right - left) / 2;
+
+      if (t >= this->Knots.Get(mid) && t <= this->Knots.Get(mid + 1))
+        return mid;
+      else if (t < this->Knots.Get(mid))
+        right = mid;
+      else
+        left = mid;
     }
+
+    // t not within the interval. We should not get here.
     return -1;
   }
 
