@@ -30,6 +30,7 @@ set(headers
   ArrayHandleGroupVecVariable.h
   ArrayHandleImplicit.h
   ArrayHandleIndex.h
+  ArrayHandleIsMonotonic.h
   ArrayHandleMultiplexer.h
   ArrayHandleOffsetsToNumComponents.h
   ArrayHandlePermutation.h
@@ -80,6 +81,7 @@ set(headers
   ColorTableSamples.h
   ConvertNumComponentsToOffsets.h
   CoordinateSystem.h
+  CubicHermiteSpline.h
   CubicSpline.h
   DataSet.h
   DataSetBuilderCurvilinear.h
@@ -131,6 +133,7 @@ set(headers
   )
 
 set(template_sources
+  ArrayHandleIsMonotonic.hxx
   CellSetExplicit.hxx
   ParticleArrayCopy.hxx
   )
@@ -154,7 +157,6 @@ set(sources
   CellSetStructured.cxx
   ColorTablePresets.cxx
   CoordinateSystem.cxx
-  CubicSpline.cxx
   DataSet.cxx
   DataSetBuilderCurvilinear.cxx
   DataSetBuilderExplicit.cxx
@@ -201,6 +203,8 @@ set(device_sources
   CellSetExtrude.cxx
   ColorTable.cxx
   ConvertNumComponentsToOffsets.cxx
+  CubicHermiteSpline.cxx  
+  CubicSpline.cxx
   Field.cxx
   internal/ArrayCopyUnknown.cxx
   internal/ArrayRangeComputeUtils.cxx

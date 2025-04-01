@@ -22,6 +22,7 @@ set(unit_tests
   UnitTestArrayHandleCounting.cxx
   UnitTestArrayHandleDiscard.cxx
   UnitTestArrayHandleIndex.cxx
+  UnitTestArrayHandleIsMonotonic.cxx
   UnitTestArrayHandleOffsetsToNumComponents.cxx
   UnitTestArrayHandleRandomUniformBits.cxx
   UnitTestArrayHandleReverse.cxx
