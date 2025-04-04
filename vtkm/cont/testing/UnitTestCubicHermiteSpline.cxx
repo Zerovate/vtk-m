@@ -40,20 +40,23 @@ public:
   }
 };
 
-template <typename SplineType, typename T>
-void CheckEvaluation(const SplineType& spline,
-                     const std::vector<vtkm::FloatDefault>& params,
-                     const std::vector<T>& answer)
+void CheckEvaluation(const vtkm::cont::CubicHermiteSpline& spline,
+                     const vtkm::cont::ArrayHandle<vtkm::FloatDefault>& params,
+                     const std::vector<vtkm::Vec3f>& answer)
 {
-  auto paramsAH = vtkm::cont::make_ArrayHandle(params, vtkm::CopyFlag::Off);
-
   vtkm::cont::Invoker invoke;
-  vtkm::cont::ArrayHandle<T> result;
-
-  invoke(SplineEvalWorklet{}, paramsAH, spline, result);
+  vtkm::cont::ArrayHandle<vtkm::Vec3f> result;
+  invoke(SplineEvalWorklet{}, params, spline, result);
 
   VTKM_TEST_ASSERT(
     test_equal_ArrayHandles(result, vtkm::cont::make_ArrayHandle(answer, vtkm::CopyFlag::Off)));
+}
+
+void CheckEvaluation(const vtkm::cont::CubicHermiteSpline& spline,
+                     const std::vector<vtkm::FloatDefault>& params,
+                     const std::vector<vtkm::Vec3f>& answer)
+{
+  return CheckEvaluation(spline, vtkm::cont::make_ArrayHandle(params, vtkm::CopyFlag::Off), answer);
 }
 
 void CubicHermiteSplineTest()
@@ -61,12 +64,42 @@ void CubicHermiteSplineTest()
   std::vector<vtkm::Vec3f> pts = { { 0, 0, 0 },  { 1, 1, 0 },  { 2, 1, 0 }, { 3, -.5, 0 },
                                    { 4, -1, 0 }, { 5, -1, 0 }, { 6, 0, 0 } };
 
-  std::vector<vtkm::FloatDefault> knots;
-  pts.clear();
+  vtkm::cont::CubicHermiteSpline spline(pts);
+  //Evaluation at knots gives the sample pts.
+  CheckEvaluation(spline, spline.GetKnots(), pts);
 
-  vtkm::Id n = 100;
+  //Evaluation at non-knot values.
+  std::vector<vtkm::FloatDefault> params = { 0.21, 0.465, 0.501, 0.99832 };
+  std::vector<vtkm::Vec3f> result = { { 1.20072, 1.07379, 0 },
+                                      { 2.64681, 0.012108, 0 },
+                                      { 2.79356, -0.239254, 0 },
+                                      { 5.99081, -0.00924034, 0 } };
+  CheckEvaluation(spline, params, result);
+
+  //Explicitly set knots and check.
+  std::vector<vtkm::FloatDefault> knots = { 0, 1, 2, 3, 4, 5, 6 };
+  spline = vtkm::cont::CubicHermiteSpline(pts, knots);
+  CheckEvaluation(spline, knots, pts);
+
+  //Non-uniform knots.
+  knots = { 0, 1, 2, 2.1, 2.2, 2.3, 3 };
+  spline = vtkm::cont::CubicHermiteSpline(pts, knots);
+  CheckEvaluation(spline, knots, pts);
+
+  params = { 1.5, 2.05, 2.11, 2.299, 2.8 };
+  result = { { 1.39773, 1.23295, 0 },
+             { 2.39773, 0.357954, 0 },
+             { 3.1, -0.59275, 0 },
+             { 4.99735, -1.00125, 0 },
+             { 5.75802, -0.293003, 0 } };
+  CheckEvaluation(spline, params, result);
+
+  //Create a more complex spline from analytical functions.
+  vtkm::Id n = 500;
   vtkm::FloatDefault t = 0.0, dt = vtkm::TwoPi() / static_cast<vtkm::FloatDefault>(n);
 
+  pts.clear();
+  knots.clear();
   while (t <= vtkm::TwoPi())
   {
     vtkm::FloatDefault x = vtkm::Cos(t);
@@ -76,38 +109,14 @@ void CubicHermiteSplineTest()
     knots.push_back(t);
     t += dt;
   }
-  vtkm::cont::CubicHermiteSpline spline0(pts, knots);
-  auto parametricRange = spline0.GetParametricRange();
+  spline = vtkm::cont::CubicHermiteSpline(pts, knots);
+  CheckEvaluation(spline, knots, pts);
 
-  t = parametricRange.Min;
-  dt = parametricRange.Length() / 1500;
-  std::vector<vtkm::FloatDefault> vals;
-  while (t <= parametricRange.Max)
-  {
-    vals.push_back(t);
-    t += dt;
-  }
-  std::cout << "KNOTS= ";
-  vtkm::cont::printSummary_ArrayHandle(spline0.GetKnots(), std::cout);
-
-  vtkm::cont::Invoker invoke;
-  vtkm::cont::ArrayHandle<vtkm::Vec3f> result;
-  invoke(
-    SplineEvalWorklet{}, vtkm::cont::make_ArrayHandle(vals, vtkm::CopyFlag::Off), spline0, result);
-
-  std::cout << "SaveSamples" << std::endl;
-  std::ofstream fout("/Users/dpn/output.txt"), ptsOut("/Users/dpn/pts.txt");
-  fout << "T, X, Y, Z" << std::endl;
-  ptsOut << "T, X, Y, Z" << std::endl;
-  auto knots_ = spline0.GetKnots().ReadPortal();
-  for (vtkm::Id i = 0; i < pts.size(); i++)
-    ptsOut << knots_.Get(i) << ", " << pts[i][0] << ", " << pts[i][1] << ", " << pts[i][2]
-           << std::endl;
-
-  auto res = result.ReadPortal();
-  for (vtkm::Id i = 0; i < res.GetNumberOfValues(); i++)
-    fout << vals[i] << ", " << res.Get(i)[0] << ", " << res.Get(i)[1] << ", " << res.Get(i)[2]
-         << std::endl;
+  params = { 0.15, 2.38, 4.92, 6.2 };
+  result.clear();
+  for (const auto& p : params)
+    result.push_back({ vtkm::Cos(p), vtkm::Sin(p), vtkm::Cos(p) * vtkm::Sin(p) });
+  CheckEvaluation(spline, params, result);
 }
 
 } // anonymous namespace

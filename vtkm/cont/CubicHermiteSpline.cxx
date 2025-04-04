@@ -8,8 +8,10 @@
 //  PURPOSE.  See the above copyright notice for more information.
 //============================================================================
 
+#include <vtkm/BinaryOperators.h>
 #include <vtkm/VectorAnalysis.h>
 #include <vtkm/cont/Algorithm.h>
+#include <vtkm/cont/ArrayHandleConstant.h>
 #include <vtkm/cont/CubicHermiteSpline.h>
 #include <vtkm/exec/CubicHermiteSpline.h>
 #include <vtkm/worklet/WorkletMapField.h>
@@ -35,21 +37,6 @@ struct CalcNeighborDistanceWorklet : public vtkm::worklet::WorkletMapField
     else
       val = vtkm::Magnitude(data.Get(idx) - data.Get(idx - 1));
   }
-};
-
-struct DivideBy : public vtkm::worklet::WorkletMapField
-{
-  DivideBy(const vtkm::FloatDefault& divisor)
-    : Divisor(divisor)
-  {
-  }
-
-  using ControlSignature = void(FieldInOut);
-  using ExecutionSignature = void(_1);
-
-  VTKM_EXEC void operator()(vtkm::FloatDefault& val) const { val = val / this->Divisor; }
-
-  vtkm::FloatDefault Divisor;
 };
 
 struct CalcTangentsWorklet : public vtkm::worklet::WorkletMapField
@@ -89,7 +76,6 @@ struct CalcTangentsWorklet : public vtkm::worklet::WorkletMapField
     auto dT = knots.Get(idx1) - knots.Get(idx0);
 
     tangent = dX / dT;
-    std::cout << "Tan: " << idx << " = " << tangent << "  dx: " << dX << " " << dT << std::endl;
   }
 
   vtkm::Id NumPoints;
@@ -117,9 +103,8 @@ VTKM_CONT void CubicHermiteSpline::ComputeKnots()
   if (sum == 0.0)
     throw std::invalid_argument("Error: accumulated distance between data is zero.");
 
-  invoker(DivideBy{ sum }, this->Knots);
-  std::cout << ":: params= ";
-  vtkm::cont::printSummary_ArrayHandle(this->Knots, std::cout);
+  auto divideBy = vtkm::cont::make_ArrayHandleConstant(1.0 / sum, this->Knots.GetNumberOfValues());
+  vtkm::cont::Algorithm::Transform(this->Knots, divideBy, this->Knots, vtkm::Product{});
 }
 
 VTKM_CONT void CubicHermiteSpline::ComputeTangents()
@@ -149,6 +134,5 @@ vtkm::exec::CubicHermiteSpline CubicHermiteSpline::PrepareForExecution(
 
   return ExecObjType(this->Data, this->Knots, this->Tangents, device, token);
 }
-
 }
 } // namespace vtkm::cont
