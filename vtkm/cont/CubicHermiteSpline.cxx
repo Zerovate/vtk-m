@@ -10,7 +10,6 @@
 
 #include <vtkm/VectorAnalysis.h>
 #include <vtkm/cont/Algorithm.h>
-#include <vtkm/cont/ArrayHandleIsMonotonic.h>
 #include <vtkm/cont/CubicHermiteSpline.h>
 #include <vtkm/exec/CubicHermiteSpline.h>
 #include <vtkm/worklet/WorkletMapField.h>
@@ -140,10 +139,6 @@ vtkm::exec::CubicHermiteSpline CubicHermiteSpline::PrepareForExecution(
   vtkm::Id n = this->Data.GetNumberOfValues();
   if (n < 2)
     throw std::invalid_argument("At least two points are required for spline interpolation.");
-
-  bool isMonotonic = vtkm::cont::IsMonotonicIncreasing(this->Knots);
-  if (!isMonotonic)
-    throw std::invalid_argument("Error. Knots must be monotonic increasing.");
 
   if (n != this->Knots.GetNumberOfValues())
     throw std::invalid_argument("Number of data points must match the number of knots.");

@@ -22,7 +22,6 @@ set(unit_tests
   UnitTestArrayHandleCounting.cxx
   UnitTestArrayHandleDiscard.cxx
   UnitTestArrayHandleIndex.cxx
-  UnitTestArrayHandleIsMonotonic.cxx
   UnitTestArrayHandleOffsetsToNumComponents.cxx
   UnitTestArrayHandleRandomUniformBits.cxx
   UnitTestArrayHandleReverse.cxx
@@ -106,7 +105,7 @@ set(unit_tests_device
   UnitTestCellSetExplicit.cxx
   UnitTestCellSetPermutation.cxx
   UnitTestColorTable.cxx
-  UnitTestCubicSpline.cxx
+  UnitTestCubicHermiteSpline.cxx
   UnitTestDataSetPermutation.cxx
   UnitTestDataSetSingleType.cxx
   UnitTestDeviceAdapterAlgorithmDependency.cxx
