@@ -30,55 +30,51 @@ public:
   CubicHermiteSpline() = default;
   virtual ~CubicHermiteSpline() = default;
 
-  CubicHermiteSpline(const std::vector<vtkm::Vec3f>& data, vtkm::CopyFlag copy = vtkm::CopyFlag::On)
-    : Data(vtkm::cont::make_ArrayHandle(data, copy))
+  VTKM_CONT void SetData(const vtkm::cont::ArrayHandle<vtkm::Vec3f>& data) { this->Data = data; }
+  VTKM_CONT void SetData(const std::vector<vtkm::Vec3f>& data,
+                         vtkm::CopyFlag copy = vtkm::CopyFlag::On)
   {
-    this->ComputeKnots();
-    this->ComputeTangents();
+    this->Data = vtkm::cont::make_ArrayHandle(data, copy);
   }
 
-  CubicHermiteSpline(const std::vector<vtkm::Vec3f>& data,
-                     const std::vector<vtkm::Vec3f>& tangents,
-                     vtkm::CopyFlag copy = vtkm::CopyFlag::On)
-    : Data(vtkm::cont::make_ArrayHandle(data, copy))
-    , Tangents(vtkm::cont::make_ArrayHandle(tangents, copy))
+  VTKM_CONT void SetKnots(const vtkm::cont::ArrayHandle<vtkm::FloatDefault>& knots)
   {
-    this->ComputeKnots();
+    this->Knots = knots;
+  }
+  VTKM_CONT void SetKnots(const std::vector<vtkm::FloatDefault>& knots,
+                          vtkm::CopyFlag copy = vtkm::CopyFlag::On)
+  {
+    this->Knots = vtkm::cont::make_ArrayHandle(knots, copy);
   }
 
-  CubicHermiteSpline(const std::vector<vtkm::Vec3f>& data,
-                     const std::vector<vtkm::FloatDefault>& knots,
-                     vtkm::CopyFlag copy = vtkm::CopyFlag::On)
-    : Data(vtkm::cont::make_ArrayHandle(data, copy))
-    , Knots(vtkm::cont::make_ArrayHandle(knots, copy))
+  VTKM_CONT void SetTangents(const vtkm::cont::ArrayHandle<vtkm::Vec3f>& tangents)
   {
-    this->ComputeTangents();
+    this->Tangents = tangents;
+  }
+  VTKM_CONT void SetTangents(const std::vector<vtkm::Vec3f>& tangents,
+                             vtkm::CopyFlag copy = vtkm::CopyFlag::On)
+  {
+    this->Tangents = vtkm::cont::make_ArrayHandle(tangents, copy);
   }
 
-  CubicHermiteSpline(const std::vector<vtkm::Vec3f>& data,
-                     const std::vector<vtkm::Vec3f>& tangents,
-                     const std::vector<vtkm::FloatDefault>& knots,
-                     vtkm::CopyFlag copy = vtkm::CopyFlag::On)
-    : Data(vtkm::cont::make_ArrayHandle(data, copy))
-    , Knots(vtkm::cont::make_ArrayHandle(knots, copy))
-    , Tangents(vtkm::cont::make_ArrayHandle(tangents, copy))
-  {
-  }
-
-  VTKM_CONT vtkm::Range GetParametricRange() const;
+  VTKM_CONT vtkm::Range GetParametricRange();
 
   VTKM_CONT const vtkm::cont::ArrayHandle<vtkm::Vec3f>& GetData() const { return this->Data; }
-  VTKM_CONT const vtkm::cont::ArrayHandle<vtkm::Vec3f>& GetTangents() const
+  VTKM_CONT const vtkm::cont::ArrayHandle<vtkm::Vec3f>& GetTangents()
   {
+    if (this->Tangents.GetNumberOfValues() == 0)
+      this->ComputeTangents();
     return this->Tangents;
   }
-  VTKM_CONT const vtkm::cont::ArrayHandle<vtkm::FloatDefault>& GetKnots() const
+  VTKM_CONT const vtkm::cont::ArrayHandle<vtkm::FloatDefault>& GetKnots()
   {
+    if (this->Knots.GetNumberOfValues() == 0)
+      this->ComputeKnots();
     return this->Knots;
   }
 
   VTKM_CONT vtkm::exec::CubicHermiteSpline PrepareForExecution(vtkm::cont::DeviceAdapterId device,
-                                                               vtkm::cont::Token& token) const;
+                                                               vtkm::cont::Token& token);
 
 private:
   VTKM_CONT void ComputeKnots();
@@ -88,7 +84,6 @@ private:
   vtkm::cont::ArrayHandle<vtkm::FloatDefault> Knots;
   vtkm::cont::ArrayHandle<vtkm::Vec3f> Tangents;
 };
-
 }
 } // vtkm::cont
 

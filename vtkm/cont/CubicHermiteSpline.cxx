@@ -82,11 +82,17 @@ struct CalcTangentsWorklet : public vtkm::worklet::WorkletMapField
 };
 } //anonymous namespace
 
-VTKM_CONT vtkm::Range CubicHermiteSpline::GetParametricRange() const
+VTKM_CONT vtkm::Range CubicHermiteSpline::GetParametricRange()
 {
-  auto portal = this->Knots.ReadPortal();
-  auto n = portal.GetNumberOfValues();
-  return { portal.Get(0), portal.Get(n - 1) };
+  auto n = this->Knots.GetNumberOfValues();
+  if (n == 0)
+  {
+    this->ComputeKnots();
+    n = this->Knots.GetNumberOfValues();
+  }
+  const auto ids = vtkm::cont::make_ArrayHandle<vtkm::Id>({ 0, n - 1 });
+  const std::vector<vtkm::FloatDefault> output = vtkm::cont::ArrayGetValues(ids, this->Knots);
+  return { output[0], output[1] };
 }
 
 VTKM_CONT void CubicHermiteSpline::ComputeKnots()
@@ -119,16 +125,20 @@ VTKM_CONT void CubicHermiteSpline::ComputeTangents()
 
 vtkm::exec::CubicHermiteSpline CubicHermiteSpline::PrepareForExecution(
   vtkm::cont::DeviceAdapterId device,
-  vtkm::cont::Token& token) const
+  vtkm::cont::Token& token)
 {
   vtkm::Id n = this->Data.GetNumberOfValues();
   if (n < 2)
-    throw std::invalid_argument("At least two points are required for spline interpolation.");
+    throw vtkm::cont::ErrorBadValue("At least two points are required for spline interpolation.");
+  if (this->Knots.GetNumberOfValues() == 0)
+    this->ComputeKnots();
+  if (this->Tangents.GetNumberOfValues() == 0)
+    this->ComputeTangents();
 
   if (n != this->Knots.GetNumberOfValues())
-    throw std::invalid_argument("Number of data points must match the number of knots.");
+    throw vtkm::cont::ErrorBadValue("Number of data points must match the number of knots.");
   if (n != this->Tangents.GetNumberOfValues())
-    throw std::invalid_argument("Number of data points must match the number of tangents.");
+    throw vtkm::cont::ErrorBadValue("Number of data points must match the number of tangents.");
 
   using ExecObjType = vtkm::exec::CubicHermiteSpline;
 

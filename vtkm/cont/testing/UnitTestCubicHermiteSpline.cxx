@@ -36,7 +36,7 @@ public:
   {
     auto res = spline.Evaluate(param, value);
     if (res != vtkm::ErrorCode::Success)
-      throw vtkm::cont::ErrorBadValue("Spline evaluation failed.");
+      this->RaiseError("Spline evaluation failed.");
   }
 };
 
@@ -64,7 +64,8 @@ void CubicHermiteSplineTest()
   std::vector<vtkm::Vec3f> pts = { { 0, 0, 0 },  { 1, 1, 1 },  { 2, 1, 0 }, { 3, -.5, -1 },
                                    { 4, -1, 0 }, { 5, -1, 1 }, { 6, 0, 0 } };
 
-  vtkm::cont::CubicHermiteSpline spline(pts);
+  vtkm::cont::CubicHermiteSpline spline;
+  spline.SetData(pts);
   //Evaluation at knots gives the sample pts.
   CheckEvaluation(spline, spline.GetKnots(), pts);
 
@@ -78,7 +79,9 @@ void CubicHermiteSplineTest()
 
   //Explicitly set knots and check.
   std::vector<vtkm::FloatDefault> knots = { 0, 1, 2, 3, 4, 5, 6 };
-  spline = vtkm::cont::CubicHermiteSpline(pts, knots);
+  spline = vtkm::cont::CubicHermiteSpline();
+  spline.SetData(pts);
+  spline.SetKnots(knots);
   CheckEvaluation(spline, knots, pts);
 
   //Evaluation at non-knot values.
@@ -90,7 +93,9 @@ void CubicHermiteSplineTest()
 
   //Non-uniform knots.
   knots = { 0, 1, 2, 2.1, 2.2, 2.3, 3 };
-  spline = vtkm::cont::CubicHermiteSpline(pts, knots);
+  spline = vtkm::cont::CubicHermiteSpline();
+  spline.SetData(pts);
+  spline.SetKnots(knots);
   CheckEvaluation(spline, knots, pts);
 
   params = { 1.5, 2.05, 2.11, 2.299, 2.8 };
@@ -116,7 +121,9 @@ void CubicHermiteSplineTest()
     knots.push_back(t);
     t += dt;
   }
-  spline = vtkm::cont::CubicHermiteSpline(pts, knots);
+  spline = vtkm::cont::CubicHermiteSpline();
+  spline.SetData(pts);
+  spline.SetKnots(knots);
   CheckEvaluation(spline, knots, pts);
 
   //Evaluate at a few points and check against analytical results.
