@@ -392,6 +392,46 @@ void WriteCellFields(std::ostream& out,
   }
 }
 
+void WriteGlobalFields(std::ostream& out,
+                       const vtkm::cont::DataSet& dataSet,
+                       vtkm::io::FileType fileType)
+{
+  // count number of global arrays
+  int n = 0;
+  for (vtkm::Id f = 0; f < dataSet.GetNumberOfFields(); f++)
+  {
+    if (dataSet.GetField(f).IsFieldGlobal())
+      n++;
+  }
+
+  if (n < 1)
+    return;
+
+  // write header
+  out << "FIELD FieldData " << n << '\n';
+
+  // write fields
+  for (vtkm::Id f = 0; f < dataSet.GetNumberOfFields(); f++)
+  {
+    const vtkm::cont::Field field = dataSet.GetField(f);
+    if (!field.IsFieldGlobal())
+    {
+      continue;
+    }
+
+    std::string name = field.GetName();
+    int nComponents = field.GetData().GetNumberOfComponentsFlat();
+    int nValues = field.GetData().GetNumberOfValues();
+    std::string typeName = GetFieldTypeName(field.GetData());
+
+    out << name << " " << nComponents << " " << nValues << " " << typeName << '\n';
+
+    OutputArrayData(field.GetData(), out, fileType);
+
+    out << "METADATA\nINFORMATION 0\n\n";
+  }
+}
+
 template <class CellSetType>
 void WriteDataSetAsUnstructured(std::ostream& out,
                                 const vtkm::cont::DataSet& dataSet,
@@ -406,10 +446,13 @@ void WriteDataSetAsUnstructured(std::ostream& out,
 template <vtkm::IdComponent DIM>
 void WriteDataSetAsStructuredPoints(std::ostream& out,
                                     const vtkm::cont::ArrayHandleUniformPointCoordinates& points,
-                                    const vtkm::cont::CellSetStructured<DIM>& cellSet)
+                                    const vtkm::cont::CellSetStructured<DIM>& cellSet,
+                                    const vtkm::cont::DataSet& dataSet,
+                                    vtkm::io::FileType fileType)
 {
   out << "DATASET STRUCTURED_POINTS\n";
 
+  WriteGlobalFields(out, dataSet, fileType);
   WriteDimensions(out, cellSet);
 
   auto portal = points.ReadPortal();
@@ -472,7 +515,11 @@ void WriteDataSetAsStructured(std::ostream& out,
   {
     // uniform is written as "structured points"
     WriteDataSetAsStructuredPoints(
-      out, coordSystem.AsArrayHandle<vtkm::cont::ArrayHandleUniformPointCoordinates>(), cellSet);
+      out,
+      coordSystem.AsArrayHandle<vtkm::cont::ArrayHandleUniformPointCoordinates>(),
+      cellSet,
+      dataSet,
+      fileType);
   }
   else if (coordSystem.IsType<ArrayHandleRectilinearCoordinates<vtkm::Float32>>())
   {
