@@ -9,26 +9,8 @@
 ##============================================================================
 
 set(uncertainty_headers
-  ContourUncertainUniform.h
-  ContourUncertainUniformMonteCarlo.h
-
-  #2 Variate Data
-  2VariateUncertianty.h
-
+# 2 Variate data
+    2VariateUncertianty.h
   )
-set(uncertainty_sources_device
-  ContourUncertainUniform.cxx
-  ContourUncertainUniformMonteCarlo.cxx
-
-  #2 Variate
-  2VariateUncertianty.cxx
-  )
-
-vtkm_library(
-  NAME vtkm_filter_uncertainty
-  HEADERS ${uncertainty_headers}
-  DEVICE_SOURCES ${uncertainty_sources_device}
-  USE_VTKM_JOB_POOL
-)
-
-add_subdirectory(worklet)
+#-----------------------------------------------------------------------------#i
+vtkm_declare_headers(${uncertainty_headers})

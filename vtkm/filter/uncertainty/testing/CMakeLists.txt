@@ -16,6 +16,7 @@ set(libraries
 
 set(unit_tests
   UnitTestContourUncertainUniform.cxx
+  UnitTest2VariateUncertainty.cxx
   )
 
 vtkm_unit_tests(
