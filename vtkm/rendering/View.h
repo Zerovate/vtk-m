@@ -26,6 +26,9 @@ namespace vtkm
 {
 namespace rendering
 {
+const std::string RENDER_TIME_KEY = "RenderTime";
+const std::string COMPOSITE_TIME_KEY = "CompositeTime";
+const std::string TOTAL_TIME_KEY = "TotalTime";
 
 /// @brief The abstract class representing the view of a rendering scene.
 class VTKM_RENDERING_EXPORT View
@@ -133,6 +136,9 @@ public:
   VTKM_CONT
   void AddAdditionalAnnotation(std::function<void(void)> ann);
 
+  VTKM_CONT
+  std::unordered_map<std::string, vtkm::Float64> GetTimes() const { return this->Times; }
+
 protected:
   void SetupForWorldSpace(bool viewportClip = true);
 
@@ -142,6 +148,8 @@ protected:
   vtkm::rendering::Color AxisColor = vtkm::rendering::Color::white;
   bool WorldAnnotationsEnabled = true;
   bool RenderAnnotationsEnabled = true;
+
+  std::unordered_map<std::string, vtkm::Float64> Times;
 
 private:
   std::unique_ptr<InternalData> Internal;
