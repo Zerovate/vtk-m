@@ -1,0 +1,58 @@
+#include <vtkm/cont/DataSet.h>
+#include <vtkm/cont/DataSetBuilderUniform.h>
+#include <vtkm/cont/ArrayHandle.h>
+#include <vtkm/io/writer/VTKDataSetWriter.h>
+#include <cmath>
+
+int main()
+{
+    // Define grid parameters
+    const int numPoints = 50; // Number of points along each axis
+    const double xMin = -1.0, xMax = 1.0;
+    const double yMin = -1.0, yMax = 1.0;
+    const double tMin = 0.0, tMax = (3.0 / 4.0) * M_PI;
+
+    // Create arrays to store data
+    vtkm::cont::ArrayHandle<vtkm::Float32> uArray, vArray, wArray;
+
+    // Iterate over grid points
+    for (int i = 0; i < numPoints; ++i) {
+        for (int j = 0; j < numPoints; ++j) {
+            double x = xMin + (xMax - xMin) * i / (numPoints - 1);
+            double y = yMin + (yMax - yMin) * j / (numPoints - 1);
+
+            // Initial conditions
+            float u = std::sin(x);
+            float v = std::sin(y);
+            float w = 0.5f;
+
+            // Evolve over time
+            for (double t = tMin; t <= tMax; t += 0.1) {
+                float u_next = u * std::cos(t) - v * std::sin(t);
+                float v_next = u * std::sin(t) + v * std::cos(t);
+                u = u_next;
+                v = v_next;
+            }
+
+            // Append to arrays
+            uArray.Append(u);
+            vArray.Append(v);
+            wArray.Append(w);
+        }
+    }
+
+    // Create dataset
+    vtkm::cont::DataSetBuilderUniform builder;
+    vtkm::cont::DataSet dataset = builder.Create(vtkm::Id2(numPoints, numPoints));
+
+    // Add fields to dataset
+    dataset.AddField(vtkm::cont::Field("u", vtkm::cont::Field::Association::POINTS, uArray));
+    dataset.AddField(vtkm::cont::Field("v", vtkm::cont::Field::Association::POINTS, vArray));
+    dataset.AddField(vtkm::cont::Field("w", vtkm::cont::Field::Association::POINTS, wArray));
+
+    // Write the dataset to a file
+    vtkm::io::writer::VTKDataSetWriter writer("vector_dataset.vtk");
+    writer.WriteDataSet(dataset);
+
+    return 0;
+}
