@@ -87,3 +87,7 @@ vtkm_add_target_information(extract_edges
 
 # Copy the data file to be adjacent to the binaries
 file(GENERATE OUTPUT "$<TARGET_FILE_DIR:mag_grad>/data/kitchen.vtk" INPUT "${CMAKE_CURRENT_SOURCE_DIR}/data/kitchen.vtk")
+
+file(GENERATE OUTPUT "$<TARGET_FILE_DIR:contour>/data/skull.vtk" INPUT "${CMAKE_CURRENT_SOURCE_DIR}/data/skull.vtk")
+
+file(GENERATE OUTPUT "$<TARGET_FILE_DIR:contour>/data/raw_data.vtk" INPUT "${CMAKE_CURRENT_SOURCE_DIR}/data/raw_data.vtk")
