@@ -29,6 +29,8 @@ set(headers
   ConnectivityExtrude.h
   ConnectivityPermuted.h
   ConnectivityStructured.h
+  CubicHermiteSpline.h
+  CubicSpline.h
   FieldNeighborhood.h
   FunctorBase.h
   ParametricCoordinates.h

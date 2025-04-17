@@ -42,6 +42,7 @@ enum class ErrorCode
   MalformedCellDetected,
   OperationOnEmptyCell,
   CellNotFound,
+  ValueOutOfRange,
 
   UnknownError
 };
@@ -160,6 +161,8 @@ inline const char* ErrorString(vtkm::ErrorCode code) noexcept
       return "Operation on empty cell";
     case vtkm::ErrorCode::CellNotFound:
       return "Cell not found";
+    case vtkm::ErrorCode::ValueOutOfRange:
+      return "Value out of range";
     case vtkm::ErrorCode::UnknownError:
       return "Unknown error";
   }
