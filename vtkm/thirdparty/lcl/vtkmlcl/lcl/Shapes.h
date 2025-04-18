@@ -35,7 +35,7 @@ enum ShapeId : IdShape
   HEXAHEDRON       = 12,
   WEDGE            = 13,
   PYRAMID          = 14,
-
+  LAGRANGE_HEXAHEDRON = 72, 
   NUMBER_OF_CELL_SHAPES
 };
 
@@ -87,6 +87,7 @@ inline LCL_EXEC int dimension(IdShape shapeId)
     case HEXAHEDRON:
     case WEDGE:
     case PYRAMID:
+    case LAGRANGE_HEXAHEDRON:
       return 3;
     case EMPTY:
     default:
@@ -115,6 +116,7 @@ class Voxel;
 class Hexahedron;
 class Wedge;
 class Pyramid;
+class Lagrange_Hexahedron;
 
 } //namespace lcl
 
@@ -137,6 +139,7 @@ class Pyramid;
   lclGenericCellShapeMacroCase(lcl::ShapeId::VOXEL,      lcl::Voxel,      call);                \
   lclGenericCellShapeMacroCase(lcl::ShapeId::HEXAHEDRON, lcl::Hexahedron, call);                \
   lclGenericCellShapeMacroCase(lcl::ShapeId::WEDGE,      lcl::Wedge,      call);                \
-  lclGenericCellShapeMacroCase(lcl::ShapeId::PYRAMID,    lcl::Pyramid,    call)
+  lclGenericCellShapeMacroCase(lcl::ShapeId::PYRAMID,    lcl::Pyramid,    call);                \
+  lclGenericCellShapeMacroCase(lcl::ShapeId::LAGRANGE_HEXAHEDRON,    lcl::Lagrange_Hexahedron,    call)
 
 #endif //lcl_Shapes_h

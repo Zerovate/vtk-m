@@ -221,6 +221,16 @@ struct TestCellFacesFunctor
       this->TryShapeWithNumPoints(numPoints, vtkm::CellShapeTagPolygon());
     }
   }
+
+  void operator()(vtkm::CellShapeTagLagrange_Hexahedron) const
+  {
+    // n^3
+    for (vtkm::IdComponent numPoints = 8; numPoints < 28;
+         numPoints = static_cast<vtkm::IdComponent>(vtkm::Pow(numPoints, 3.)))
+    {
+      this->TryShapeWithNumPoints(numPoints, vtkm::CellShapeTagLagrange_Hexahedron());
+    }
+  }
 };
 
 void TestAllShapes()

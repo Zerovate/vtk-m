@@ -161,6 +161,19 @@ static inline VTKM_EXEC vtkm::ErrorCode CellEdgeNumberOfEdges(vtkm::IdComponent 
 ///     This method is overloaded for different shape types.
 /// @param[out] numEdges A reference to return the number of edges.
 static inline VTKM_EXEC vtkm::ErrorCode CellEdgeNumberOfEdges(vtkm::IdComponent numPoints,
+                                                              vtkm::CellShapeTagLagrange_Hexahedron,
+                                                              vtkm::IdComponent& numEdges)
+{
+  if (numPoints <= 0)
+  {
+    numEdges = -1;
+    return vtkm::ErrorCode::InvalidNumberOfPoints;
+  }
+  numEdges = numPoints; // HC: this is what SW did, but possibly it was a shortcut
+  return vtkm::ErrorCode::Success;
+}
+
+static inline VTKM_EXEC vtkm::ErrorCode CellEdgeNumberOfEdges(vtkm::IdComponent numPoints,
                                                               vtkm::CellShapeTagGeneric shape,
                                                               vtkm::IdComponent& numEdges)
 {

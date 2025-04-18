@@ -40,11 +40,20 @@ public:
     : Indices(indices)
     , Portal(portal)
   {
+    Limit = 0;
   }
+
+  void LimitNumberOfComponents(vtkm::IdComponent l) { Limit = l; }
 
   VTKM_SUPPRESS_EXEC_WARNINGS
   VTKM_EXEC_CONT
-  vtkm::IdComponent GetNumberOfComponents() const { return this->Indices->GetNumberOfComponents(); }
+  vtkm::IdComponent GetNumberOfComponents() const
+  {
+    vtkm::IdComponent numComps = this->Indices->GetNumberOfComponents();
+    if (Limit > 0)
+      return (Limit < numComps ? Limit : numComps);
+    return numComps;
+  }
 
   VTKM_SUPPRESS_EXEC_WARNINGS
   template <vtkm::IdComponent DestSize>
@@ -67,6 +76,7 @@ public:
 private:
   const IndexVecType* const Indices;
   PortalType Portal;
+  vtkm::IdComponent Limit;
 };
 
 template <typename IndexVecType, typename PortalType>

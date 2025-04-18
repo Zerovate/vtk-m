@@ -21,6 +21,7 @@
 #include <lcl/Vertex.h>
 #include <lcl/Voxel.h>
 #include <lcl/Wedge.h>
+#include <lcl/Lagrange_Hexahedron.h>
 
 #include <utility>
 
