@@ -12,6 +12,7 @@
 
 #include <ostream>
 #include <vtkm/Bitset.h>
+#include <vtkm/Deprecated.h>
 #include <vtkm/VecVariable.h>
 #include <vtkm/VectorAnalysis.h>
 #include <vtkm/cont/Serialization.h>
@@ -117,6 +118,8 @@ public:
   {
   }
 
+  using FlowVectorsType = vtkm::Vec3f;
+
   vtkm::Particle& operator=(const vtkm::Particle&) = default;
 
   VTKM_EXEC_CONT ~Particle() noexcept
@@ -141,6 +144,7 @@ public:
   VTKM_EXEC_CONT vtkm::FloatDefault GetTime() const { return this->Time; }
   VTKM_EXEC_CONT void SetTime(vtkm::FloatDefault time) { this->Time = time; }
 
+  VTKM_DEPRECATED(2.3, "Use Particle::FlowVectorsType for force vectors.")
   VTKM_EXEC_CONT
   vtkm::Vec3f Velocity(const vtkm::VecVariable<vtkm::Vec3f, 2>& vectors,
                        const vtkm::FloatDefault& vtkmNotUsed(length)) const
@@ -149,6 +153,12 @@ public:
     // and is not influenced by the particle
     VTKM_ASSERT(vectors.GetNumberOfComponents() > 0);
     return vectors[0];
+  }
+
+  VTKM_EXEC_CONT vtkm::Vec3f Velocity(const FlowVectorsType& vectors,
+                                      const vtkm::FloatDefault& vtkmNotUsed(length)) const
+  {
+    return vectors;
   }
 
   VTKM_EXEC_CONT
@@ -236,6 +246,12 @@ public:
     // troublesome with CUDA __host__ __device__ markup.
   }
 
+  struct FlowVectorsType
+  {
+    vtkm::Vec3f EField;
+    vtkm::Vec3f BField;
+  };
+
   VTKM_EXEC_CONT const vtkm::Vec3f& GetPosition() const { return this->Position; }
   VTKM_EXEC_CONT void SetPosition(const vtkm::Vec3f& position) { this->Position = position; }
 
@@ -265,29 +281,33 @@ public:
       return vtkm::Sqrt(1.0 + fMom2 * m2_c2_reci);
   }
 
+  VTKM_DEPRECATED(2.3, "Use Particle::FlowVectorsType for force vectors.")
   VTKM_EXEC_CONT
   vtkm::Vec3f Velocity(const vtkm::VecVariable<vtkm::Vec3f, 2>& vectors,
                        const vtkm::FloatDefault& length) const
   {
     VTKM_ASSERT(vectors.GetNumberOfComponents() == 2);
 
+    return this->Velocity({ vectors[0], vectors[1] }, length);
+  }
+
+  VTKM_EXEC_CONT vtkm::Vec3f Velocity(const FlowVectorsType& vectors,
+                                      const vtkm::FloatDefault& length) const
+  {
     // Suppress unused warning
     (void)this->Weighting;
 
-    vtkm::Vec3f eField = vectors[0];
-    vtkm::Vec3f bField = vectors[1];
-
     const vtkm::Float64 QoM = this->Charge / this->Mass;
-    const vtkm::Vec3f mom_minus = this->Momentum + (0.5 * this->Charge * eField * length);
+    const vtkm::Vec3f mom_minus = this->Momentum + (0.5 * this->Charge * vectors.EField * length);
 
     // Get reciprocal of Gamma
     vtkm::Vec3f gamma_reci = static_cast<vtkm::FloatDefault>(this->Gamma(mom_minus, true));
-    const vtkm::Vec3f t = 0.5 * QoM * length * bField * gamma_reci;
+    const vtkm::Vec3f t = 0.5 * QoM * length * vectors.BField * gamma_reci;
     const vtkm::Vec3f s = 2.0f * t * (1.0 / (1.0 + vtkm::Magnitude(t)));
     const vtkm::Vec3f mom_prime = mom_minus + vtkm::Cross(mom_minus, t);
     const vtkm::Vec3f mom_plus = mom_minus + vtkm::Cross(mom_prime, s);
 
-    const vtkm::Vec3f mom_new = mom_plus + 0.5 * this->Charge * eField * length;
+    const vtkm::Vec3f mom_new = mom_plus + 0.5 * this->Charge * vectors.EField * length;
     this->Momentum = mom_new;
 
     // momentum = velocity * mass * gamma;

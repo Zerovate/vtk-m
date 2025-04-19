@@ -16,6 +16,9 @@
 #include <vtkm/filter/flow/worklet/GridEvaluatorStatus.h>
 #include <vtkm/filter/flow/worklet/IntegratorStatus.h>
 
+#include <vtkm/cont/DeviceAdapterTag.h>
+#include <vtkm/cont/Token.h>
+
 namespace vtkm
 {
 namespace worklet
@@ -56,7 +59,7 @@ public:
 
     vtkm::Vec3f v1 = vtkm::TypeTraits<vtkm::Vec3f>::ZeroInitialization();
     vtkm::Vec3f v2 = v1, v3 = v1, v4 = v1;
-    vtkm::VecVariable<vtkm::Vec3f, 2> k1, k2, k3, k4;
+    typename Particle::FlowVectorsType k1, k2, k3, k4;
 
     GridEvaluatorStatus evalStatus;
 

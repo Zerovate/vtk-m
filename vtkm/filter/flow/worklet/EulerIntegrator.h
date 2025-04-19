@@ -16,6 +16,9 @@
 #include <vtkm/filter/flow/worklet/GridEvaluatorStatus.h>
 #include <vtkm/filter/flow/worklet/IntegratorStatus.h>
 
+#include <vtkm/cont/DeviceAdapterTag.h>
+#include <vtkm/cont/Token.h>
+
 namespace vtkm
 {
 namespace worklet
@@ -40,7 +43,7 @@ public:
   {
     auto time = particle.GetTime();
     auto inpos = particle.GetEvaluationPosition(stepLength);
-    vtkm::VecVariable<vtkm::Vec3f, 2> vectors;
+    typename Particle::FlowVectorsType vectors;
     GridEvaluatorStatus evalStatus = this->Evaluator.Evaluate(inpos, time, vectors);
     if (evalStatus.CheckFail())
       return IntegratorStatus(evalStatus, false);

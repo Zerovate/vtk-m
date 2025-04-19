@@ -21,13 +21,9 @@ namespace worklet
 namespace flow
 {
 
-template <typename FieldType>
+template <typename GridEvaluator>
 class ExecutionTemporalGridEvaluator
 {
-private:
-  using GridEvaluator = vtkm::worklet::flow::GridEvaluator<FieldType>;
-  using ExecutionGridEvaluator = vtkm::worklet::flow::ExecutionGridEvaluator<FieldType>;
-
 public:
   VTKM_CONT
   ExecutionTemporalGridEvaluator() = default;
@@ -36,22 +32,13 @@ public:
   ExecutionTemporalGridEvaluator(const GridEvaluator& evaluatorOne,
                                  const vtkm::FloatDefault timeOne,
                                  const GridEvaluator& evaluatorTwo,
-                                 const vtkm::FloatDefault timeTwo,
-                                 vtkm::cont::DeviceAdapterId device,
-                                 vtkm::cont::Token& token)
-    : EvaluatorOne(evaluatorOne.PrepareForExecution(device, token))
-    , EvaluatorTwo(evaluatorTwo.PrepareForExecution(device, token))
+                                 const vtkm::FloatDefault timeTwo)
+    : EvaluatorOne(evaluatorOne)
+    , EvaluatorTwo(evaluatorTwo)
     , TimeOne(timeOne)
     , TimeTwo(timeTwo)
     , TimeDiff(timeTwo - timeOne)
   {
-  }
-
-  template <typename Point>
-  VTKM_EXEC bool IsWithinSpatialBoundary(const Point point) const
-  {
-    return this->EvaluatorOne.IsWithinSpatialBoundary(point) &&
-      this->EvaluatorTwo.IsWithinSpatialBoundary(point);
   }
 
   VTKM_EXEC
@@ -69,10 +56,10 @@ public:
     return direction > 0 ? this->TimeTwo : this->TimeOne;
   }
 
-  template <typename Point>
+  template <typename Point, typename ForceVectors>
   VTKM_EXEC GridEvaluatorStatus Evaluate(const Point& particle,
                                          vtkm::FloatDefault time,
-                                         vtkm::VecVariable<Point, 2>& out) const
+                                         ForceVectors& out) const
   {
     // Validate time is in bounds for the current two slices.
     GridEvaluatorStatus status;
@@ -84,7 +71,7 @@ public:
       return status;
     }
 
-    vtkm::VecVariable<Point, 2> e1, e2;
+    ForceVectors e1, e2;
     status = this->EvaluatorOne.Evaluate(particle, time, e1);
     if (status.CheckFail())
       return status;
@@ -94,29 +81,25 @@ public:
 
     // LERP between the two values of calculated fields to obtain the new value
     vtkm::FloatDefault proportion = (time - this->TimeOne) / this->TimeDiff;
-    VTKM_ASSERT(e1.GetNumberOfComponents() != 0 &&
-                e1.GetNumberOfComponents() == e2.GetNumberOfComponents());
-    out = vtkm::VecVariable<Point, 2>{};
-    for (vtkm::IdComponent index = 0; index < e1.GetNumberOfComponents(); ++index)
-      out.Append(vtkm::Lerp(e1[index], e2[index], proportion));
+    out = vtkm::Lerp(e1, e2, proportion);
 
     status.SetOk();
     return status;
   }
 
 private:
-  ExecutionGridEvaluator EvaluatorOne;
-  ExecutionGridEvaluator EvaluatorTwo;
+  GridEvaluator EvaluatorOne;
+  GridEvaluator EvaluatorTwo;
   vtkm::FloatDefault TimeOne;
   vtkm::FloatDefault TimeTwo;
   vtkm::FloatDefault TimeDiff;
 };
 
-template <typename FieldType>
+template <typename FieldType, typename CellSetType, typename CellLocatorType>
 class TemporalGridEvaluator : public vtkm::cont::ExecutionObjectBase
 {
 private:
-  using GridEvaluator = vtkm::worklet::flow::GridEvaluator<FieldType>;
+  using GridEvaluator = vtkm::worklet::flow::GridEvaluator<FieldType, CellSetType, CellLocatorType>;
 
 public:
   VTKM_CONT TemporalGridEvaluator() = default;
@@ -131,7 +114,6 @@ public:
     , EvaluatorTwo(GridEvaluator(ds2, field2))
     , TimeOne(t1)
     , TimeTwo(t2)
-
   {
   }
 
@@ -162,12 +144,14 @@ public:
   {
   }
 
-  VTKM_CONT ExecutionTemporalGridEvaluator<FieldType> PrepareForExecution(
-    vtkm::cont::DeviceAdapterId device,
-    vtkm::cont::Token& token) const
+  VTKM_CONT auto PrepareForExecution(vtkm::cont::DeviceAdapterId device,
+                                     vtkm::cont::Token& token) const
   {
-    return ExecutionTemporalGridEvaluator<FieldType>(
-      this->EvaluatorOne, this->TimeOne, this->EvaluatorTwo, this->TimeTwo, device, token);
+    auto evaluatorOneExec = this->EvaluatorOne.PrepareForExecution(device, token);
+    auto evaluatorTwoExec = this->EvaluatorTwo.PrepareForExecution(device, token);
+    using GridEvaluatorType = decltype(evaluatorOneExec);
+    return ExecutionTemporalGridEvaluator<GridEvaluatorType>(
+      evaluatorOneExec, this->TimeOne, evaluatorTwoExec, this->TimeTwo);
   }
 
 private:
@@ -176,6 +160,71 @@ private:
   vtkm::FloatDefault TimeOne;
   vtkm::FloatDefault TimeTwo;
 };
+
+// Given the information for evaluators at 2 time steps, constructs a temporal grid
+// evaluator of the appropriate type and calls the provided functor. This only
+// works if the datasets both have the same types.
+template <typename FieldType, typename Functor>
+void CastAndCallTemporalGridEvaluator(
+  Functor&& functor,
+  const vtkm::cont::CoordinateSystem& coords1,
+  const vtkm::cont::CoordinateSystem& coords2,
+  const vtkm::cont::UnknownCellSet& cells1,
+  const vtkm::cont::UnknownCellSet& cells2,
+  const FieldType& field1,
+  const FieldType& field2,
+  vtkm::FloatDefault time1,
+  vtkm::FloatDefault time2,
+  const vtkm::cont::ArrayHandle<vtkm::UInt8>& ghostCells1 = vtkm::cont::ArrayHandle<vtkm::UInt8>{},
+  const vtkm::cont::ArrayHandle<vtkm::UInt8>& ghostCells2 = vtkm::cont::ArrayHandle<vtkm::UInt8>{})
+{
+  auto constructTemporal = [&](auto steadyGridEval1) {
+    using SteadyGridEval = decltype(steadyGridEval1);
+    using UnsteadyGridEval = TemporalGridEvaluator<FieldType,
+                                                   typename SteadyGridEval::CellSetType,
+                                                   typename SteadyGridEval::CellLocatorType>;
+    SteadyGridEval steadyGridEval2(coords2, cells2, field2, ghostCells2);
+    UnsteadyGridEval unsteadyGridEval(steadyGridEval1, time1, steadyGridEval2, time2);
+    functor(unsteadyGridEval);
+  };
+  vtkm::worklet::flow::CastAndCallGridEvaluator(
+    constructTemporal, coords1, cells1, field1, ghostCells1);
+}
+
+template <typename FieldType, typename Functor>
+void CastAndCallTemporalGridEvaluator(Functor&& functor,
+                                      const vtkm::cont::DataSet& dataset1,
+                                      const vtkm::cont::DataSet& dataset2,
+                                      const FieldType& field1,
+                                      const FieldType& field2,
+                                      vtkm::FloatDefault time1,
+                                      vtkm::FloatDefault time2,
+                                      vtkm::IdComponent activeCoordinates1 = 0,
+                                      vtkm::IdComponent activeCoordinates2 = 0)
+{
+  vtkm::cont::ArrayHandle<vtkm::UInt8> ghostArray1;
+  if (dataset1.HasGhostCellField())
+  {
+    vtkm::cont::ArrayCopyShallowIfPossible(dataset1.GetGhostCellField().GetData(), ghostArray1);
+  }
+  vtkm::cont::ArrayHandle<vtkm::UInt8> ghostArray2;
+  if (dataset2.HasGhostCellField())
+  {
+    vtkm::cont::ArrayCopyShallowIfPossible(dataset2.GetGhostCellField().GetData(), ghostArray2);
+  }
+
+  CastAndCallTemporalGridEvaluator(std::forward<Functor>(functor),
+                                   dataset1.GetCoordinateSystem(activeCoordinates1),
+                                   dataset2.GetCoordinateSystem(activeCoordinates2),
+                                   dataset1.GetCellSet(),
+                                   dataset2.GetCellSet(),
+                                   field1,
+                                   field2,
+                                   time1,
+                                   time2,
+                                   ghostArray1,
+                                   ghostArray2);
+}
 
 }
 }
