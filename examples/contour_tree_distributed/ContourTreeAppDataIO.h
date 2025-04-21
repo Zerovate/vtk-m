@@ -359,7 +359,8 @@ bool read3DHDF5File(const int& mpi_rank,
   ds = dsb.Create(v_dims, v_origin, v_spacing);
   vtkm::cont::CellSetStructured<3> cs;
   cs.SetPointDimensions(v_dims);
-  cs.SetGlobalPointDimensions(globalSize);
+  // NOTE: Comment out for test purposes
+  //cs.SetGlobalPointDimensions(globalSize);
   cs.SetGlobalPointIndexStart(vtkm::Id3{ v_origin[0], v_origin[1], v_origin[2] });
   ds.SetCellSet(cs);
 
@@ -600,7 +601,8 @@ bool readPreSplitFiles(const int& rank,
       ds = dsb.Create(v_dims, v_origin, v_spacing);
       vtkm::cont::CellSetStructured<2> cs;
       cs.SetPointDimensions(v_dims);
-      cs.SetGlobalPointDimensions(vtkm::Id2{ globalSize[0], globalSize[1] });
+      // NOTE: Comment out for test purposes
+      //cs.SetGlobalPointDimensions(vtkm::Id2{ globalSize[0], globalSize[1] });
       cs.SetGlobalPointIndexStart(vtkm::Id2{ offset[0], offset[1] });
       ds.SetCellSet(cs);
     }
@@ -617,7 +619,8 @@ bool readPreSplitFiles(const int& rank,
       ds = dsb.Create(v_dims, v_origin, v_spacing);
       vtkm::cont::CellSetStructured<3> cs;
       cs.SetPointDimensions(v_dims);
-      cs.SetGlobalPointDimensions(globalSize);
+      // NOTE: Comment out for test purposes
+      //cs.SetGlobalPointDimensions(globalSize);
       cs.SetGlobalPointIndexStart(vtkm::Id3{ offset[0], offset[1], offset[2] });
       ds.SetCellSet(cs);
     }
@@ -828,7 +831,8 @@ bool readSingleBlockFile(const int& rank,
         ds = dsb.Create(vdims, origin, spacing);
         vtkm::cont::CellSetStructured<2> cs;
         cs.SetPointDimensions(vdims);
-        cs.SetGlobalPointDimensions(vtkm::Id2{ globalSize[0], globalSize[1] });
+        // NOTE: Comment out for test purposes
+        //cs.SetGlobalPointDimensions(vtkm::Id2{ globalSize[0], globalSize[1] });
         cs.SetGlobalPointIndexStart(vtkm::Id2{ 0, (blockStart / blockSliceSize) });
         ds.SetCellSet(cs);
         localBlockIndicesPortal.Set(localBlockIndex, vtkm::Id3(0, blockIndex, 0));
@@ -845,7 +849,8 @@ bool readSingleBlockFile(const int& rank,
         ds = dsb.Create(vdims, origin, spacing);
         vtkm::cont::CellSetStructured<3> cs;
         cs.SetPointDimensions(vdims);
-        cs.SetGlobalPointDimensions(globalSize);
+        // NOTE: Comment out for test purposes
+        //cs.SetGlobalPointDimensions(globalSize);
         cs.SetGlobalPointIndexStart(vtkm::Id3(0, 0, blockStart / blockSliceSize));
         ds.SetCellSet(cs);
         localBlockIndicesPortal.Set(localBlockIndex, vtkm::Id3(0, 0, blockIndex));
