@@ -19,6 +19,7 @@ struct TestEqualArrayHandleType2
   void operator()(T,
                   const FirstArrayType& array1,
                   const vtkm::cont::UnknownArrayHandle& array2,
+                  vtkm::Float64 tolerance,
                   vtkm::IdComponent cIndex,
                   TestEqualResult& result,
                   bool& called) const
@@ -28,7 +29,7 @@ struct TestEqualArrayHandleType2
       return;
     }
 
-    result = test_equal_ArrayHandles(array1, array2.ExtractComponent<T>(cIndex));
+    result = test_equal_ArrayHandles(array1, array2.ExtractComponent<T>(cIndex), tolerance);
 
     called = true;
   }
@@ -40,6 +41,7 @@ struct TestEqualArrayHandleType1
   void operator()(T,
                   const vtkm::cont::UnknownArrayHandle& array1,
                   const vtkm::cont::UnknownArrayHandle& array2,
+                  vtkm::Float64 tolerance,
                   TestEqualResult& result,
                   bool& called) const
   {
@@ -54,6 +56,7 @@ struct TestEqualArrayHandleType1
                         vtkm::TypeListScalarAll{},
                         array1.ExtractComponent<T>(cIndex),
                         array2,
+                        tolerance,
                         cIndex,
                         result,
                         called);
@@ -68,7 +71,8 @@ struct TestEqualArrayHandleType1
 } // anonymous namespace
 
 TestEqualResult test_equal_ArrayHandles(const vtkm::cont::UnknownArrayHandle& array1,
-                                        const vtkm::cont::UnknownArrayHandle& array2)
+                                        const vtkm::cont::UnknownArrayHandle& array2,
+                                        vtkm::Float64 tolerance)
 {
   TestEqualResult result;
 
@@ -80,8 +84,13 @@ TestEqualResult test_equal_ArrayHandles(const vtkm::cont::UnknownArrayHandle& ar
 
   bool called = false;
 
-  vtkm::ListForEach(
-    TestEqualArrayHandleType1{}, vtkm::TypeListScalarAll{}, array1, array2, result, called);
+  vtkm::ListForEach(TestEqualArrayHandleType1{},
+                    vtkm::TypeListScalarAll{},
+                    array1,
+                    array2,
+                    tolerance,
+                    result,
+                    called);
 
   if (!called)
   {

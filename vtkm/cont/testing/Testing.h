@@ -202,7 +202,8 @@ private:
 template <typename T1, typename T2, typename StorageTag1, typename StorageTag2>
 VTKM_CONT TestEqualResult
 test_equal_ArrayHandles(const vtkm::cont::ArrayHandle<T1, StorageTag1>& array1,
-                        const vtkm::cont::ArrayHandle<T2, StorageTag2>& array2)
+                        const vtkm::cont::ArrayHandle<T2, StorageTag2>& array2,
+                        vtkm::Float64 tolerance = 0.00001)
 {
   TestEqualResult result;
 
@@ -216,7 +217,7 @@ test_equal_ArrayHandles(const vtkm::cont::ArrayHandle<T1, StorageTag1>& array1,
   auto portal2 = array2.ReadPortal();
   for (vtkm::Id i = 0; i < portal1.GetNumberOfValues(); ++i)
   {
-    if (!test_equal(portal1.Get(i), portal2.Get(i)))
+    if (!test_equal(portal1.Get(i), portal2.Get(i), tolerance))
     {
       result.PushMessage("Values don't match at index " + std::to_string(i));
       break;
@@ -228,7 +229,8 @@ test_equal_ArrayHandles(const vtkm::cont::ArrayHandle<T1, StorageTag1>& array1,
 
 VTKM_CONT_TESTING_EXPORT TestEqualResult
 test_equal_ArrayHandles(const vtkm::cont::UnknownArrayHandle& array1,
-                        const vtkm::cont::UnknownArrayHandle& array2);
+                        const vtkm::cont::UnknownArrayHandle& array2,
+                        vtkm::Float64 tolerance = 0.00001);
 
 namespace detail
 {
